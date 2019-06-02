@@ -1,0 +1,14 @@
+#define CS_FUNNEL_CTL        0x80031000
+#define CS_FUNNEL_LOCK       0x80031FB0
+#define DS_FUNNEL_CTL        0x80002000
+#define DS_FUNNEL_LOCK       0x80002FB0
+#define UNLOCK_VALUE         0xC5ACCE55
+
+hotmenu Enable_Funnel_For_PTM()
+{
+	*(int*)CS_FUNNEL_LOCK@data  = UNLOCK_VALUE;
+	*(int*)CS_FUNNEL_CTL@data = 0x3FF;
+	*(int*)DS_FUNNEL_LOCK@data  = UNLOCK_VALUE;
+	*(int*)DS_FUNNEL_CTL@data = 0x3FF;
+}
+

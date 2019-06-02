@@ -1,0 +1,53 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* Attila L4 WKUP     			     						   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+memorymap_init_L4_WKUP()
+{
+    GEL_MapAddStr(0x4A300000, 0, 0x00000800, "R|W|AS4", 0); 	/* L4 WKUP configuration AP - 2KBytes */
+    GEL_MapAddStr(0x4A300800, 0, 0x00000800, "R|W|AS4", 0); 	/* L4 WKUP configuration LA - 2KBytes */
+    GEL_MapAddStr(0x4A301000, 0, 0x00001000, "R|W|AS4", 0); 	/* L4 WKUP configuration IP0 - 4KBytes */
+    GEL_MapAddStr(0x4A304000, 0, 0x00001000, "R|W|AS4", 0); 	/* Synctimer32K Module - 4KBytes */
+    GEL_MapAddStr(0x4A305000, 0, 0x00001000, "R|W|AS4", 0); 	/* Synctimer32K L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4A306000, 0, 0x00002000, "R|W|AS4", 0); 	/* PRM Module - 8KBytes */
+    GEL_MapAddStr(0x4A308000, 0, 0x00001000, "R|W|AS4", 0); 	/* PRM L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4A30A000, 0, 0x00001000, "R|W|AS4", 0); 	/* SCRM Module - 4KBytes */
+    GEL_MapAddStr(0x4A30B000, 0, 0x00001000, "R|W|AS4", 0); 	/* SCRM L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4A30C000, 0, 0x00000008, "R|W|AS4", 0); 	/* Attila WKUP Control Module - 4KBytes */
+    GEL_MapAddStr(0x4A30C010, 0, 0x00000004, "R|W|AS4", 0); 	/* Attila WKUP Control Module - 4KBytes */
+    GEL_MapAddStr(0x4A30C100, 0, 0x00000F00, "R|W|AS4", 0); 	/* Attila WKUP Control Module - 4KBytes */
+    GEL_MapAddStr(0x4A30D000, 0, 0x00001000, "R|W|AS4", 0); 	/* Attila WKUP Control L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4A310000, 0, 0x00001000, "R|W|AS4", 0); 	/* GPIO1 Module - 4KBytes */
+    GEL_MapAddStr(0x4A311000, 0, 0x00001000, "R|W|AS4", 0); 	/* GPIO1 L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4A314000, 0, 0x00001000, "R|W|AS4", 0); 	/* WDT2 Module - 4KBytes */
+    GEL_MapAddStr(0x4A315000, 0, 0x00001000, "R|W|AS4", 0); 	/* WDT2 L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4A318000, 0, 0x00001000, "R|W|AS4", 0); 	/* DM_TIMER_1MS_1 Module - 4KBytes */
+    GEL_MapAddStr(0x4A319000, 0, 0x00001000, "R|W|AS4", 0); 	/* DM_TIMER_1MS_1 L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4A31C000, 0, 0x00001000, "R|W|AS4", 0); 	/* KBDOCP Module - 4KBytes */
+    GEL_MapAddStr(0x4A31D000, 0, 0x00001000, "R|W|AS4", 0); 	/* KBDOCP L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4A31E000, 0, 0x00001000, "R|W|AS4", 0); 	/* Device WKUP Module - 4KBytes */
+    GEL_MapAddStr(0x4A31F000, 0, 0x00001000, "R|W|AS4", 0); 	/* Device WKUP L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4A320000, 0, 0x00001000, "R|W|AS4", 0); 	/* DM_TIMER_12 Module - 4KBytes */
+    GEL_MapAddStr(0x4A321000, 0, 0x00001000, "R|W|AS4", 0); 	/* DM_TIMER_12 L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4A322000, 0, 0x00001000, "R|W|AS4", 0); 	/* WDT1 Secure Module - 4KBytes */
+    GEL_MapAddStr(0x4A323000, 0, 0x00001000, "R|W|AS4", 0); 	/* WDT1 Secure L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4A324000, 0, 0x00001000, "R|W|AS4", 0); 	/* USIM Secure Module - 4KBytes */
+    GEL_MapAddStr(0x4A325000, 0, 0x00001000, "R|W|AS4", 0); 	/* USIM Secure L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4A326000, 0, 0x00000400, "R|W|AS4", 0); 	/* SAR Space 1 Module - 1KBytes */
+    GEL_MapAddStr(0x4A327000, 0, 0x00000400, "R|W|AS4", 0); 	/* SAR Space 2 Module - 1KBytes */
+    GEL_MapAddStr(0x4A328000, 0, 0x00000400, "R|W|AS4", 0); 	/* SAR Space 3 Module - 1KBytes */
+    GEL_MapAddStr(0x4A329000, 0, 0x00000400, "R|W|AS4", 0); 	/* SAR Space 4 Module - 1KBytes */
+    GEL_MapAddStr(0x4A32A000, 0, 0x00001000, "R|W|AS4", 0); 	/* SAR L4 interconnect - 4KBytes */
+    
+    }
+    
+ 
+    
+    

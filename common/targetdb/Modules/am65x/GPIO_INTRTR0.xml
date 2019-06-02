@@ -1,0 +1,9 @@
+<module name="GPIO_INTRTR0" acronym="" XML_version="1.0" HW_revision="n/a" description="">
+  <register id="GPIO_INTRTR0_PID" acronym="GPIO_INTRTR0_PID" offset="0x0" width="32" description="Identification register">
+    <bitfield id="REV" width="32" begin="31" end="0" resetval="0x66947100" description="TI internal data. Identifies revision of peripheral." range="" rwaccess="R"/>
+  </register>
+  <register id="GPIO_INTRTR0_MUXCNTL_y" acronym="GPIO_INTRTR0_MUXCNTL_y" offset="0x4" width="32" description="Interrupt mux control register">
+    <bitfield id="RESERVED" width="24" begin="31" end="8" resetval="0xX" description="Reserved" range="" rwaccess="RW"/>
+    <bitfield id="ENABLE" width="8" begin="7" end="0" resetval="0x0" description="Mux control for interrupt N" range="" rwaccess="RW"/>
+  </register>
+</module>

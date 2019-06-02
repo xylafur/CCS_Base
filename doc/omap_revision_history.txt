@@ -1,0 +1,63 @@
+OMAP Device support package
+===========================
+
+1.0.9
+-----
+Added the compiler end-of-life project wizard property for legacy devices
+General cleanup of unused XML properties
+
+1.0.8
+-----
+Fixed SDSCM00048464
+Handoff for CCSv6.0
+
+1.0.7
+-----
+Added complete OMAP5 Public device support
+Converted CR/LF (DOS) to LF (UNIX) on several files
+Fixed SDSCM00047538
+
+1.0.6
+-----
+Updated OMAP4430 and OMAP4460 STM GEL files to include a function for enabling PTM trace.
+
+1.0.5
+-----
+Updated OMAP4460 Pandaboard ES Gel files.
+
+1.0.4
+-----
+Cross Triggering settings added to OMAP4 devices.
+
+1.0.3
+-----
+Fixed several uppercase/lowercase issues in board files
+Fixed CR/LF in several files
+Repartitioned OMAP4 GEL files to include Trace only on the device files and everything else on board files. 
+Fixed project filters for OMAP4430 and OMAP4460 device XML files
+Repaired paths to GEL files from ../../emulation to ../../../emulation
+Added Linker CMD files
+Added PandaBoard and Blaze board XML files
+Added Project options to device XML files (A9 and M3 cores)
+Added public GEL file packages for OMAP4430 and OMAP4460 from Thomas Salamito
+Removed references to fdif_init.gel (contained hardcoded paths)
+Removed references to DSS_gel_wrapper.gel from cortexA9 startup GELs
+Converted backslashes to forward slashes on GEL files
+Converted CR/LF (DOS) to LF (UNIX) on several files
+
+1.0.2
+-----
+PTM added to OMAP4430.xml and OMAP4460.xml
+Added filter strings for project wizard
+Added default build options for omap3430 and omap3630.
+Removed invalid silicon revision option from omap4430
+Added missing cpu tags in omap4430 and omap4460
+
+1.0.1
+-----
+Revision history moved to /doc
+
+1.0.0
+-----
+Packaged created using content from existing emulation installer
+Path issues corrected for Linux in device xml files

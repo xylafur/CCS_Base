@@ -1,0 +1,212 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* OMAP4460 startup     			     						   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+
+#define INFO_PRINT								0
+
+#define CONTROL_L3_HW_FW_EXPORTED_VALUES_CONF        0x4A002110
+
+#define fw_modem_regupdate_control              0x4A206040
+#define fw_mpuma_regupdate_control              0x4A20A040
+#define fw_emif_regupdate_control                 0x4A20C040
+#define fw_gpmc_regupdate_control                0x4A210040
+#define fw_sgx_regupdate_control              0x4A214040
+#define fw_iss_regupdate_control                 0x4A216040
+#define fw_ducati_regupdate_control              0x4A218040
+#define fw_dss_regupdate_control               0x4A21C040
+#define fw_sl2_regupdate_control                 0x4A21E040
+#define fw_ivahd_regupdate_control                0x4A220040
+#define fw_abe_regupdate_control               0x4A228040
+#define fw_debug_regupdate_control               0x4A226088
+
+#define fw_l3ram_regupdate_control              0x4A212040
+#define fw_l3ram_start_region_1_val              0x40300000
+#define fw_l3ram_end_region_1_val                0x4030BFFF
+
+#define FW_L3RAM_START_REGION_1_VALUE     fw_l3ram_regupdate_control+0x50  
+#define FW_L3RAM_END_REGION_1_VALUE 	fw_l3ram_regupdate_control+0x54 
+
+#define control_l4_hw_fw_exported_values_conf   0x4A002114
+#define control_sec_load_fw_exported_values     0x4A002118
+
+StartUp()
+{
+  // STM traces
+  GEL_LoadGel("$(GEL_file_dir)/omap4460_stm.gel"); 
+}
+
+OnTargetConnect()
+{ 
+	int device_type;
+    
+    	GEL_TextOut("--->>> Firewalls settings <<<---\n");
+    
+    	device_type = *(int*)0x4A0022C4;
+    
+    	// GP device	
+    	if (((device_type & 0x300)>>8) == 0x3)
+    	{
+     	   GEL_TextOut("--->>> GP device, no FW settings needed. <<<---\n"); 
+    	}
+    	else
+    	{	
+		// EMU device
+    		if (((device_type & 0x300)>>8) == 0x1) 	
+    		{
+        		GEL_TextOut("--->>> EMU device, FW settings needed -> allow all access <<<---\n"); 
+        		set_firewalls_to_public();
+    		}
+		else
+		{
+			// TEST device
+			if (((device_type & 0x300)>>8) == 0x0) 	
+    			{
+        			GEL_TextOut("--->>> TEST device, FW settings needed -> allow all access <<<---\n"); 
+        			set_firewalls_to_public();
+    			}
+			else
+			{	
+				GEL_TextOut("--->>> UNKOWN device maybe NON FUSED , FW settings needed -> allow all access <<<---\n"); 
+        			set_firewalls_to_public();
+			}
+		}
+	}
+	
+	GEL_TextOut("---<<< Firewalls settings >>>---\n");
+}  
+
+set_firewalls_to_public()
+{
+	int control_l3_hw_fw_exported_values_conf_register_value;
+	
+	int control_l3ram_regupdate_control_register_value;
+	
+	int control_l4_hw_fw_exported_values_conf_register_value;
+
+if (INFO_PRINT) {
+	GEL_TextOut("--->>> set_firewalls_to_public <<<---\n");
+	}
+	
+	/* Set Public rights for some L3 firewalls */
+	control_l3_hw_fw_exported_values_conf_register_value = *(int*)CONTROL_L3_HW_FW_EXPORTED_VALUES_CONF;
+
+if (INFO_PRINT) {
+	GEL_TextOut("L3_FW1 %x\n",,,,, control_l3_hw_fw_exported_values_conf_register_value); 
+}
+
+	control_l3_hw_fw_exported_values_conf_register_value &= 0xFFFF120A;
+	*(int*)CONTROL_L3_HW_FW_EXPORTED_VALUES_CONF = control_l3_hw_fw_exported_values_conf_register_value;
+
+if (INFO_PRINT) {
+	GEL_TextOut("L3_FW2 %x\n",,,,, control_l3_hw_fw_exported_values_conf_register_value);
+	}
+	
+	 /* Request L3 firewalls to load exported values: */
+     /*  - Set BUSY_REQ bit (avoid requests to go through FW while updating registers) */
+     /*  - Request load of exported values (Write '1' to FW_LOAD_REQ bit) */
+     /*  - Clear BUSY_REQ bit */
+     
+     /* Set BUSY_REQ Bit */
+     *(int*)fw_modem_regupdate_control = 0x1;
+     *(int*)fw_mpuma_regupdate_control = 0x1;
+     *(int*)fw_emif_regupdate_control = 0x1;
+     *(int*)fw_sgx_regupdate_control = 0x1;
+     *(int*)fw_iss_regupdate_control = 0x1;
+     *(int*)fw_ducati_regupdate_control = 0x1;
+     *(int*)fw_dss_regupdate_control = 0x1;
+     *(int*)fw_sl2_regupdate_control = 0x1;
+     *(int*)fw_ivahd_regupdate_control = 0x1;
+	 *(int*)fw_abe_regupdate_control = 0x1;
+
+if (INFO_PRINT) {	 
+	 GEL_TextOut("--->>> set_firewalls_to_public 1<<<---\n");
+	 }
+	 
+	 /* Request load of exported value */
+	 *(int*)fw_modem_regupdate_control = 0x3;
+     *(int*)fw_mpuma_regupdate_control = 0x3;
+     *(int*)fw_emif_regupdate_control = 0x3;
+     *(int*)fw_sgx_regupdate_control = 0x3;
+     *(int*)fw_iss_regupdate_control = 0x3;
+     *(int*)fw_ducati_regupdate_control = 0x3;
+     *(int*)fw_dss_regupdate_control = 0x3;
+     *(int*)fw_sl2_regupdate_control = 0x3;
+     *(int*)fw_ivahd_regupdate_control = 0x3;
+	 *(int*)fw_abe_regupdate_control = 0x3; 
+
+if (INFO_PRINT) {
+	 GEL_TextOut("--->>> set_firewalls_to_public 2<<<---\n");
+}
+	 
+	/* Clear BUSY_REQ Bit */
+	 *(int*)fw_modem_regupdate_control = 0x0;
+     *(int*)fw_mpuma_regupdate_control = 0x0;
+     *(int*)fw_emif_regupdate_control = 0x0;
+     *(int*)fw_sgx_regupdate_control = 0x0;
+     *(int*)fw_iss_regupdate_control = 0x0;
+     *(int*)fw_ducati_regupdate_control = 0x0;
+     *(int*)fw_dss_regupdate_control = 0x0;
+     *(int*)fw_sl2_regupdate_control = 0x0;
+     *(int*)fw_ivahd_regupdate_control = 0x0;
+	 *(int*)fw_abe_regupdate_control = 0x0;
+
+if (INFO_PRINT) {	 
+	 GEL_TextOut("--->>> set_firewalls_to_public 3<<<---\n");
+	 }
+	 
+	 /*  GPMC firewall configuration load request is done there to take care of extermal booting */
+     /* in GPMC case. Indeed setting the BUSY_REQ bit locks access to GPMC in which code is located */
+     /* when booting in GPMC. Thus in order to avoid deadlock (can not fetch code because of BUSY_REQ */
+     /* assertion) the six following instructions are aligned on 8 words boundary. So they are all */
+     /* loaded in one time in the prefetch buffer, avoiding the deadlock case to happen. */
+     
+     /* Set GPMC BUSY_REQ */
+     *(int*)fw_gpmc_regupdate_control = 0x1;
+     
+     /* Request load of exported value */
+     *(int*)fw_gpmc_regupdate_control = 0x3;
+     
+     /* Clear BUSY_REQ Bit */
+     *(int*)fw_gpmc_regupdate_control = 0x0;
+
+if (INFO_PRINT) {     
+     GEL_TextOut("--->>> set_firewalls_to_public 4<<<---\n");
+}
+     
+     /* Configure partially OCMCRAM in public with region1 */
+     /* control_l3ram_regupdate_control_register_value = *(int*)fw_l3ram_regupdate_control; */
+      *(int*)fw_l3ram_regupdate_control = 0x1;  
+     //*(int*)FW_L3RAM_START_REGION_1_VALUE = fw_l3ram_start_region_1_val; 
+     *(int*)0x4A212090 = 0x0; 
+     //*(int*)FW_L3RAM_END_REGION_1_VALUE =  fw_l3ram_end_region_1_val; 
+     *(int*)0x4A212094 = 0xb001;
+
+     *(int*)fw_l3ram_regupdate_control = 0x0; 
+if (INFO_PRINT) {     
+     GEL_TextOut("--->>> set_firewalls_to_public 5<<<---\n");
+ }
+     
+     /* Set public rights for some L4 firewalls */
+     control_l4_hw_fw_exported_values_conf_register_value = *(int*)control_l4_hw_fw_exported_values_conf;
+     /* Clear L4CONFIG_USIM_seclock bit */
+     control_l4_hw_fw_exported_values_conf_register_value &= ~(1 << 6);
+     
+     *(int*)control_l4_hw_fw_exported_values_conf = control_l4_hw_fw_exported_values_conf_register_value;
+     
+     /* Request L4CONFIG firewalls to load exported values */
+     *(int*)control_sec_load_fw_exported_values=0x4;
+     
+     /* Set debug firewall to public */
+     *(int*)fw_debug_regupdate_control = 0xFFFFFFFF;
+ if (INFO_PRINT) {    
+     GEL_TextOut("--->>> set_firewalls_to_public 6<<<---\n");
+}     
+}

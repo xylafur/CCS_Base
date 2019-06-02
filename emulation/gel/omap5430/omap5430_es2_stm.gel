@@ -1,0 +1,979 @@
+/*******************************************************************/ 
+/* OMAP5430 Sequences for STM system trace                         */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Madhav Vij (SDO)                                       */
+/*  Latest update by Ning Kang and Rafael de Souza (2013/06/25)    */
+/*  - Removed non-working API SetGPIOwakeUp5ToOutputAndSetTo1()    */
+/*    and all its calls from the initialization functions          */
+/*  - Removed the body of Configure_EMU0_1_For_STM() as the        */
+/*    device does not support 1-pin STM Trace                      */
+/*  - we cannot determine the revision of silicon automatically    */
+/*  - this gel file needed to be loaded from cs_dap_debugSS to     */
+/*    better support for EMU device                                */
+/*******************************************************************/
+
+/**********************************************************************
+ *
+ *  DEFINITIONS
+ *
+ **********************************************************************/
+
+// omap5430 control core: PAD CONF Registers
+
+#define INFO_PRINT	1
+
+#define SEC_EMU_MRM_PERM_REG_LOW_0   0x4A226088
+
+//------------------------
+//  SYS_CLK definitions.
+//------------------------
+#define SYS_CLK_38_4     1
+#define SYS_CLK_26       2
+#define SYS_CLK_19_2     3
+
+//default when no menu used.
+int SYSCLKFREQ = SYS_CLK_19_2;
+
+#define PAD0_DRM_EMU0_PAD1_DRM_EMU1     0x4AE0C844  
+#define PAD0_RFBI_WE_PAD1_RFBI_CS0      0x4A002924
+#define PAD0_RFBI_DATA1_PAD1_RFBI_DATA0 0x4A002920
+
+#define PAD0_SYS_BOOT0_PAD1_SYS_BOOT1   0x4AE0C870
+#define PAD0_SYS_BOOT2_PAD1_SYS_BOOT3   0x4AE0C874
+#define PAD0_SYS_BOOT4_PAD1_SYS_BOOT5   0x4AE0C878
+
+
+#define DEBUGSS_CFGBUS_PLLCTRL 0x80031800
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS  *(unsigned int *) 0x80031804
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_GO  *(unsigned int *) 0x80031808
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1  *(unsigned int *) 0x8003180C
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2  *(unsigned int *) 0x80031810
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3  *(unsigned int *) 0x80031814
+
+#define CM_DIV_M6_DPLL_CORE      0x4A004140  
+
+#define OMAP4430_DRM_BASE_ADDR				0x54160000
+#define DRM_CLKGEN_CFG                 (int*) (OMAP4430_DRM_BASE_ADDR + 0x00000020)
+#define DRM_CLKGEN_PDLO_TRC_CTL        (int*) (OMAP4430_DRM_BASE_ADDR + 0x00000024)
+#define DRM_CLKGEN_PDLO_TRC_LIMIT      (int*) (OMAP4430_DRM_BASE_ADDR + 0x00000028)
+#define DRM_CLKGEN_PDLO_TRC_STATUS     (int*) (OMAP4430_DRM_BASE_ADDR + 0x0000002C)
+#define DRM_CLKGEN_PDLO_STM_CTL        (int*) (OMAP4430_DRM_BASE_ADDR + 0x00000030)
+#define DRM_CLKGEN_PDLO_STM_LIMIT      (int*) (OMAP4430_DRM_BASE_ADDR + 0x00000034)
+#define DRM_CLKGEN_PDLO_STM_STATUS     (int*) (OMAP4430_DRM_BASE_ADDR + 0x00000038)
+
+#define DRM_CLKGEN_CFG               0x54160020
+
+
+#define CM_EMU_DEBUGSS_CLKCTRL       0x4A307A20
+#define CM_L3INSTR_L3_3_CLKCTRL      0x4A008E20
+#define CM_L3INSTR_L3_INSTR_CLKCTRL  0x4A008E28
+
+#define DRM_CLAIM                    0xD4160050
+#define DPM_CTRL0                    0xD4160080
+#define DPM_CTRL1                    0xD4160084
+#define DPM_CTRL2                    0xD4160088
+#define DPM_CTRL3                    0xD416008C
+#define DPM_CTRL4                    0xD4160090
+#define DPM_CTRL5                    0xD4160094
+
+#define STM_SWMCTRL0                 0x54161024
+#define STM_PTI_CONFIG               0x5416103C
+#define STM_LOCK_ACCESS              0x54161FB0
+#define STM_TESTCTRL                 0x54161050
+
+#define UNLOCK_VALUE             0xC5ACCE55
+
+menuitem "STM_Utility";
+
+
+/**********************************************************************
+ *
+ *  FUNCTIONS
+ *
+ *  STM Clock is enabled by running the gel file at cortexA15.
+ *   
+ *   The sequences in this gel FILE SHOULD BE used in the following order:
+ *    (Cortex-A9)
+ *    1/ Setup_STM_Clocking_Modes()
+ *    2/ Configure_EMU0_4_For_STM for 4 pin trace or Configure_EMU0_1_For_STM()
+ *              for 1 pin trace
+ *    3/ Enable_Pattern_Generator_in_STM_1_pin_mode() or 
+ *             Enable_Pattern_Generator_in_STM_4_pin_mode()
+ *
+ *
+ *    Note that the drive strength of the I/O (EMU0..4) are for 1-10pF external
+ *    load. It can be changed by using the hotmenu GEL functions to use 10-16pF
+ *    external load (Configure_EMU0_4_SmartIO_Load_10pF_16pF())
+ *
+ *   Configure FPGA as follows: (on TEB)
+ *      * Do not allow FPGA to drive EMU0/1 pins (disable WIR mode)
+ *      * Configure QSWITCH2 register in FPGA using HPC tool as follows
+ *        Set bits 25:24 to 0x1 and 23:22 to 0x1 to route EMU2..4 through
+ *        switches controlled by the FPGA to the 20 Pin TI header.
+ *
+ *      * Also configure QSWITCH4 register to disconnect FPGA from EMU0/1
+ *
+ *
+ *      * Also need to ensure EMU0..4 disconnected from MIPI 60 connector 
+ *        through resistor bank on board.
+ *
+ *      * Also need to ensure EMU2..4 connected to TI-20 JTAG header
+ *              
+ **********************************************************************/
+
+hotmenu Enable_ETB_For_STM()
+{
+    int value;
+    
+	// Configure Trace Funnel
+	*(int*)0xD4164FB0@data = UNLOCK_VALUE;
+
+	//Enable port 7 to pass STM data to ETB
+	*(int*)0xD4164000@data = 0x380; 
+	
+	value = *((int*)0xD4164000@data);
+	
+	if ((value & 0xFF) != 0x80)
+	{
+		 GEL_TextOut("< DEBUGSS FUNNEL UPDATE FAILED \n");
+    }
+    else
+    {
+    	GEL_TextOut("< DEBUGSS FUNNEL UPDATE SUCCEEDED \n");
+    }
+		
+}
+
+hotmenu Enable_ETB_For_PTM()
+{
+    int value;
+    
+	// Configure Trace Funnel
+	*(int*)0xD4164FB0@data = UNLOCK_VALUE;
+
+	//Enable port 0 to pass MPU ATB data to ETB
+	*(int*)0xD4164000@data = 0x301; 
+	
+	value = *((int*)0xD4164000@data);
+	
+	if ((value & 0xFF) != 0x01)
+	{
+		 GEL_TextOut("< DEBUGSS FUNNEL UPDATE FAILED \n");
+    }
+    else
+    {
+    	GEL_TextOut("< DEBUGSS FUNNEL UPDATE SUCCEEDED \n");
+    }
+		
+	//Enable port 0 and 1 to pass MPU data to ATB
+	*(int*)0xD4158000@data = 0x303; 
+}
+
+hotmenu Configure_TPIU_4Pins()
+{
+   Configure_DRM_to_assign_TPIU_to_DP0_5(); 
+
+   Configure_Spinner_For_STM_trace_Pins_EMU0_EMU5_SYSBOOT();
+}
+
+hotmenu Configure_TPIU_2Pins()
+{
+   Configure_DRM_to_assign_TPIU_to_DP0_5(); 
+
+   Configure_Spinner_For_STM_trace_Pins_EMU0_EMU3_SYSBOOT();
+}
+
+Configure_DeviceIO_For_STM_trace_Pins_EMU0_EMU5()
+{
+
+	    // do pad mux VOUT->EMU; 
+		// 2-19 are pull-down enabled + output + fast slew
+		//GEL_TextOut("Configure Spinner for TPIU trace pins, EMU2..19 for 16 bit mode \n ");
+		
+		*(int*)0x4a003848 = 0x000d0000;      //EMU0-trigger	
+		*(int*)0x4a00384c = 0x000d0000;      //EMU1-trigger
+		*(int*)0x4a0035e4 = 0x00090002;      //EMU2-tpiu-clk
+		*(int*)0x4a003604 = 0x00090002;      //EMU3-tpiu-ctrl
+		*(int*)0x4a003624 = 0x00090002;      //EMU4-tpiu-data0    	
+	    *(int*)0x4a0035e8 = 0x00090002;      //EMU5    	
+//	    *(int*)0x4a0035ec = 0x00090002;      //EMU6    	
+//	    *(int*)0x4a0035f0 = 0x00090002;      //EMU7	
+//	    *(int*)0x4a0035f4 = 0x00090002;      //EMU8	
+//	    *(int*)0x4a0035f8 = 0x00090002;      //EMU9	
+//	    *(int*)0x4a003608 = 0x00090002;      //EMU10	
+//	    *(int*)0x4a00360c = 0x00090002;      //EMU11	
+//	    *(int*)0x4a003610 = 0x00090002;      //EMU12  	
+//	    *(int*)0x4a003614 = 0x00090002;      //EMU13    	
+//	    *(int*)0x4a003618 = 0x00090002;      //EMU14    	
+//	    *(int*)0x4a003628 = 0x00090002;      //EMU15    	
+//	    *(int*)0x4a003630 = 0x00090002;      //EMU16	
+//	    *(int*)0x4a003634 = 0x00090002;      //EMU17	
+//	    *(int*)0x4a003638 = 0x00090002;      //EMU18	
+//	    *(int*)0x4a00363c = 0x00090002;      //EMU19-tpiu-data15
+	
+	    // ensure trace funnel ok for data path                        	
+	    // *(int*)0x54164000 = 0x301 ; (already set by LB) coresight trace funnel control CSTF:CSTF_FCTL enable slave ports 0,4,5"	
+	    // *(int*)0x54158000 = 0x303 ; (already set by LB) coresight trace funnel control CSTF1:CSTF_FCTL enable slave ports 0,1,4,5"	
+	    // *(int*)0x54160040 = 0x1  ; DRM:CSTRACE_CONFIG (clocksel)	
+
+
+    GEL_TextOut("Enable EMU pins for STM \n");
+}  
+
+hotmenu Configure_EMU0_4_For_STM()
+{
+
+	// Configure Trace Funnel
+	*(int*)0xD4164FB0@data = UNLOCK_VALUE;
+
+	//Enable port 7 to pass STM data
+	*(int*)0xD4164000@data = 0x380; 
+
+   //Configure_DRM_to_assign_STM_to_DP0_4();
+	Configure_DRM_to_assign_TPIU_to_DP0_5(); 
+
+  // Configure_Spinner_For_STM_trace_Pins_EMU0_EMU4();
+	Configure_DeviceIO_For_STM_trace_Pins_EMU0_EMU5();
+	
+}
+
+hotmenu Configure_EMU0_2_For_STM()
+{
+
+   Configure_DRM_to_assign_STM_to_DP0_2();
+
+   Configure_Spinner_For_STM_trace_Pins_EMU0_EMU4();
+}
+
+hotmenu Configure_EMU0_1_For_STM()
+{
+
+   GEL_TextOut("================== ERROR: ==================\n"); 
+   GEL_TextOut("=  This device does not support 1-pin STM  =\n"); 
+   GEL_TextOut("=  The STM channel calibration will fail   =\n"); 
+   GEL_TextOut("============================================\n"); 
+
+}
+
+hotmenu Enable_Pattern_Generator_in_STM_4_pin_mode()
+{
+ /* Enable Pattern Generator in STM */
+  // unlock access of stm (ONLY needed for application access)
+   *(int*)STM_LOCK_ACCESS = 0xC5ACCE55;
+
+   // Release any prior ownership
+   *(int*)STM_SWMCTRL0 = 0x20000000;
+
+   // claim ownersip
+    *(int*)STM_SWMCTRL0 = 0x40000000;
+   // Set PTISize and PTIEnable
+   // Double data rate
+   // 4-pin data
+    *(int*)STM_PTI_CONFIG = (0x0 << 3) |
+                            (0x2 << 4) |
+                            (0x1 << 8);
+
+   // Enable Simple Pattern A
+    *(int*)STM_TESTCTRL = 0x1; 
+   // Enable STM
+    *(int*)STM_SWMCTRL0 = 0x80000000;
+   GEL_TextOut("Enable Pattern Generator in STM,4 pin mode \n"); 
+}
+
+hotmenu Enable_Pattern_Generator_in_STM_2_pin_mode()
+{
+ /* Enable Pattern Generator in STM */
+  // unlock access of stm (ONLY needed for application access)
+   *(int*)STM_LOCK_ACCESS = 0xC5ACCE55;
+
+   // Release any prior ownership
+   *(int*)STM_SWMCTRL0 = 0x20000000;
+
+   // claim ownersip
+    *(int*)STM_SWMCTRL0 = 0x40000000;
+   // Set PTISize and PTIEnable
+   // Double data rate
+   // 2-pin data
+    *(int*)STM_PTI_CONFIG = (0x0 << 3) |
+                            (0x1 << 4) |
+                            (0x1 << 8);
+
+   // Enable Simple Pattern A
+    *(int*)STM_TESTCTRL = 0x1; 
+   // Enable STM
+    *(int*)STM_SWMCTRL0 = 0x80000000;
+   GEL_TextOut("Enable Pattern Generator in STM,2 pin mode \n"); 
+}
+
+hotmenu Enable_Pattern_Generator_in_STM_1_pin_mode()
+{
+ /* Enable Pattern Generator in STM */
+  // unlock access of stm (ONLY needed for application access)
+   *(int*)STM_LOCK_ACCESS = 0xC5ACCE55;
+
+   // Release any prior ownership
+   *(int*)STM_SWMCTRL0 = 0x20000000;
+
+   // claim ownersip
+    *(int*)STM_SWMCTRL0 = 0x40000000;
+   // Set PTISize and PTIEnable
+   // Double data rate
+   // 1-pin data
+    *(int*)STM_PTI_CONFIG = (0x0 << 3) |
+                            (0x0 << 4) |
+                            (0x1 << 8);
+
+   // Enable Simple Pattern A
+    *(int*)STM_TESTCTRL = 0x1; 
+   // Enable STM
+    *(int*)STM_SWMCTRL0 = 0x80000000;
+   GEL_TextOut("Enable Pattern Generator in STM, 1 pin mpde\n"); 
+}
+
+
+Configure_Spinner_For_STM_trace_Pins_EMU0_EMU5_SYSBOOT()
+{
+
+    *(int*)PAD0_DRM_EMU0_PAD1_DRM_EMU1   = 0x01180118;    //set bit 18:16 and 2:0 to 0 to enable both emu0 and emu1. Set 0 to other bits
+                                                          // EMU0 = DATA[0] and EMU1 = DATA[1]
+   
+    *(int*)PAD0_SYS_BOOT0_PAD1_SYS_BOOT1 = 0x00030003;    // EMU2 = SYS_BOOT0 - CLK and EMU3 = SYS_BOOT1 - CTRL
+ 
+    *(int*)PAD0_SYS_BOOT2_PAD1_SYS_BOOT3 = 0x00030003;    // EMU4 = SYS_BOOT2 - DATA[2] and EMU5 = SYS_BOOT3 - DATA[3]
+
+
+    /* Configure EMU2.5 for DBG pin usage */
+    /* All are MUX MODE 3 and for all the input buffer has been disabled */
+    /* Input buffer enabling for output only signals may result in reflections */
+    /* Pull-ups/down have been disabled as well */
+
+    GEL_TextOut("Set pad registers to enble emu pins over sysboot \n");
+}  
+
+Configure_Spinner_For_STM_trace_Pins_EMU0_EMU3_SYSBOOT()
+{
+
+    *(int*)PAD0_DRM_EMU0_PAD1_DRM_EMU1   = 0x01180118;    //set bit 18:16 and 2:0 to 0 to enable both emu0 and emu1. Set 0 to other bits
+                                                          // EMU0 = DATA[0] and EMU1 = DATA[1]
+   
+    *(int*)PAD0_SYS_BOOT0_PAD1_SYS_BOOT1 = 0x00030003;    // EMU2 = SYS_BOOT0 - CLK and EMU3 = SYS_BOOT1 - CTRL
+ 
+
+    /* Configure EMU2.5 for DBG pin usage */
+    /* All are MUX MODE 3 and for all the input buffer has been disabled */
+    /* Input buffer enabling for output only signals may result in reflections */
+    /* Pull-ups/down have been disabled as well */
+
+    GEL_TextOut("Set pad registers to enble emu pins over sysboot \n");
+}  
+
+Configure_Spinner_For_STM_trace_Pins_EMU0_EMU4()
+{
+
+    *(int*)PAD0_DRM_EMU0_PAD1_DRM_EMU1 = 0x01180118;    //set bit 18:16 and 2:0 to 0 to enable both emu0 and emu1. Set 0 to other bits
+
+    *(int*)PAD0_RFBI_WE_PAD1_RFBI_CS0  = 0x010D010D;  //Set the lower 3 bit to value 0x5 to enable each emu pin (16 bits per emu channel)5
+
+    *(int*)PAD0_RFBI_DATA1_PAD1_RFBI_DATA0 &= 0xffff;	//clear upper 16 bits and then set it to 0x5 to configure emu4 pin
+    *(int*)PAD0_RFBI_DATA1_PAD1_RFBI_DATA0 |= (0x010D << 16);
+
+    /* Configure EMU0..4 for DBG pin usage */
+    /* All are MUX MODE 0 and for all the input buffer has been disabled */
+    /* Input buffer enabling for output only signals may result in reflections */
+    /* Pull-ups/down have been disabled as well */
+
+    GEL_TextOut("Set pad registers to enble emu pins \n");
+}  
+
+
+Configure_DRM_to_assign_TPIU_to_DP0_5()
+{
+
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x2 << 30);
+   *(int*)DPM_CTRL0@data = 0x8; // TPIU_DATA[0] (DP0)
+   *(int*)DPM_CTRL1@data = 0x8; // TPIU_DATA[1] (DP1)
+   *(int*)DPM_CTRL2@data = 0xa; // TPIU_CLK     (DP2)
+   *(int*)DPM_CTRL3@data = 0x9; // TPIU_CTRL    (DP3)
+   *(int*)DPM_CTRL4@data = 0x8; // TPIU_DATA[2] (DP4)
+   *(int*)DPM_CTRL5@data = 0x8; // TPIU_DATA[3] (DP5)
+   
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 4 pin STM data over TPIU bus \n");
+}
+                                         
+
+
+Configure_DRM_to_assign_STM_to_DP0_4()
+{
+
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x2 << 30);
+   *(int*)DPM_CTRL0@data = 0x2; // STM_DATA[0] (DP0)
+   *(int*)DPM_CTRL1@data = 0x3; // STM_DATA[1] (DP1)
+   *(int*)DPM_CTRL2@data = 0x6; // STM_CLK     (DP2)
+   *(int*)DPM_CTRL3@data = 0x4; // STM_DATA[2] (DP3)
+   *(int*)DPM_CTRL4@data = 0x5; // STM_DATA[3] (DP4)
+
+   // Note the app owned state status bit should be '0' after PAD configuration
+   // (i checked, it appears to work)
+
+   // Debug only status bit is always '0' because on OMAP-4 no DP pin is exclusively 
+   // available for debug
+
+   // The output and output enable status bits should reflect the way STM is driving
+   // the pins (output enable should go to zero and stay zero)
+
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 4 pin STM data \n");
+}
+
+Configure_DRM_to_assign_STM_to_DP0_2()
+{
+
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x2 << 30);
+   *(int*)DPM_CTRL0@data = 0x2; // STM_DATA[0] (DP0)
+   *(int*)DPM_CTRL1@data = 0x3; // STM_DATA[1] (DP1)
+   *(int*)DPM_CTRL2@data = 0x6; // STM_CLK     (DP2)
+
+   /* clear\disable the other 2 data pins */
+   *(int*)DPM_CTRL3@data = 0x0; // STM_DATA[2] (DP3)
+   *(int*)DPM_CTRL4@data = 0x0; // STM_DATA[3] (DP4)
+
+   // Note the app owned state status bit should be '0' after PAD configuration
+   // (i checked, it appears to work)
+
+   // Debug only status bit is always '0' because on OMAP-4 no DP pin is exclusively 
+   // available for debug
+
+   // The output and output enable status bits should reflect the way STM is driving
+   // the pins (output enable should go to zero and stay zero)
+
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 2 pin STM data \n");
+}
+
+Configure_DRM_to_assign_STM_to_DP0_1()
+{
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x2 << 30);
+   *(int*)DPM_CTRL0@data = 0x2; // STM_DATA[0] (DP0)
+   *(int*)DPM_CTRL1@data = 0x6; // STM_CLK (DP1)
+
+   /* clear\disable the other 3 data pins */
+   *(int*)DPM_CTRL2@data = 0x0; // STM_DATA[2] (DP2)
+   *(int*)DPM_CTRL3@data = 0x0; // STM_DATA[2] (DP3)
+   *(int*)DPM_CTRL4@data = 0x0; // STM_DATA[3] (DP4)
+   // Note the app owned state status bit should be '0' after PAD configuration
+   // Debug only status bit is always '0' because on OMAP-4 no DP pin is exclusively available for debug
+
+   // The output and output enable status bits should reflect the way STM is driving
+   // the pins (output enable should go to zero and stay zero)
+
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 1 pin STM data \n");
+}
+
+
+
+hotmenu dpll_dbgss_config_board_1600_M4_3()
+{
+    unsigned int temp;
+
+    GEL_TextOut("> Setup DebugSS Clocking 1.6GHz M4_3 \n");
+           
+    if (SYSCLKFREQ==SYS_CLK_38_4)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1C60FA0A;   
+    }
+    
+    if (SYSCLKFREQ==SYS_CLK_19_2)
+    {
+        GEL_TextOut("> Setting STM output clock to 50MHz \n");
+        
+        // PLL CONFIGURATION1
+       //  DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1C61F40A; //M5=7
+           DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x23E1F40A;   //M5=8, M4=31
+       //    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x3c61F40A;  //m5=15, m4=3
+    }
+    
+    // PLL CONFIGURATION2
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2@data = 0xE52008;
+            
+    // PLL CONFIGURATION3
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3@data = 0x8;
+     
+    // REQUEST DPLL
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_GO@data = 0x1;
+    
+	temp = DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS@data;
+
+    // Reading 1 : DPLL is locked.
+    while ((temp & 0x2)& ~0x2);
+ 
+  	
+    // Allow Arteris L3_3 clock to be provided
+    *(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1;
+
+    // Allow l3 instr clock to be provided
+    *(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+   
+    GEL_TextOut("< Done with Setup DebugSS Clocking 1.6GHz \n");
+}
+
+hotmenu dpll_dbgss_config_board_1600_M4_3_M5_31_M6_31()
+{
+    unsigned int temp;
+
+    GEL_TextOut("> Setup DebugSS Clocking 1.6GHz M4_3_M5_31_M6_31 \n");
+           
+    
+    if (SYSCLKFREQ==SYS_CLK_38_4)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x7C60FA0A;   
+    }
+    
+    if (SYSCLKFREQ==SYS_CLK_19_2)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x7C61F40A;
+    }
+    
+    // PLL CONFIGURATION2
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2@data = 0xE52008;
+            
+    // PLL CONFIGURATION3
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3@data = 0x1F;
+     
+    // REQUEST DPLL
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_GO@data = 0x1;
+    
+	temp = DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS@data;
+
+    // Reading 1 : DPLL is locked.
+    while ((temp & 0x2)& ~0x2);
+ 
+  	
+    // Allow Arteris L3_3 clock to be provided
+    *(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1;
+
+    // Allow l3 instr clock to be provided
+    *(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+   
+    GEL_TextOut("< Done with Setup DebugSS Clocking 1.6GHz \n");
+}
+
+hotmenu dpll_dbgss_config_board_1600_M4_4()
+{
+    unsigned int temp;
+
+    GEL_TextOut("> Setup DebugSS Clocking 1.6GHz M4_4 \n");
+           
+    
+    if (SYSCLKFREQ==SYS_CLK_38_4)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1C80FA0A;   
+    }
+    
+    if (SYSCLKFREQ==SYS_CLK_19_2)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1C81F40A;
+    }
+    
+    // PLL CONFIGURATION2
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2@data = 0xE52008;
+            
+    // PLL CONFIGURATION3
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3@data = 0x4;
+     
+    // REQUEST DPLL
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_GO@data = 0x1;
+    
+	temp = DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS@data;
+
+    // Reading 1 : DPLL is locked.
+    while ((temp & 0x2)& ~0x2);
+ 
+  	
+    // Allow Arteris L3_3 clock to be provided
+    *(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1;
+
+    // Allow l3 instr clock to be provided
+    *(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+   
+    GEL_TextOut("< Done with Setup DebugSS Clocking 1.6GHz \n");
+}
+
+hotmenu dpll_dbgss_config_board_1600_M4_5()
+{
+    unsigned int temp;
+
+    GEL_TextOut("> Setup DebugSS Clocking 1.6GHz M4_5\n");
+           
+    
+    if (SYSCLKFREQ==SYS_CLK_38_4)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1CA0FA0A;   
+    }
+    
+    if (SYSCLKFREQ==SYS_CLK_19_2)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1CA1F40A;
+    }
+    
+    // PLL CONFIGURATION2
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2@data = 0xE52008;
+            
+    // PLL CONFIGURATION3
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3@data = 0x4;
+     
+    // REQUEST DPLL
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_GO@data = 0x1;
+    
+	temp = DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS@data;
+
+    // Reading 1 : DPLL is locked.
+    while ((temp & 0x2)& ~0x2);
+ 
+  	
+    // Allow Arteris L3_3 clock to be provided
+    *(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1;
+
+    // Allow l3 instr clock to be provided
+    *(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+   
+    GEL_TextOut("< Done with Setup DebugSS Clocking 1.6GHz \n");
+}
+
+hotmenu dpll_dbgss_config_board_1600_M4_6()
+{
+    unsigned int temp;
+
+    GEL_TextOut("> Setup DebugSS Clocking 1.6GHz M4_6 \n");
+           
+    
+    if (SYSCLKFREQ==SYS_CLK_38_4)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1CC0FA0A;   
+    }
+    
+    if (SYSCLKFREQ==SYS_CLK_19_2)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1CC1F40A;
+    }
+    
+    // PLL CONFIGURATION2
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2@data = 0xE52008;
+            
+    // PLL CONFIGURATION3
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3@data = 0x4;
+     
+    // REQUEST DPLL
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_GO@data = 0x1;
+    
+	temp = DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS@data;
+
+    // Reading 1 : DPLL is locked.
+    while ((temp & 0x2)& ~0x2);
+ 
+  	
+    // Allow Arteris L3_3 clock to be provided
+    *(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1;
+
+    // Allow l3 instr clock to be provided
+    *(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+   
+    GEL_TextOut("< Done with Setup DebugSS Clocking 1.6GHz \n");
+}
+
+hotmenu dpll_dbgss_config_board_1600_M4_7()
+{
+    unsigned int temp;
+
+    GEL_TextOut("> Setup DebugSS Clocking 1.6GHz M4_7\n");
+           
+    
+    if (SYSCLKFREQ==SYS_CLK_38_4)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1CE0FA0A; //M4 = 7
+    }
+    
+    if (SYSCLKFREQ==SYS_CLK_19_2)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1CE1F40A;
+    }
+    
+    // PLL CONFIGURATION2
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2@data = 0xE52008;
+            
+    // PLL CONFIGURATION3
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3@data = 0x4;
+     
+    // REQUEST DPLL
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_GO@data = 0x1;
+    
+	temp = DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS@data;
+
+    // Reading 1 : DPLL is locked.
+    while ((temp & 0x2)& ~0x2);
+ 
+  	
+    // Allow Arteris L3_3 clock to be provided
+    *(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1;
+
+    // Allow l3 instr clock to be provided
+    *(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+   
+    GEL_TextOut("< Done with Setup DebugSS Clocking 1.6GHz \n");
+}
+
+
+hotmenu dpll_dbgss_config_board_1600_M4_15()
+{
+    unsigned int temp;
+
+    GEL_TextOut("> Setup DebugSS Clocking 1.6GHz \n");
+           
+    
+    if (SYSCLKFREQ==SYS_CLK_38_4)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1DE0FA0A; //M4 = 15
+    }
+    
+    if (SYSCLKFREQ==SYS_CLK_19_2)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1DE1F40A;
+    }
+    
+    // PLL CONFIGURATION2
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2@data = 0xE52008;
+            
+    // PLL CONFIGURATION3
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3@data = 0x4;
+     
+    // REQUEST DPLL
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_GO@data = 0x1;
+    
+	temp = DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS@data;
+
+    // Reading 1 : DPLL is locked.
+    while ((temp & 0x2)& ~0x2);
+ 
+  	
+    // Allow Arteris L3_3 clock to be provided
+    *(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1;
+
+    // Allow l3 instr clock to be provided
+    *(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+   
+    GEL_TextOut("< Done with Setup DebugSS Clocking 1.6GHz \n");
+}
+
+hotmenu dpll_dbgss_config_board_1600_M4_31()
+{
+    unsigned int temp;
+
+    GEL_TextOut("> Setup DebugSS Clocking 1.6GHz \n");
+           
+    
+    if (SYSCLKFREQ==SYS_CLK_38_4)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1FE0FA0A; //M4 = 31
+    }
+    
+    if (SYSCLKFREQ==SYS_CLK_19_2)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1FE1F40A;
+    }
+    
+    // PLL CONFIGURATION2
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2@data = 0xE52008;
+            
+    // PLL CONFIGURATION3
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3@data = 0x4;
+     
+    // REQUEST DPLL
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_GO@data = 0x1;
+    
+	temp = DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS@data;
+
+    // Reading 1 : DPLL is locked.
+    while ((temp & 0x2)& ~0x2);
+ 
+  	
+    // Allow Arteris L3_3 clock to be provided
+    *(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1;
+
+    // Allow l3 instr clock to be provided
+    *(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+   
+    GEL_TextOut("< Done with Setup DebugSS Clocking 1.6GHz \n");
+}
+
+
+hotmenu dpll_dbgss_config_board_37()
+{
+    unsigned int temp;
+
+    GEL_TextOut("> Setup DebugSS Clocking 37MHz \n");
+           
+    
+    if (SYSCLKFREQ==SYS_CLK_38_4)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1C60F7FE;
+    }
+    
+    if (SYSCLKFREQ==SYS_CLK_19_2)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1C61EDFE;
+    }
+    
+    // PLL CONFIGURATION2
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2@data = 0xE52008;
+            
+    // PLL CONFIGURATION3
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3@data = 0x4;
+     
+    // REQUEST DPLL
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_GO@data = 0x1;
+    
+	temp = DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS@data;
+
+    // Reading 1 : DPLL is locked.
+    while ((temp & 0x2)& ~0x2);
+ 
+  	
+    // Allow Arteris L3_3 clock to be provided
+    *(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1;
+
+    // Allow l3 instr clock to be provided
+    *(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+   
+    GEL_TextOut("< Done with Setup DebugSS Clocking 37MHz \n");
+}
+
+hotmenu Setup_STM_Clocking_Modes_ES2()
+{
+   Configure_CM2_provide_clk_l3debugss();
+   Set_DBGCLK_And_RefACLK_to_166MHz();
+   Configure_PRM_provide_RefA_clk_debugss();
+//   Set_PDLO_Clock_to_STM_Module_ES2();
+}
+
+Configure_CM2_provide_clk_l3debugss()
+{
+   // Allow Arteris L3_3 clock to be provided
+  *(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1;
+
+   // Allow l3 instr clock to be provided
+  *(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+ 
+   GEL_TextOut("Configure CM2 to provide a clock to debugss \n");
+}
+
+Set_DBGCLK_And_RefACLK_to_166MHz()
+{
+    GEL_TextOut("Set DBGCLK to 166MHz assuming CORE DPLL is locked \n");
+    *(int*)CM_DIV_M6_DPLL_CORE = 0x9;
+  
+    // Add a check to verify that the status bit which confirms 
+    // the divider change takes effect (status bit in the register is a 
+    // toggle bit.
+}
+
+Configure_PRM_provide_RefA_clk_debugss()
+{
+    // Configure PRM to provide a RefA clk to debugss
+    // Configurations are in EMU_CM in PRM module 
+
+    // Clear all bits to start cleanly.
+   *(int*)CM_EMU_DEBUGSS_CLKCTRL = 0x0;
+
+    // PMD_STM_MUX_CTRL = CORE_DPLL_EMU_CLK
+    // STM clock is CORE_DPLL_EMU_CLK / 1
+    // Allow REF_A clock to be propagated as CORE_DPLL_EMU_CLK
+   *(int*)CM_EMU_DEBUGSS_CLKCTRL = (0x1 << 20 | 0x1 << 27); 
+
+   GEL_TextOut("Configure PRM to provide REF_A clk as CORE_CLK_M6 DIVIDE BY 1 \n");
+}
+
+Set_PDLO_Clock_to_STM_Module_ES2()
+{
+    // Choose PDLO clock as clock source to STM module
+    int device_type;
+    int secure_mode;
+
+    device_type = *(int*)0x4A0022C4;
+    
+    if (((device_type & 0x300)>>8) != 0x3)
+    { 
+       GEL_TextOut("--->>> Not a GP device so open EMUSS firewall for ES2 <<<---\n"); 
+
+        // Open EMUSS firewall (note this will only work if L3_3 clock domain
+        // is not gated (which is it by default on SDC device........)
+        // You need to run Configure_CM2_provide_clkdebugss() first otherwise
+        // the disconnect bridge will cause in-band errors to be returned (:)
+        // This allows non-secure access in EMU/TEST device to go through
+        // Also needed for testing software messages on EMU/TEST device.
+       *(int*)SEC_EMU_MRM_PERM_REG_LOW_0 = 0xFFFFFFFF;
+       
+    }     
+    
+    /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM = (0x2 << 30);
+   
+    *(int*)DRM_CLKGEN_CFG = 0x0;
+
+   // Initialize register to reset state
+   *(int*)DRM_CLKGEN_PDLO_STM_CTL = 0x00000000;
+
+   // Set divider to 1
+   *(int*)DRM_CLKGEN_PDLO_STM_CTL = (0x1 << 11);
+
+   // set refsel assuming 38MHz sysclk (/128)
+   *(int*)DRM_CLKGEN_PDLO_STM_CTL |= (0x2 << 5);
+
+   // configure dly_a value to control the speed. the lower this value is
+   // the higher the clock speed. The value of 44 here gives PTI clock at
+   // 90MHz +-5%
+
+   //ES1 and ES2 uses different delay line value here due to HW(PDLO) difference
+   //in 2 silicion versions
+   *(int*)DRM_CLKGEN_PDLO_STM_CTL |= (44) << 16;
+
+   *(int*)DRM_CLKGEN_PDLO_STM_CTL |= 0x0800;
+   // enable clock
+   *(int*)DRM_CLKGEN_PDLO_STM_CTL |= 0x4;
+
+   // enable oscillator
+   *(int*)DRM_CLKGEN_PDLO_STM_CTL |= 0x2;
+
+    GEL_TextOut("Configure CLKGEN CLKMUX for PDLO clock to STM/TPIU \n");
+}
+
+
+

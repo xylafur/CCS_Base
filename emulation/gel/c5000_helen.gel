@@ -1,0 +1,96 @@
+/* This GEL file is loaded on the command line of Code Composer 
+ * The StartUp() function is called every time you start
+ * Code Composer.  You can customize this function to
+ * initialize wait states or to perform other initialization.
+ * 
+ * MGS3 GEL file is used for ARM9 and Megastar3 co-emulation:
+ *		Tap Helen : bypass
+ *		Tap 5500  : enable
+ *		Tap ARM9  : enable
+ */
+
+
+StartUp()
+{
+	memorymap_init();
+
+}
+menuitem "MGS3 GEL File - HelenDC EVM";
+
+OnTargetConnect()
+{
+	watchdog_disable();
+}
+
+dialog watchdog_disable()
+{
+	short dspTimerModeRegValue;
+	short watchdogEnable;	
+ 		
+	/* Check to see if Watchdog is enabled. If enabled, disable it */
+	dspTimerModeRegValue = *(short *)0x3404@IO;
+
+	watchdogEnable = dspTimerModeRegValue & 0x8000;
+
+	if (watchdogEnable)
+	{
+		/* Disable Megastar3 Watchdog Timer */
+		*(short *)0x3404@IO = 0xF5;
+		*(short *)0x3404@IO = 0xA0;
+	} else {
+		GEL_TextOut("Watchdog already disabled!\n");
+	}	
+}
+
+
+dialog memorymap_init()
+{
+  GEL_MapReset();
+/* Memory mapping */
+  GEL_MapAdd(0x000000U, 0, 0x050000U, 1, 1);   /* Program space */
+/*GEL_MapAdd(0x050000U, 0, 0xFA8000U, 1, 1); */
+  GEL_MapAdd(0xFF8000U, 0, 0x008000U, 1, 0);
+/* Read/write 32 bit access size, zero wait states */
+  GEL_MapAddStr(0x400000U,0,0x80000U,"RAM|AS4",0);
+  GEL_MapAdd(0x000000U, 1, 0x050000U, 1, 1);   /* Data space */
+//  GEL_MapAdd(0x050000U, 1, 0xFA8000U, 1, 1);
+//  GEL_MapAdd(0xFF8000U, 1, 0x008000U, 1, 0);
+/* DSP Public Rhea Strobe 0 */
+  GEL_MapAdd(0x0000U, 2, 0x0400U, 1, 1);   /* RHEA */
+  GEL_MapAdd(0x0400U, 2, 0x0400U, 1, 1);   /* EMULATOR-TEST */
+  GEL_MapAdd(0x0800U, 2, 0x0400U, 1, 1);   /* EMIF */
+  GEL_MapAdd(0x0C00U, 2, 0x0400U, 1, 1);   /* DMA */
+  GEL_MapAdd(0x1400U, 2, 0x0400U, 1, 1);   /* Instruction Cache */
+  GEL_MapAdd(0x2000U, 2, 0x0400U, 1, 1);   /* TRACE */
+  GEL_MapAdd(0x2800U, 2, 0x0400U, 1, 1);   /* TIMER1 */
+  GEL_MapAdd(0x2C00U, 2, 0x0400U, 1, 1);   /* TIMER2 */
+  GEL_MapAdd(0x3000U, 2, 0x0400U, 1, 1);   /* TIMER3 */
+  GEL_MapAdd(0x3400U, 2, 0x0400U, 1, 1);   /* WATCHDOG TIMER */
+  GEL_MapAdd(0x3800U, 2, 0x0400U, 1, 1);   /* DSPINT_IF */
+  GEL_MapAdd(0x4000U, 2, 0x0400U, 1, 1);   /* CLKM */
+  GEL_MapAdd(0x4400U, 2, 0x0400U, 1, 1);   /* DSP MMU */
+  GEL_MapAdd(0x4800U, 2, 0x0400U, 1, 1);   /* Interrupt Handler level 2 */
+  /* DSP Public Rhea Strobe 1 */
+  GEL_MapAdd(0x8000U, 2, 0x0400U, 1, 1);   /* UART Blue Tooth */
+  GEL_MapAdd(0x8800U, 2, 0x0400U, 1, 1);   /* UART Modem */
+  GEL_MapAdd(0x8C00U, 2, 0x0400U, 1, 1);   /* McBSP Audio */
+  GEL_MapAdd(0x9000U, 2, 0x0400U, 1, 1);   /* MCSI Modem */
+  GEL_MapAdd(0x9400U, 2, 0x0400U, 1, 1);   /* MCSI Blue Tooth */
+  GEL_MapAdd(0xB800U, 2, 0x0400U, 1, 1);   /* McBSP Optical */
+  GEL_MapAdd(0xCC00U, 2, 0x0400U, 1, 1);   /* External Rhea Switch */
+  GEL_MapAdd(0xF000U, 2, 0x0400U, 1, 1);   /* GPIO Gigacell */
+  GEL_MapAdd(0xF400U, 2, 0x0400U, 1, 1);   /* UART Gigacell */
+  GEL_MapAdd(0xF800U, 2, 0x0400U, 1, 1);   /* Mailbox Gigacell */
+  GEL_MapAdd(0xFC00U, 2, 0x0400U, 1, 1);   /* Megastar3 API register */
+
+  GEL_MapOn();
+}
+
+
+OnReset(int nErrorCode)
+{
+	if (nErrorCode == 0)
+		watchdog_disable();
+	else
+		GEL_TextOut("Reset unsuccessful -- watchdog not disabled");
+}

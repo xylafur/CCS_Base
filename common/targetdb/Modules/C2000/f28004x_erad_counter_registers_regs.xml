@@ -1,0 +1,202 @@
+<module id="ERAD_COUNTER_REGISTERS" HW_revision="" description="ERAD COUNTER REGISTERS Registers">
+	<register id="CTM_CNTL1" width="16" page="1" offset="0x0" internal="0" description="CTM_CNTL1    ">
+		<bitfield id="START_STOP_MODE" description="Start_stop mode bit" begin="2" end="2" width="1" rwaccess="R/W"/>
+		<bitfield id="EVENT_MODE" description="Event mode bit" begin="3" end="3" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_ON_MATCH" description="Reset_on_match bit" begin="4" end="4" width="1" rwaccess="R/W"/>
+		<bitfield id="STOP" description="Stop bit (Halt/No Halt of CPU)" begin="6" end="6" width="1" rwaccess="R/W"/>
+		<bitfield id="RTOSINT" description="RTOSINT bit" begin="7" end="7" width="1" rwaccess="R/W"/>
+		<bitfield id="START_STOP_CUMULATIVE" description="Start stop cumulative bit" begin="8" end="8" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_EN" description="Enable Reset" begin="10" end="10" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_INP_SEL" description="Reset Input select" begin="15" end="11" width="5" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_STATUS1" width="16" page="1" offset="0x1" internal="0" description="CTM_STATUS1">
+		<bitfield id="EVENT_FIRED" description="Counter Event Fired bits" begin="0" end="0" width="1" rwaccess="R"/>
+		<bitfield id="OVERFLOW" description="Counter Overflowed" begin="1" end="1" width="1" rwaccess="R"/>
+		<bitfield id="MODULE_ID" description="Identification bits" begin="11" end="2" width="10" rwaccess="R"/>
+		<bitfield id="STATUS" description="Status bits" begin="15" end="12" width="4" rwaccess="R"/>
+	</register>
+	<register id="CTM_REF_LOW1" width="16" page="1" offset="0x2" internal="0" description="CTM_REF_LOW1">
+		<bitfield id="REF_LOW" description="Lower 16 bits of the counter reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_REF_HIGH1" width="16" page="1" offset="0x3" internal="0" description="CTM_REF_HIGH1">
+		<bitfield id="REF_HIGH" description="Upper 16 bits of the counter reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_COUNT_LOW1" width="16" page="1" offset="0x4" internal="0" description="CTM_COUNT_LOW1">
+		<bitfield id="COUNT_LOW" description="Lower 16 bits of the counter value[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_COUNT_HIGH1" width="16" page="1" offset="0x5" internal="0" description="CTM_COUNT_HIGH1">
+		<bitfield id="COUNT_HIGH" description="Upper 16 bits of the counter value[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_MAX_COUNT_LOW1" width="16" page="1" offset="0x6" internal="0" description="CTM_MAX_COUNT_LOW1">
+		<bitfield id="MAX_COUNT_LOW" description="Lower 16 bits of the maximum recorded counter value." begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_MAX_COUNT_HIGH1" width="16" page="1" offset="0x7" internal="0" description="CTM_MAX_COUNT_HIGH1">
+		<bitfield id="MAX_COUNT_HIGH" description="Upper 16 bits of the maximum recorded counter value." begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_INPUT_SEL1" width="16" page="1" offset="0x8" internal="0" description="CTM_INPUT_SEL1">
+		<bitfield id="CTM_INP_SEL_EN" description="Count input select enable" begin="0" end="0" width="1" rwaccess="R/W"/>
+		<bitfield id="CNT_INP_SEL" description="Count input select" begin="5" end="1" width="5" rwaccess="R/W"/>
+		<bitfield id="STA_INP_SEL" description="Start input select" begin="10" end="6" width="5" rwaccess="R/W"/>
+		<bitfield id="STO_INP_SEL" description="Stop input select" begin="15" end="11" width="5" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_CLEAR1" width="16" page="1" offset="0x9" internal="0" description="CTM_CLEAR1">
+		<bitfield id="EVENT_CLEAR" description="Clear EVENT_FIRED" begin="0" end="0" width="1" rwaccess="R=0/W"/>
+		<bitfield id="OVERFLOW_CLEAR" description="Clear OVERFLOW" begin="1" end="1" width="1" rwaccess="R=0/W"/>
+	</register>
+	<register id="CTM_INPUT_SEL_MSB1" width="16" page="1" offset="0xa" internal="0" description="CTM_INPUT_SEL_MSB1">
+		<bitfield id="CTM_INP_SEL_MSB" description="Count input select" begin="0" end="0" width="1" rwaccess="R/W"/>
+		<bitfield id="STA_INP_SEL_MSB" description="Start input select" begin="4" end="4" width="1" rwaccess="R/W"/>
+		<bitfield id="STO_INP_SEL_MSB" description="Stop input select" begin="8" end="8" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_INP_SEL_MSB" description="Reset Input Select" begin="12" end="12" width="1" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_CNTL2" width="16" page="1" offset="0x10" internal="0" description="CTM_CNTL2     ">
+		<bitfield id="START_STOP_MODE" description="Start_stop mode bit" begin="2" end="2" width="1" rwaccess="R/W"/>
+		<bitfield id="EVENT_MODE" description="Event mode bit" begin="3" end="3" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_ON_MATCH" description="Reset_on_match bit" begin="4" end="4" width="1" rwaccess="R/W"/>
+		<bitfield id="STOP" description="Stop bit (Halt/No Halt of CPU)" begin="6" end="6" width="1" rwaccess="R/W"/>
+		<bitfield id="RTOSINT" description="RTOSINT bit" begin="7" end="7" width="1" rwaccess="R/W"/>
+		<bitfield id="START_STOP_CUMULATIVE" description="Start stop cumulative bit" begin="8" end="8" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_EN" description="Enable Reset" begin="10" end="10" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_INP_SEL" description="Reset Input select" begin="15" end="11" width="5" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_STATUS2" width="16" page="1" offset="0x11" internal="0" description="CTM_STATUS2">
+		<bitfield id="EVENT_FIRED" description="Counter Event Fired bits" begin="0" end="0" width="1" rwaccess="R"/>
+		<bitfield id="OVERFLOW" description="Counter Overflowed" begin="1" end="1" width="1" rwaccess="R"/>
+		<bitfield id="MODULE_ID" description="Identification bits" begin="11" end="2" width="10" rwaccess="R"/>
+		<bitfield id="STATUS" description="Status bits" begin="15" end="12" width="4" rwaccess="R"/>
+	</register>
+	<register id="CTM_REF_LOW2" width="16" page="1" offset="0x12" internal="0" description="CTM_REF_LOW2">
+		<bitfield id="REF_LOW" description="Lower 16 bits of the counter reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_REF_HIGH2" width="16" page="1" offset="0x13" internal="0" description="CTM_REF_HIGH2">
+		<bitfield id="REF_HIGH" description="Upper 16 bits of the counter reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_COUNT_LOW2" width="16" page="1" offset="0x14" internal="0" description="CTM_COUNT_LOW2">
+		<bitfield id="COUNT_LOW" description="Lower 16 bits of the counter value[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_COUNT_HIGH2" width="16" page="1" offset="0x15" internal="0" description="CTM_COUNT_HIGH2">
+		<bitfield id="COUNT_HIGH" description="Upper 16 bits of the counter value[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_MAX_COUNT_LOW2" width="16" page="1" offset="0x16" internal="0" description="CTM_MAX_COUNT_LOW2">
+		<bitfield id="MAX_COUNT_LOW" description="Lower 16 bits of the maximum recorded counter value." begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_MAX_COUNT_HIGH2" width="16" page="1" offset="0x17" internal="0" description="CTM_MAX_COUNT_HIGH2">
+		<bitfield id="MAX_COUNT_HIGH" description="Upper 16 bits of the maximum recorded counter value." begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_INPUT_SEL2" width="16" page="1" offset="0x18" internal="0" description="CTM_INPUT_SEL2">
+		<bitfield id="CTM_INP_SEL_EN" description="Count input select enable" begin="0" end="0" width="1" rwaccess="R/W"/>
+		<bitfield id="CNT_INP_SEL" description="Count input select" begin="5" end="1" width="5" rwaccess="R/W"/>
+		<bitfield id="STA_INP_SEL" description="Start input select" begin="10" end="6" width="5" rwaccess="R/W"/>
+		<bitfield id="STO_INP_SEL" description="Stop input select" begin="15" end="11" width="5" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_CLEAR2" width="16" page="1" offset="0x19" internal="0" description="CTM_CLEAR2">
+		<bitfield id="EVENT_CLEAR" description="Clear EVENT_FIRED" begin="0" end="0" width="1" rwaccess="R=0/W"/>
+		<bitfield id="OVERFLOW_CLEAR" description="Clear OVERFLOW" begin="1" end="1" width="1" rwaccess="R=0/W"/>
+	</register>
+	<register id="CTM_INPUT_SEL_MSB2" width="16" page="1" offset="0x1a" internal="0" description="CTM_INPUT_SEL_MSB2">
+		<bitfield id="CTM_INP_SEL_MSB" description="Count input select" begin="0" end="0" width="1" rwaccess="R/W"/>
+		<bitfield id="STA_INP_SEL_MSB" description="Start input select" begin="4" end="4" width="1" rwaccess="R/W"/>
+		<bitfield id="STO_INP_SEL_MSB" description="Stop input select" begin="8" end="8" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_INP_SEL_MSB" description="Reset Input Select" begin="12" end="12" width="1" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_CNTL3" width="16" page="1" offset="0x20" internal="0" description="CTM_CNTL3    ">
+		<bitfield id="START_STOP_MODE" description="Start_stop mode bit" begin="2" end="2" width="1" rwaccess="R/W"/>
+		<bitfield id="EVENT_MODE" description="Event mode bit" begin="3" end="3" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_ON_MATCH" description="Reset_on_match bit" begin="4" end="4" width="1" rwaccess="R/W"/>
+		<bitfield id="STOP" description="Stop bit (Halt/No Halt of CPU)" begin="6" end="6" width="1" rwaccess="R/W"/>
+		<bitfield id="RTOSINT" description="RTOSINT bit" begin="7" end="7" width="1" rwaccess="R/W"/>
+		<bitfield id="START_STOP_CUMULATIVE" description="Start stop cumulative bit" begin="8" end="8" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_EN" description="Enable Reset" begin="10" end="10" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_INP_SEL" description="Reset Input select" begin="15" end="11" width="5" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_STATUS3" width="16" page="1" offset="0x21" internal="0" description="CTM_STATUS3">
+		<bitfield id="EVENT_FIRED" description="Counter Event Fired bits" begin="0" end="0" width="1" rwaccess="R"/>
+		<bitfield id="OVERFLOW" description="Counter Overflowed" begin="1" end="1" width="1" rwaccess="R"/>
+		<bitfield id="MODULE_ID" description="Identification bits" begin="11" end="2" width="10" rwaccess="R"/>
+		<bitfield id="STATUS" description="Status bits" begin="15" end="12" width="4" rwaccess="R"/>
+	</register>
+	<register id="CTM_REF_LOW3" width="16" page="1" offset="0x22" internal="0" description="CTM_REF_LOW3">
+		<bitfield id="REF_LOW" description="Lower 16 bits of the counter reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_REF_HIGH3" width="16" page="1" offset="0x23" internal="0" description="CTM_REF_HIGH3">
+		<bitfield id="REF_HIGH" description="Upper 16 bits of the counter reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_COUNT_LOW3" width="16" page="1" offset="0x24" internal="0" description="CTM_COUNT_LOW3">
+		<bitfield id="COUNT_LOW" description="Lower 16 bits of the counter value[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_COUNT_HIGH3" width="16" page="1" offset="0x25" internal="0" description="CTM_COUNT_HIGH3">
+		<bitfield id="COUNT_HIGH" description="Upper 16 bits of the counter value[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_MAX_COUNT_LOW3" width="16" page="1" offset="0x26" internal="0" description="CTM_MAX_COUNT_LOW3">
+		<bitfield id="MAX_COUNT_LOW" description="Lower 16 bits of the maximum recorded counter value." begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_MAX_COUNT_HIGH3" width="16" page="1" offset="0x27" internal="0" description="CTM_MAX_COUNT_HIGH3">
+		<bitfield id="MAX_COUNT_HIGH" description="Upper 16 bits of the maximum recorded counter value." begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_INPUT_SEL3" width="16" page="1" offset="0x28" internal="0" description="CTM_INPUT_SEL3">
+		<bitfield id="CTM_INP_SEL_EN" description="Count input select enable" begin="0" end="0" width="1" rwaccess="R/W"/>
+		<bitfield id="CNT_INP_SEL" description="Count input select" begin="5" end="1" width="5" rwaccess="R/W"/>
+		<bitfield id="STA_INP_SEL" description="Start input select" begin="10" end="6" width="5" rwaccess="R/W"/>
+		<bitfield id="STO_INP_SEL" description="Stop input select" begin="15" end="11" width="5" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_CLEAR3" width="16" page="1" offset="0x29" internal="0" description="CTM_CLEAR3">
+		<bitfield id="EVENT_CLEAR" description="Clear EVENT_FIRED" begin="0" end="0" width="1" rwaccess="R=0/W"/>
+		<bitfield id="OVERFLOW_CLEAR" description="Clear OVERFLOW" begin="1" end="1" width="1" rwaccess="R=0/W"/>
+	</register>
+	<register id="CTM_INPUT_SEL_MSB3" width="16" page="1" offset="0x2a" internal="0" description="CTM_INPUT_SEL_MSB3">
+		<bitfield id="CTM_INP_SEL_MSB" description="Count input select" begin="0" end="0" width="1" rwaccess="R/W"/>
+		<bitfield id="STA_INP_SEL_MSB" description="Start input select" begin="4" end="4" width="1" rwaccess="R/W"/>
+		<bitfield id="STO_INP_SEL_MSB" description="Stop input select" begin="8" end="8" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_INP_SEL_MSB" description="Reset Input Select" begin="12" end="12" width="1" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_CNTL4" width="16" page="1" offset="0x30" internal="0" description="CTM_CNTL4    ">
+		<bitfield id="START_STOP_MODE" description="Start_stop mode bit" begin="2" end="2" width="1" rwaccess="R/W"/>
+		<bitfield id="EVENT_MODE" description="Event mode bit" begin="3" end="3" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_ON_MATCH" description="Reset_on_match bit" begin="4" end="4" width="1" rwaccess="R/W"/>
+		<bitfield id="STOP" description="Stop bit (Halt/No Halt of CPU)" begin="6" end="6" width="1" rwaccess="R/W"/>
+		<bitfield id="RTOSINT" description="RTOSINT bit" begin="7" end="7" width="1" rwaccess="R/W"/>
+		<bitfield id="START_STOP_CUMULATIVE" description="Start stop cumulative bit" begin="8" end="8" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_EN" description="Enable Reset" begin="10" end="10" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_INP_SEL" description="Reset Input select" begin="15" end="11" width="5" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_STATUS4" width="16" page="1" offset="0x31" internal="0" description="CTM_STATUS4">
+		<bitfield id="EVENT_FIRED" description="Counter Event Fired bits" begin="0" end="0" width="1" rwaccess="R"/>
+		<bitfield id="OVERFLOW" description="Counter Overflowed" begin="1" end="1" width="1" rwaccess="R"/>
+		<bitfield id="MODULE_ID" description="Identification bits" begin="11" end="2" width="10" rwaccess="R"/>
+		<bitfield id="STATUS" description="Status bits" begin="15" end="12" width="4" rwaccess="R"/>
+	</register>
+	<register id="CTM_REF_LOW4" width="16" page="1" offset="0x32" internal="0" description="CTM_REF_LOW4">
+		<bitfield id="REF_LOW" description="Lower 16 bits of the counter reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_REF_HIGH4" width="16" page="1" offset="0x33" internal="0" description="CTM_REF_HIGH4">
+		<bitfield id="REF_HIGH" description="Upper 16 bits of the counter reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_COUNT_LOW4" width="16" page="1" offset="0x34" internal="0" description="CTM_COUNT_LOW4">
+		<bitfield id="COUNT_LOW" description="Lower 16 bits of the counter value[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_COUNT_HIGH4" width="16" page="1" offset="0x35" internal="0" description="CTM_COUNT_HIGH4">
+		<bitfield id="COUNT_HIGH" description="Upper 16 bits of the counter value[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_MAX_COUNT_LOW4" width="16" page="1" offset="0x36" internal="0" description="CTM_MAX_COUNT_LOW4">
+		<bitfield id="MAX_COUNT_LOW" description="Lower 16 bits of the maximum recorded counter value." begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_MAX_COUNT_HIGH4" width="16" page="1" offset="0x37" internal="0" description="CTM_MAX_COUNT_HIGH4">
+		<bitfield id="MAX_COUNT_HIGH" description="Upper 16 bits of the maximum recorded counter value." begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_INPUT_SEL4" width="16" page="1" offset="0x38" internal="0" description="CTM_INPUT_SEL4">
+		<bitfield id="CTM_INP_SEL_EN" description="Count input select enable" begin="0" end="0" width="1" rwaccess="R/W"/>
+		<bitfield id="CNT_INP_SEL" description="Count input select" begin="5" end="1" width="5" rwaccess="R/W"/>
+		<bitfield id="STA_INP_SEL" description="Start input select" begin="10" end="6" width="5" rwaccess="R/W"/>
+		<bitfield id="STO_INP_SEL" description="Stop input select" begin="15" end="11" width="5" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_CLEAR4" width="16" page="1" offset="0x39" internal="0" description="CTM_CLEAR4">
+		<bitfield id="EVENT_CLEAR" description="Clear EVENT_FIRED" begin="0" end="0" width="1" rwaccess="R=0/W"/>
+		<bitfield id="OVERFLOW_CLEAR" description="Clear OVERFLOW" begin="1" end="1" width="1" rwaccess="R=0/W"/>
+	</register>
+	<register id="CTM_INPUT_SEL_MSB4" width="16" page="1" offset="0x3a" internal="0" description="CTM_INPUT_SEL_MSB4">
+		<bitfield id="CTM_INP_SEL_MSB" description="Count input select" begin="0" end="0" width="1" rwaccess="R/W"/>
+		<bitfield id="STA_INP_SEL_MSB" description="Start input select" begin="4" end="4" width="1" rwaccess="R/W"/>
+		<bitfield id="STO_INP_SEL_MSB" description="Stop input select" begin="8" end="8" width="1" rwaccess="R/W"/>
+		<bitfield id="RST_INP_SEL_MSB" description="Reset Input Select" begin="12" end="12" width="1" rwaccess="R/W"/>
+	</register>
+</module>

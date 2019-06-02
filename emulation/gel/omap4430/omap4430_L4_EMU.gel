@@ -1,0 +1,27 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* Attila L4 EMU     			     						   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+memorymap_init_L4_EMU()
+{
+    GEL_MapAddStr(0x54000000, 0, 0x00100000, "R|W|AS4", 0);  /* MIPI STM OCP AddrSpace0 */
+	GEL_MapAddStr(0x54100000, 0, 0x00040000, "R|W|AS4", 0);  /* MIPI STM OCP AddrSpace1 */
+	GEL_MapAddStr(0x54160000, 0, 0x00001000, "R|W|AS4", 0);  /* DRM OCP */
+	GEL_MapAddStr(0x54161000, 0, 0x00001000, "R|W|AS4", 0);  /* MIPI_STM OCP */
+	GEL_MapAddStr(0x54162000, 0, 0x00001000, "R|W|AS4", 0);  /* ETB */
+	GEL_MapAddStr(0x54163000, 0, 0x00001000, "R|W|AS4", 0);  /* CS_TPIU */
+	GEL_MapAddStr(0x54164000, 0, 0x00001000, "R|W|AS4", 0);  /* CSTF0 */
+    GEL_MapAddStr(0x54167000, 0, 0x00001000, "R|W|AS4", 0);  /* Technologic Specific Interconnect Registers */
+	GEL_MapAddStr(0x54180000, 0, 0x00001000, "R|W|AS4", 0);  /* Technologic Specific Interconnect Registers */ 
+}
+    
+ 
+    
+    

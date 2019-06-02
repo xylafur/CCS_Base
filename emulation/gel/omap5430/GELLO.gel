@@ -1,0 +1,514 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* OMAP5430 CortexA15 CPU0 startup         						   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Dave Comisky
+/*******************************************************************/
+
+#define CTRL_MODULE_CORE_PAD             0x4A002800
+#define EMIF4D1_BASE_ADDRESS 0x4C000000
+#define EMIF4D2_BASE_ADDRESS 0x4D000000
+#define MA_LISA__BASE__ADDR  0x482AF000
+#define DMM_BASE_ADDRESS     0x4E000000
+
+#define MA_LISA_1_REG(BASE__ADDRESS)  *(unsigned int *)(BASE__ADDRESS + 0x40)
+#define MA_LISA_MAP__0__SDRAM_INTERLEAVED_VALUE  0x80740300
+#define MA_LISA_MAP__0__SDRAM_EMIF2_ONLY_VALUE  0x80700200 // 0x80700300 
+#define MA_LISA_MAP__0__SDRAM_EMIF1_ONLY_VALUE  0x80700100 // 0x80700300  
+
+#define DMM_LISA_MAP_0(BASE_ADDRESS) *(unsigned int *)(BASE_ADDRESS + 0x40)
+
+#define DDR_IO_EMIF1__DDR3CH                            0x00000630
+#define DDR_IO_EMIF2__DDR3CH                            0x00000634
+#define DDR_IO_EMIF1__ADDR_DQ0_DQS0_DQ1_DQS1			0x00000638
+#define DDR_IO_EMIF1__ADDR_DQ2_DQS2_DQ3_DQS3			0x0000063C
+#define DDR_IO_EMIF2__ADDR_DQ0_DQS0_DQ1_DQS1			0x00000640
+#define DDR_IO_EMIF2__ADDR_DQ2_DQS2_DQ3_DQS3			0x00000644
+#define DDR_IO_EMIF1__ADDR_NCS_CK_CKE_CA			0x00000648
+#define DDR_IO_EMIF2__ADDR_NCS_CK_CKE_CA			0x0000064C
+#define DDR_IO_0						0x00000650
+#define DDR_IO_1						0x00000654
+#define DDR_IO_2						0x00000658
+
+
+#define DDR_IO__I_40OHM_SR_SLOWEST__WD_DQ_NO_PULL_DQS_NO_PULL 0x7C7C7C6C;
+
+// reg_value for DQ and DQS
+#define DDR_IO__I_34OHM_SR_FASTEST__WD_DQ_NO_PULL_DQS_NO_PULL	0x80808080
+#define DDR_IO__I_34OHM_SR_FASTEST__WD_DQ_NO_PULL_DQS_PULL_DOWN	0x80828082
+#define DDR_IO__I_40OHM_SR_FAST_____WD_DQ_NO_PULL_DQS_NO_PULL	0x64646464
+#define DDR_IO__I_40OHM_SR_FAST_____WD_DQ_NO_PULL_DQS_PULL_DOWN	0x64666466
+
+// reg_value for CK/CKE/NCS/CA
+#define DDR_IO__I_34OHM_SR_FASTEST__WD_CK_CKE_NCS_CA_NO_PULL	0x80808000
+#define DDR_IO__I_34OHM_SR_FASTEST__WD_CK_CKE_NCS_CA_PULL_DOWN	0x82828200
+#define DDR_IO__I_40OHM_SR_FAST_____WD_CK_CKE_NCS_CA_NO_PULL	0x64646400
+#define DDR_IO__I_40OHM_SR_FAST_____WD_CK_CKE_NCS_CA_PULL_DOWN	0x66666600
+
+// reg_value for VREF
+#define DDR_IO_0__DDR2_DQ_INT_EN_ALL__DDR3_CA_DIS_ALL		0x00008421
+#define DDR_IO_0__DQ_INT_NO_CAP					0x00000000
+#define DDR_IO_0__DQ_INT_CAP_VDD_ALL				0x00042108
+#define DDR_IO_0__DQ_INT_CAP_VSS_ALL				0x00084210
+#define DDR_IO_0__DQ_INT_CAP_VDD_VSS_ALL			0x000C6318
+#define DDR_IO_0__DQ_INT_2UA_ALL				0x00000000
+#define DDR_IO_0__DQ_INT_4UA_ALL				0x00010842
+#define DDR_IO_0__DQ_INT_8UA_ALL				0x00021084
+#define DDR_IO_0__DQ_INT_32UA_ALL				0x000318C6
+
+#define DDR_IO_0_VREF_CELLS_DDR3_VALUE          0xBAE8C631
+#define DDR_IO_1_VREF_CELLS_DDR3_VALUE          0xBC6318DC
+#define DDR_IO_2_VREF_CELLS_DDR3_VALUE          0x00000000
+
+#define DDR_IO_1__DQ_OUT_EN_ALL__DQ_INT_EN_ALL			0x08421084
+#define DDR_IO_1__DQ_OUT_NO_CAP__DQ_INT_NO_CAP			0x00000000
+#define DDR_IO_1__DQ_OUT_CAP_VSS__DQ_INT_CAP_VSS		0x84210840
+#define DDR_IO_1__DQ_OUT_CAP_VDD__DQ_INT_CAP_VDD		0x42108420
+#define DDR_IO_1__DQ_OUT_CAP_VDD_VSS__DQ_INT_CAP_VDD_VSS	0xC6318C60
+#define DDR_IO_1__DQ_OUT_2UA__DQ_INT_2UA			0x00000000
+#define DDR_IO_1__DQ_OUT_4UA__DQ_INT_4UA			0x21084210
+#define DDR_IO_1__DQ_OUT_8UA__DQ_INT_8UA			0x10842108
+#define DDR_IO_1__DQ_OUT_32UA__DQ_INT_32UA			0x318C6318
+
+#define DDR_IO_2__CA_OUT_EN_ALL__CA_INT_EN_ALL			0x08421000
+#define DDR_IO_2__CA_OUT_NO_CAP__CA_INT_NO_CAP			0x00000000
+#define DDR_IO_2__CA_OUT_CAP_VSS__CA_INT_CAP_VSS		0x84210000
+#define DDR_IO_2__CA_OUT_CAP_VDD__CA_INT_CAP_VDD		0x42108000
+#define DDR_IO_2__DQ_OUT_CAP_VDD_VSS__DQ_INT_CAP_VDD_VSS	0xC6318000
+#define DDR_IO_2__CA_OUT_2UA__CA_INT_2UA			0x00000000
+#define DDR_IO_2__CA_OUT_4UA__CA_INT_4UA			0x21084000
+#define DDR_IO_2__CA_OUT_8UA__CA_INT_8UA			0x10842000
+#define DDR_IO_2__CA_OUT_32UA__CA_INT_32UA			0x318C6000
+
+// reg_value for EFUSE_2
+#define EFUSE_2__N_100000__P_100000				0x82000000
+
+// reg_value for obervability
+// codes for HW_DBG signal selection the CORE CONTROL module
+#define MODE_FOR_EMIF1_DATA_BYTE_0				0x15
+#define MODE_FOR_EMIF1_LEVELING_BYTE_0_RANK_0			0x16
+#define MODE_FOR_EMIF1_LEVELING_BYTE_0_RANK_1			0x17
+#define MODE_FOR_EMIF1_CMD_DLL					0x18
+#define MODE_FOR_EMIF2_DATA_BYTE_0				0x19
+#define MODE_FOR_EMIF2_LEVELING_BYTE_0_RANK_0			0x1A
+#define MODE_FOR_EMIF2_LEVELING_BYTE_0_RANK_1			0x1B
+#define MODE_FOR_EMIF2_CMD_DLL					0x1C
+
+
+#define SDRAM_CONFIG(EMIF_BASE_ADDRESS)   *(unsigned int *)(EMIF_BASE_ADDRESS + 0x8)
+#define SDRAM_CONFIG_2(EMIF_BASE_ADDRESS)   *(unsigned int *)(EMIF_BASE_ADDRESS + 0xC)
+#define SDRAM_REF_CTRL(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x10)
+#define SDRAM_REF_CTRL_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x14)
+#define SDRAM_TIM_1(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x18)
+#define SDRAM_TIM_1_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x1C)
+#define SDRAM_TIM_2(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x20)
+#define SDRAM_TIM_2_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x24)
+#define SDRAM_TIM_3(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x28)
+#define SDRAM_TIM_3_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2C)
+#define LPDDR2_NVM_TIM(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x30)
+#define LPDDR2_NVM_TIM_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x34)
+#define PWR_MGMT_CTRL(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x38)
+#define PWR_MGMT_CTRL_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x3C)
+#define LPDDR2_MODE_REG_DATA(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x40)
+#define LPDDR2_MODE_REG_CONFIG(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x50)
+#define OCP_CONFIG(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x54)
+#define IODFT_TLGC(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x60)
+#define DLL_CALIB_CTRL(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x98)
+#define DLL_CALIB_CTRL_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x9C)
+#define SDRAM_OUTPUT_ZQ(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0xC8)
+#define TEMP_ALERT_CFG(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0xCC)
+#define READ_WRITE_LEVELING_RAMP_WINDOW(EMIF_BASE_ADDRESS)  *(unsigned int *)(EMIF_BASE_ADDRESS + 0xD4)
+#define READ_WRITE_LEVELING_RAMP_CONTROL(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0xD8)
+#define READ_WRITE_LEVELING_CONTROL(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0xDC)
+#define DDR_PHY_CTRL_1(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0xE4)
+#define DDR_PHY_CTRL_1_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0xE8)
+#define DDR_PHY_CTRL_2(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0xEC)
+//#define DDR_PHY_CTRL_2_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0xF0)
+#define PRI_COS_MAP(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x100)
+#define CONNID_COS_1(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x104)
+#define CONNID_COS_2(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x108)
+#define RD_WR_EXEC_THRESH(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x120)
+#define COS_CONFIG(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x124)
+#define EXT_PHY_CONTROL_1(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x200)
+#define EXT_PHY_CONTROL_1_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x204)
+#define EXT_PHY_CONTROL_2(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x208)
+#define EXT_PHY_CONTROL_2_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x20C)
+#define EXT_PHY_CONTROL_3(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x210)
+#define EXT_PHY_CONTROL_3_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x214)
+#define EXT_PHY_CONTROL_4(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x218)
+#define EXT_PHY_CONTROL_4_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x21C)
+#define EXT_PHY_CONTROL_5(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x220)
+#define EXT_PHY_CONTROL_5_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x224)
+#define EXT_PHY_CONTROL_6(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x228)
+#define EXT_PHY_CONTROL_6_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x22C)
+#define EXT_PHY_CONTROL_7(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x230)
+#define EXT_PHY_CONTROL_7_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x234)
+#define EXT_PHY_CONTROL_8(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x238)
+#define EXT_PHY_CONTROL_8_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x23C)
+#define EXT_PHY_CONTROL_9(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x240)
+#define EXT_PHY_CONTROL_9_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x244)
+#define EXT_PHY_CONTROL_10(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x248)
+#define EXT_PHY_CONTROL_10_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x24C)
+#define EXT_PHY_CONTROL_11(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x250)
+#define EXT_PHY_CONTROL_11_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x254)
+#define EXT_PHY_CONTROL_12(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x258)
+#define EXT_PHY_CONTROL_12_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x25C)
+#define EXT_PHY_CONTROL_13(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x260)
+#define EXT_PHY_CONTROL_13_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x264)
+#define EXT_PHY_CONTROL_14(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x268)
+#define EXT_PHY_CONTROL_14_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x26C)
+#define EXT_PHY_CONTROL_15(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x270)
+#define EXT_PHY_CONTROL_15_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x274)
+#define EXT_PHY_CONTROL_16(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x278)
+#define EXT_PHY_CONTROL_16_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x27C)
+#define EXT_PHY_CONTROL_17(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x280)
+#define EXT_PHY_CONTROL_17_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x284)
+#define EXT_PHY_CONTROL_18(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x288)
+#define EXT_PHY_CONTROL_18_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x28C)
+#define EXT_PHY_CONTROL_19(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x290)
+#define EXT_PHY_CONTROL_19_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x294)
+#define EXT_PHY_CONTROL_20(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x298)
+#define EXT_PHY_CONTROL_20_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x29C)
+#define EXT_PHY_CONTROL_21(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2A0)
+#define EXT_PHY_CONTROL_21_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2A4)
+#define EXT_PHY_CONTROL_22(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2A8)
+#define EXT_PHY_CONTROL_22_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2AC)
+#define EXT_PHY_CONTROL_23(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2B0)
+#define EXT_PHY_CONTROL_23_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2B4)
+#define EXT_PHY_CONTROL_24(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2B8)
+#define EXT_PHY_CONTROL_24_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2BC)
+#define EXT_PHY_CONTROL_25(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2C0)
+#define EXT_PHY_CONTROL_25_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2C4)
+#define EXT_PHY_CONTROL_26(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2C8)
+#define EXT_PHY_CONTROL_26_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2CC)
+#define EXT_PHY_CONTROL_27(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2D0)
+#define EXT_PHY_CONTROL_27_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2D4)
+#define EXT_PHY_CONTROL_28(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2D8)
+#define EXT_PHY_CONTROL_28_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2DC)
+#define EXT_PHY_CONTROL_29(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2E0)
+#define EXT_PHY_CONTROL_29_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2E4)
+#define EXT_PHY_CONTROL_30(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2E8)
+#define EXT_PHY_CONTROL_30_SHDW(EMIF_BASE_ADDRESS) *(unsigned int *)(EMIF_BASE_ADDRESS + 0x2EC)
+
+
+hotmenu GELLO()
+{
+  // DC: reset in start.S
+  // Put CPU into SVC32 mode 
+  CPSR = (CPSR&0xFFFFFFE0)|0xD3;
+
+  // DC: cpu_init_cp15 in start.S
+  // init CP15 regs; disable caches and MMU
+  REG_CTXA15_CP15_C1_SCTLR &= ~(0x3007);
+  // set align bit, and BTB 
+  REG_CTXA15_CP15_C1_SCTLR |= 0x0802;
+  // then re-enable I-cache, because disabled is stupid....
+  REG_CTXA15_CP15_C1_SCTLR |= 0x1000;
+
+  // DC:  s_init in hwinit_common.c
+  // clear out watchdog 2
+  GELLO_Watchdog_disable();  
+
+  // DC: s_init in hwinit_common.c
+  // DC: skipping pandonf esential and non-essential; don't think they do anything
+  // DC: skipping UART clocks for console too, looks innocuous
+  // DC: and finally, skipping console init for the u-boot prompt
+
+  // DC: do_io_settings in hwinit.c 
+  // IO settings
+  // Skipping everything but DDR3...
+  // io_settings_ddr3 in hwinit.c
+    io_settings_ddr3();  
+
+  // and the EFUSE settings
+  //======= EFUSE_2 for non-trimmed devices =======//
+  *(int*)0x4AE0CDC8	= 0x45145100;
+  *(int*)0x4AE0CDCC	= 0x45145100;
+  *(int*)0x4AE0CDD0	= 0x45145100;
+  *(int*)0x4AE0CDD4	= 0x45145100;
+
+  // DC:  prcm_init, in clocks_common.c
+  // GEL_TextOut("--->>> Try the set OPP for 532MHz here <<<---\n");
+  // prcm_clock_def_opp_wakeUp_SYSCLK_19_2_DDR_532();
+ 
+  //  skipping timer init; don't think it matters
+  GELLO_sdram_init();  
+}
+
+GELLO_Watchdog_disable()
+{
+    if (1) {
+	    GEL_TextOut("--->>> Start WDT2 Watchdog Timer is disabled <<<---\n");
+	}
+	 
+    /* Enable clock */
+    *(int*)0x4AE07830 = 0x02;
+
+    /* Check that module is Idle */
+    while (((*(int *)0x4AE07830) & 0x20000));
+       
+    /* Disable  watchdog 2 */
+    /* Wait until reset complete */
+    while (!((*(int *)0x4AE14014) & 0x01));
+
+    /* Disable watchdog timer */
+    *(int*)0x4AE14048 = 0x0000AAAA;
+
+    while (((*(int *)0x4AE14034) & 0x10));
+
+    /* Disable 32Khz watchdog timer */
+    *(int*)0x4AE14048 = 0x00005555;
+
+    while (((*(int *)0x4AE14034) & 0x10));
+
+    if (1) {
+        GEL_TextOut("--->>> End WDT2 Watchdog Timer is disabled <<<---\n");
+    }
+
+}
+
+
+io_settings_ddr3()
+{
+  int reg_temp;
+  int loop_index;
+    
+  if (1) {
+    GEL_TextOut(">> START Fill_Emif_registers\n");
+  }
+
+      //=========//
+      // DDR IOs //
+      //=========//
+        
+      if (1) {
+
+	GEL_TextOut(">> START ==> EMIF1 and EMIF1 DDR IOs config (CTRL_MODULE_CORE_PAD module)\n");
+
+      }
+         
+      //CONTROL_DDR3CH1_0 -- channel_1 CMDs / 40Ohm Ron (011) / SR=slowest-3 (111) on CMDs but CLK SR=slow (011) / No pulls (00)        
+      *(int*)(CTRL_MODULE_CORE_PAD+DDR_IO_EMIF1__DDR3CH)	= DDR_IO__I_40OHM_SR_SLOWEST__WD_DQ_NO_PULL_DQS_NO_PULL;
+      //CONTROL_DDRCH1_0 -- channel_1 DATA byte 0+1 / 40Ohm Ron (011) / SR=faster (001) / No Pull-up (00) on DQS / No pull (00) on DQ
+      *(int*)(CTRL_MODULE_CORE_PAD+DDR_IO_EMIF1__ADDR_DQ0_DQS0_DQ1_DQS1)	= DDR_IO__I_40OHM_SR_FAST_____WD_DQ_NO_PULL_DQS_NO_PULL;
+        
+      //CONTROL_DDRCH1_1 -- channel_1 DATA byte 2+3 / 40Ohm Ron (011) / SR=faster (001) / No Pull-up (00) on DQS / No pull (00) on DQ
+      *(int*)(CTRL_MODULE_CORE_PAD+DDR_IO_EMIF1__ADDR_DQ2_DQS2_DQ3_DQS3)	= DDR_IO__I_40OHM_SR_FAST_____WD_DQ_NO_PULL_DQS_NO_PULL;
+    
+      //CONTROL_DDR3CH2_0 -- channel_2 CMDs / 40Ohm Ron (011) / SR=slowest-3 (111) on CMDs but CLK SR=slow (011) / No pulls (00)
+      *(int*)(CTRL_MODULE_CORE_PAD+DDR_IO_EMIF2__DDR3CH)	= DDR_IO__I_40OHM_SR_SLOWEST__WD_DQ_NO_PULL_DQS_NO_PULL;
+      //CONTROL_DDRCH2_0 -- channel_2 DATA byte 0+1 / 40Ohm Ron (011) / SR=faster (001) / No Pull-up (00) on DQS / No pull (00) on DQ
+      *(int*)(CTRL_MODULE_CORE_PAD+DDR_IO_EMIF2__ADDR_DQ0_DQS0_DQ1_DQS1)	= DDR_IO__I_40OHM_SR_FAST_____WD_DQ_NO_PULL_DQS_NO_PULL;
+      //CONTROL_DDRCH2_1 -- channel_2 DATA byte 2+3 / 40Ohm Ron (011) / SR=faster (001) / No Pull-up (00) on DQS / No pull (00) on DQ
+      *(int*)(CTRL_MODULE_CORE_PAD+DDR_IO_EMIF2__ADDR_DQ2_DQS2_DQ3_DQS3)	= DDR_IO__I_40OHM_SR_FAST_____WD_DQ_NO_PULL_DQS_NO_PULL;
+	
+      //======= VREF =======//
+      //DDRIO_0 -- VREF cells (CH1 DQ3/0 INT 2uA / Cap to GND / CMD1/0 DDR3 INT-OUT 32uA / Cap to GND) 
+      *(int*)(CTRL_MODULE_CORE_PAD+DDR_IO_0)					= DDR_IO_0_VREF_CELLS_DDR3_VALUE;
+      //DDRIO_1 -- VREF cells (CH1 OUT 32uA Cap to GND / CH2 DQ3/0 INT 2uA / Cap to GND / CH2 OUT 32uA Cap to GND)
+      *(int*)(CTRL_MODULE_CORE_PAD+DDR_IO_1)					= DDR_IO_1_VREF_CELLS_DDR3_VALUE;
+      //DDRIO_2 -- VREF cells (LPDDR2 CH1/2 CA INT/OUT - unused on OMAP5432)
+      *(int*)(CTRL_MODULE_CORE_PAD+DDR_IO_2)					= DDR_IO_2_VREF_CELLS_DDR3_VALUE;
+        
+      // channel_1 LPDDR2 CMD PHYs not used on 5432.
+      //CONTROL_LPDDR2CH1_0 -- channel_1 LPDDR2 CMD PHYs IOs not used on OMAP5432
+      *(int*)(CTRL_MODULE_CORE_PAD+DDR_IO_EMIF1__ADDR_NCS_CK_CKE_CA)					= 0x00000000;
+      //CONTROL_CONTROL_LPDDR2CH1_1 -- channel_1 LPDDR2 CMD PHYs IOs not used on OMAP5432
+      *(int*)(CTRL_MODULE_CORE_PAD+DDR_IO_EMIF2__ADDR_NCS_CK_CKE_CA)					= 0x00000000;
+      
+
+      // cslic_en[2:0] = 111/ local_odt =01 / dyn_pwrdwn=1/dis_reset=1/rd_lvl_samaples=11
+      *(int*)(CTRL_MODULE_WKUP+EMIF1_SDRAM_CONFIG_EXT) = 0x0000C1A7;
+      *(int*)(CTRL_MODULE_WKUP+EMIF2_SDRAM_CONFIG_EXT) = 0x0000C1A7;
+        
+      // Disable DLL select
+      reg_temp=*(int*)(CTRL_MODULE_WKUP+SECURE_EMIF1_SDRAM_CONFIG);
+      reg_temp&=0xFFEFFFFF;
+      *(int*)(CTRL_MODULE_WKUP+SECURE_EMIF1_SDRAM_CONFIG) = reg_temp;
+        
+      // Disable DLL select
+      reg_temp=*(int*)(CTRL_MODULE_WKUP+SECURE_EMIF2_SDRAM_CONFIG);
+      reg_temp&=0xFFEFFFFF;
+      *(int*)(CTRL_MODULE_WKUP+SECURE_EMIF2_SDRAM_CONFIG) = reg_temp;
+}    
+
+
+GELLO_sdram_init()
+{
+  // no verrride on DLL ctrl
+  *(int*)0x4A004110 = 0x0;
+
+  //dmm_init in emif_common.c
+  dmm_init_board();
+
+  // do_sdram_init in emif_common.c
+  // does nothing, but calls ddr3_init
+  // ddr3_init
+  ddr3_init(EMIF4D1_BASE_ADDRESS);
+  emif_update_timings(EMIF4D1_BASE_ADDRESS);
+  ddr3_init(EMIF4D2_BASE_ADDRESS);
+  emif_update_timings(EMIF4D2_BASE_ADDRESS);
+}
+
+ddr3_init(int base)
+{
+  SDRAM_CONFIG(base)= 0x61851B32;  // sdram_config_init
+  DDR_PHY_CTRL_1(base) = 0x0020420A ; // emif_ddr_phy_ctrl_1_init
+
+  SDRAM_TIM_1(base) = 0xCCCF36B3;
+  SDRAM_TIM_2(base) = 0x308F7FDA;
+  SDRAM_TIM_3(base) = 0x027F88A8;
+
+  SDRAM_REF_CTRL(base) = 0x00001035;
+  // we think this is the read_idle_ctrl
+  DLL_CALIB_CTRL(base) = 0x00050000;
+
+  // DC:  EMIF PHY control 1-5
+  EXT_PHY_CONTROL_1(base) = 0x04040100;
+  EXT_PHY_CONTROL_1_SHDW(base) = 0x04040100;
+  EXT_PHY_CONTROL_2(base) = 0x00000000;
+  EXT_PHY_CONTROL_2_SHDW(base) = 0x00000000;
+  EXT_PHY_CONTROL_3(base) = 0x00000000;
+  EXT_PHY_CONTROL_3_SHDW(base) = 0x00000000;
+  EXT_PHY_CONTROL_4(base) = 0x00000000;
+  EXT_PHY_CONTROL_4_SHDW(base) = 0x00000000;
+  EXT_PHY_CONTROL_5(base) = 0x04010040;	
+  EXT_PHY_CONTROL_5_SHDW(base) = 0x04010040;	
+
+  // and then 6-24...
+  EXT_PHY_CONTROL_6(base) = 0x01004010;	
+  EXT_PHY_CONTROL_6_SHDW(base) = 0x01004010;	
+  EXT_PHY_CONTROL_7(base) = 0x00001004;
+  EXT_PHY_CONTROL_7_SHDW(base) = 0x00001004;
+  EXT_PHY_CONTROL_8(base) = 0x04010040;
+  EXT_PHY_CONTROL_8_SHDW(base) = 0x04010040;
+  EXT_PHY_CONTROL_9(base) = 0x01004010;;
+  EXT_PHY_CONTROL_9_SHDW(base) = 0x01004010;;
+  EXT_PHY_CONTROL_10(base) = 0x00001004;
+  EXT_PHY_CONTROL_10_SHDW(base) = 0x00001004;
+  EXT_PHY_CONTROL_11(base) = 0x00000000;
+  EXT_PHY_CONTROL_11_SHDW(base) = 0x00000000;
+  EXT_PHY_CONTROL_12(base) = 0x00000000;
+  EXT_PHY_CONTROL_12_SHDW(base) = 0x00000000;
+  EXT_PHY_CONTROL_13(base) = 0x00000000;
+  EXT_PHY_CONTROL_13_SHDW(base) = 0x00000000;
+  EXT_PHY_CONTROL_14(base) = 0x80080080;
+  EXT_PHY_CONTROL_14_SHDW(base) = 0x80080080;
+  EXT_PHY_CONTROL_15(base) = 0x00800800;
+  EXT_PHY_CONTROL_15_SHDW(base) = 0x00800800;
+  EXT_PHY_CONTROL_16(base) = 0x08102040;	
+  EXT_PHY_CONTROL_16_SHDW(base) = 0x08102040;	
+  EXT_PHY_CONTROL_17(base) = 0x00000002;	
+  EXT_PHY_CONTROL_17_SHDW(base) = 0x00000002;	
+  EXT_PHY_CONTROL_18(base) = 0x00000000;	
+  EXT_PHY_CONTROL_18_SHDW(base) = 0x00000000;	
+  EXT_PHY_CONTROL_19(base) = 0x00000000;	
+  EXT_PHY_CONTROL_19_SHDW(base) = 0x00000000;	
+  EXT_PHY_CONTROL_20(base) = 0x00000000;	
+  EXT_PHY_CONTROL_20_SHDW(base) = 0x00000000;	
+  EXT_PHY_CONTROL_21(base) = 0x00000000;
+  EXT_PHY_CONTROL_21_SHDW(base) = 0x00000000;
+  EXT_PHY_CONTROL_22(base) = 0x00000000;
+  EXT_PHY_CONTROL_22_SHDW(base) = 0x00000000;
+  EXT_PHY_CONTROL_23(base) = 0x00000000;
+  EXT_PHY_CONTROL_23_SHDW(base) = 0x00000000;
+  EXT_PHY_CONTROL_24(base) = 0x00000057;	
+  EXT_PHY_CONTROL_24_SHDW(base) = 0x00000057;
+
+  // enable leveling
+//  READ_WRITE_LEVELING_RAMP_CONTROL(base) = 0x80000000;
+
+
+  // do the leveling
+//  ddr3_leveling(base);
+}
+
+emif_update_timings(int base)
+{
+  SDRAM_REF_CTRL_SHDW(base) = 0x1035;
+  SDRAM_TIM_1_SHDW(base) = 0xCCCF36B3;
+  SDRAM_TIM_2_SHDW(base) = 0x308F7FDA;
+  SDRAM_TIM_3_SHDW(base) = 0x027F88A8;
+  PWR_MGMT_CTRL(base) = power_mgmt_ctrl_val;
+  PWR_MGMT_CTRL_SHDW(base) = power_mgmt_ctrl_shdw_val;
+  DLL_CALIB_CTRL_SHDW(base) = 0x00050000;
+  SDRAM_OUTPUT_ZQ(base) = 0x7190B;
+  TEMP_ALERT_CFG(base) = 0x00000000;
+  DDR_PHY_CTRL_1_SHDW(base) = 0x0024420A ; // emif_ddr_phy_ctrl_1
+  // DC:  FIXME?  so I skipped the l3_config because I couldn't find it in u-boot...
+}
+    
+ddr3_leveling(int base)
+{
+   // put DDR into self refresh
+   PWR_MGMT_CTRL(base) = 0x00000200;
+   uDelay();
+   
+   // DC:  Not sure I get this one, but we invert the CLKOUT to add an exta
+   // half cycle of delay; which apparently helps is DQS is longer the the CLK 
+   // trace on the board. 
+  DDR_PHY_CTRL_1(base) = 0x0024420A;
+  DDR_PHY_CTRL_1_SHDW(base) = 0x0024420A;
+  uDelay();
+ 
+   // exit self refresh 
+   PWR_MGMT_CTRL(base) = 0x00000000;
+
+   // launch full leveling
+   READ_WRITE_LEVELING_CONTROL(base) = 0x80000000;     
+   // wait until done.... hmm, how do you know?
+   uDelay();
+   
+   // Configure read data eye leveling
+   config_data_eye_leveling(base);
+
+   // launch 8 incremental write leveling, to compensate for some PHY limitation
+   READ_WRITE_LEVELING_CONTROL(base) = 0x00000002;     
+   uDelay();
+   
+   // launch incremental leveling
+   READ_WRITE_LEVELING_CONTROL(base) = 0x00335973;     
+   uDelay(); 
+}
+
+// this isn't 130us, but it's a delay for sure...
+uDelay()
+{
+ return;
+}
+
+config_data_eye_leveling(int base)
+{
+ 
+  //EMIFn_SDRAM_CONFIG_EXT -- cslice_en[2:0]=111 / Local_odt=01 / dyn_pwrdn=1 / dis_reset=1 / rd_lvl_samples=00 (4)
+  if(base == EMIF4D1_BASE_ADDRESS)
+  {*(int*)(0x4AE0C144)= 0x000001A7;} 
+  if(base == EMIF4D2_BASE_ADDRESS)
+  {*(int*)(0x4AE0C148)= 0x000001A7;} 
+}
+
+dmm_init_board()
+{
+  if(1)
+  {
+    GEL_TextOut(">> START dmm_settings_board \n");
+  }    
+
+	  // SET MA LISA1 register for interleaved memory 
+	  MA_LISA_1_REG(MA_LISA__BASE__ADDR) = MA_LISA_MAP__0__SDRAM_INTERLEAVED_VALUE;
+	  // SET MA LISA1 register for non interleaved memory 
+	  //MA_LISA_1_REG(MA_LISA__BASE__ADDR) = MA_LISA_MAP__0__SDRAM_EMIF1_ONLY_VALUE;
+
+        
+	  /* Write @40 DMM LISA_MAP_0 */
+	  DMM_LISA_MAP_0(DMM_BASE_ADDRESS) = MA_LISA_MAP__0__SDRAM_INTERLEAVED_VALUE; 
+	  //DMM_LISA_MAP_0(DMM_BASE_ADDRESS) = MA_LISA_MAP__0__SDRAM_EMIF1_ONLY_VALUE;            
+  if (1) {
+    GEL_TextOut(">> END dmm_settings_board\n");
+  }
+}

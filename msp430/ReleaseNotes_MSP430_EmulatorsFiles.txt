@@ -1,0 +1,461 @@
+MSP debug probes drivers v8.1.2 - 10/30/2018
+========================================================================================   
+Components:
+--
+    - MSPDebugStack 3.13.1.0
+
+Bug fixes:
+--
+    - Fixed debug probe connection issue on macOS Mojave
+
+MSP debug probes drivers v8.1.1 - 05/15/2018
+========================================================================================   
+Components:
+--
+    - MSPDebugStack 3.13.0.1
+
+New device support:
+--
+    - MSP430FR2355, MSP430FR2353, MSP430FR2155, MSP430FR2153
+
+New features / changes:
+-- 
+    - Added API for detecting connected MSP devices automatically
+    - Added API for retrieving FET and launchpad name
+
+    
+Bug fixes:
+--
+    - Fixed an firmware update issue which could prevent the FET from being detected as CDC after a core update
+
+MSP debug probes drivers v8.0.1 - 02/28/2018
+========================================================================================   
+Components:
+--
+    - MSPDebugStack 3.12.0.4
+
+New device support:
+--
+    - MSP430FR6043, MSP430FR60431, MSP430FR6041, MSP430FR5043, MSP430FR50431, MSP430FR5041
+
+New features / changes:
+-- 
+    - Improved target code download speed by up to 63% (FRAM devices) and 71% (MSP432P devices)
+    - Issuing message whenever FET power supply switches from LDO to ET circuitry or vice versa
+    - Added API function to dump device database (MSP430_DumpDeviceDb)
+    - Added errata handling for DMA4, FLASH31 and CPU20
+
+    
+Bug fixes:
+--
+    - Fixed issuing messages when going through the device db by calling MSP430_Device
+    - Fixed a possible issue when allocation resources to check for nullpointer
+    - Fixed overlapping of HIL and BIOS firmware on MSP-FET which could lead to unecessary firmware updates
+
+MSP debug probes drivers v7.4.0 - 11/30/2017
+========================================================================================   
+Components:
+--
+    - MSPDebugStack 3.11.0.1
+
+New device support in MSPDebugStack:
+--
+    - MSP430FR2522, MSP430FR2512, MSP430FR2422
+    
+Changes/Enhancements:
+--
+    - Added an option on API level to customize JTAG lock key for 5xx devices - see MSP430_Configure() for more details
+    - Added support for MSP432 I2C and UART BSL on the MSP-FET
+    - Showing more detailed progress bar during firmware update
+    - Added FRAM/Flash overwrite functionality on API level
+    - Added support for new eZ-FET rev. 2.0 tool
+    - Switching power supply to on-board LDO on new eZ-FET rev. 2.0 tool while Energy Trace is not used
+    - Disabling write protection on FRAM devices during memory write access  
+
+Bug fixes in MSPDebugStack:
+--
+    - Fixed a possible race condition during USB communication for eZ430 amd MSP-FET430UIF emulation tool
+    - Fixed an issue when trying to erase main memory while MPU protection for the vector table is enabled
+    - Fixed a possible issue when trying to connect to a device which is externally supplied with VCC
+    - Fixed an issue when trying to erase BSL memory on MSP432 and second info memory on MSP432P4111
+    - Fixed an issue when backchannel UART is configured to use even parity
+    - Fixed an issue which prevented warning messages to update properly
+    - Fixed memory access to TinyRAM
+
+MSP debug probes drivers v7.3.0 - 06/23/2017
+========================================================================================   
+Components:
+--
+    - MSPDebugStack 3.10.1.0
+
+New device support in MSPDebugStack:
+--
+    - MSP430FR2100, MSP430FR2000
+    
+Changes/Enhancements:
+--
+    - None    
+
+Bug fixes in MSPDebugStack:
+--
+    - Fixed compiler warnings on Mac
+
+MSP debug probes drivers v7.2.2 - 04/25/2017
+========================================================================================   
+Components:
+--
+    - MSPDebugStack 3.10.0.3
+
+New device support in MSPDebugStack:
+--
+    - MSP430FR6047, MSP430FR60471, MSP430FR6037
+    - MSP430FR60371, MSP430FR6045, MSP430FR6035
+    - MSP432P411V, MSP432P4011
+    - MSP432P401Y, MSP432P401V
+    
+Changes/Enhancements:
+--
+    - Added API function to enable warning during connect if IP protection is enabled on MSP432 device
+    - Extended API to allow disabling/enabling of interrupts when letting the device run or during single step (MSP432)
+    - Extended API to set ultra-low power debug options for MSP432
+    - Decreased firmware update time by reducing firmware image size        
+
+Bug fixes in MSPDebugStack:
+--
+    - Fixed possible race condition when using EnergyTrace
+    - Fixed sector erase issue with BSL memory on MSP432
+
+MSP debug probes drivers v7.1.1 - 02/24/2017
+========================================================================================   
+Components:
+--
+    - MSPDebugStack 3.9.2.15
+
+New device support in MSPDebugStack:
+--
+    - MSP432P4111
+    - MSP432P4111Y
+    
+Changes/Enhancements:
+--
+    - Improve Flash programming performance for MSP432P4xx devices.
+    - Add support for MSP-FET hardware revision 2.04 and 2.05. 
+    - Improve EnergyTrace accuracy for new MSP-FET hardware revision 2.04 and 2.05.          
+    
+Bug fixes in MSPDebugStack:
+--
+    - Fix factory reset for MSP432P4xx devices.
+    - Fix reset issues on eZ-FET lite for MSP430I20xx devices.
+    - Fix timer clock control handling for MSP430F67xx devices.
+   
+MSP debug probes drivers v7.0.5 - 11/24/2016
+========================================================================================
+Components:
+--
+    - MSPDebugStack 3.9.1.2
+    
+New device support in MSPDebugStack:
+--
+    - MSP430FR5992
+    - MSP430FR5962
+    - MSP430FR5964
+    
+Bug fixes in MSPDebugStack:
+--
+    - Fix incorrect clearance of MSP432 datawatchpoints
+    - Handle exception if no emulation manager was created
+
+Operating system debug probe drivers:
+--
+    - Dual signed Windows debug probe drivers for MSP-FET, MSP-FET430UIF, eZ-FET/eZ-FET Lite, eZ430
+    
+MSP Debug Probe drivers package:  
+--
+    - Remove Header & Support files form this package
+
+MSP430 Emulators and Device Support Files v6.3.5.1 - 08/31/2016
+========================================================================================
+Components:
+--
+    - MSPDebugStack 3.9.0.920
+    - Device Support Files v1.193
+    
+New device support in MSPDebugStack:
+--
+    - None
+    
+Bug fixes in MSPDebugStack:
+--
+    - Using binary XML format for device database instead of template files
+    - Masking interrupts when executing flash loader on MSP432
+    - Fixed debug probe detection on Mac OS X El Capitan
+    - Adapt BSL entry sequence according to SYS10 errata
+ 
+Header and Support File Changes:
+--
+    - None
+
+MSP430 Emulators and Device Support Files v6.3.4.6 - 09/16/2016
+========================================================================================
+Components:
+--
+    - MSPDebugStack 3.8.1.0
+    - Device Support Files v1.193
+    
+New device support in MSPDebugStack:
+--
+    - None
+    
+Bug fixes in MSPDebugStack:
+--
+    - None
+ 
+Header and Support File Changes:
+--
+    - Removed invalid INFOMEM definitions in GCC linker files for fr2xx devices
+    - Updated legacy.h with old LEA_SC definitions
+    - Renamed LEA_SC module to LEA (including all registers and other definitions)
+    
+MSP430 Emulators and Device Support Files v6.3.4.4 - 07/05/2016
+========================================================================================
+Components:
+--
+    - MSPDebugStack 3.8.1.0
+    - Device Support Files v1.192
+    
+New device support in MSPDebugStack:
+--
+    - None
+    
+Bug fixes in MSPDebugStack:
+--
+    - Fixed SWD and JTAG communication when JTAG pins are disabled by application
+    - Fixed possible issue during programming of MSP432 device after device has executed
+ 
+Header and Support File Changes:
+--
+    -  Added new ramfunc attribute for MSP430 devices
+
+MSP430 Emulators and Device Support Files v6.3.4.2 - 06/02/2016
+========================================================================================
+Components:
+--
+    - MSPDebugStack 3.8.0.2
+    - Device Support Files v1.191
+    
+New device support in MSPDebugStack:
+--
+    - MSP430FR2111, MSP430FR2110
+    - MSP432P401M 
+    
+Bug fixes in MSPDebugStack:
+--
+    - Fixed DAP unlock when using SWD and JTAG 
+    - RAM backup for FLASH write during debug is implemented
+    - Fix for crashes on MSPDS when debugging MSP432 - use mutexs to lock async. communication
+    - Fix MSPDebugStack unload crashes on WindowsXP. 
+    
+Header and Support File Changes:
+--
+    -  Added SIGNATURE sections in GCC linker command files
+    -  Removed invalid code from generic GCC symbol files
+    -  Added silicon errata switches to GCC compiler options in CCS device XMLs
+    -  Added missing register separator comments in header files for newer MSP430s
+    -  Changed format of multi-JSTATE bit modules in IAR menu files
+    -  Added missing alternate register definitions (RTCCNT) for devices with RTC_C
+
+MSP430 Emulators and Device Support Files v6.3.3.1 - 05/01/2016
+========================================================================================
+Components:
+--    
+    - MSPDebugStack 3.7.0.12
+    - Device Support Files v1.188
+    
+New device support in MSPDebugStack:
+--
+    - No new device support 
+
+Bug fixes in MSPDebugStack:
+--
+    - Export new 32 bit clock control functionality 
+    - Fixed register definitions in GCC header files for FR5994 and FR2311 family
+    - Removed invalid header and support files for FR5994 family devices
+  
+Header and Support File Changes:
+--
+    **IMPORTANT NOTICE**
+    - MSP430 GCC header and linker scripts files update
+        The MSP430 GCC header and linker script files are updated to become similar to the TI MSP430 compiler linker CMD files i.e defining all symbols    in their own linker script.
+        A new file device_symbols.ld is created for every device having all symbols and which has its include in the standard device linker file. This change requires to add a new path in the linker library path.
+        
+        !!As consequence, old existing MSP430 GCC projects will give a linker error once you do the update to the MSP430 Emulators and Device Support Files v6.3.1.8 or later!!
+        
+        This does not affect newly created projects. 
+        
+        Please follow the instructions below to get your projects updated.
+
+        Old files
+            The older header file had a hard-coded address for every MSP430 symbol (base address, registers, addresses )
+            Example, in the msp430f5438a.h file
+            "
+                #define WDTCTL_               0x015C    /* Watchdog Timer Control */
+            "
+            
+        New files        
+            The new MSP430GCC header file does not have those definitions any more, but instead moves its address to a companion linker script that is included by the traditional device's linker script. 
+
+            The new header file for example msp430f5438a.h uses a macro to pass the symbol resolution to linker.
+            "
+                sfr_w(WDTCTL);                                /* Watchdog Timer Control */
+            "
+            In msp430f5438a.ld, the new symbols file (msp430f5438a_symbols.ld) is included at the end to resolve all already defined register and addresses.
+            "            
+                /****************************************************************************/
+                /* Include peripherals memory map                                           */
+                /****************************************************************************/
+                INCLUDE msp430f5438a_symbols.ld
+            "
+            
+MSP430 Emulators and Device Support Files v6.3.1.9 - 02/19/2016
+=======================================================================================
+Components:
+--
+    - MSPDebugStack 3.7.0.12
+    - Device Support Files v1.184
+   
+New device support in MSPDebugStack:
+--
+    - MSP430FR5994, MSP430FR5992, MSP430FR5964, MSP430FR5962, MSP430FR5894, 
+      MSP430FR5892, MSP430FR5864, MSP430FR5862
+    - MSP430FR2311, MSP430FR2310
+    - MSP432P401R
+    
+Enhancements MSPDebugStack:
+--
+    - Implement MSP432P401R SWD and JTAG debug support using the MSP-FET
+        - Basic debug run control
+        - Flash and RAM memory access
+        - Code and Data-Watchpoint support 
+        - Hard and Soft reset support     
+
+Bug fixes in MSPDebugStack:
+--
+    - Info memory is now lockable on I2040 Family
+    - Clock control naming and default correction  
+
+Header and Support File Changes:
+--
+    - added: MSP430FR5994, MSP430FR5992, MSP430FR5964, MSP430FR5962, MSP430FR5894, 
+             MSP430FR5892, MSP430FR5864, MSP430FR5862
+    - added: MSP430FR2311, MSP430FR2310
+    - Revised TAG_ADC10_1 values for applicable devices
+    - Added upper bss section in GCC linker files
+    - Removed invalid LCD definitions in CC430F514x header and support files
+    - Removed invalid ADC10PDIV_3 definitions for MSP430F5247 and related devices
+    - Added CAPTIVATE registers
+    - Added mhwmult option in the GNU Compiler option with the CCS device.xml files
+    - Fixed AESOP_2 and AESOP_3 comments mismatch and typo
+    - Added new GCC linker symbols files
+    - Added missing GCC linker option in CCS xml files
+    - CCS linker file memory regions split
+    - Updated CCS cmd file for IPE signature
+    - CCS linker file: fixed mapping of manual IPE configuration to right memory range
+    - updated a comment in the GCC linker file (.noinit)
+    - Restructured memory segment output for GCC linker files
+    - Added INFO memory tag in IAR menu files
+    - Added BSL memory tag in IAR menu files
+    - Fixed mirrored RAM section for F6659
+    - Changed IAR linker files to support MPU + IPE enabled together
+    - Corrected RAM memory range in lnk430f5359.xcl
+    - Removed 0x400 offset for IPEEND
+    - Add a .ipe_const section for constants in the IPE area in CCS linker files
+    - Added new IAR menu file features requested by IAR
+    - Added ram func. feature for CCS
+    
+MSP430 Emulators and Device Support Files v6.2.1.0 - 10/30/2015
+========================================================================================
+Components:
+--
+    - MSPDebugStack 3.5.1.1
+    - Device Support Files v1.180
+
+New device support MSPDebugStack:
+--
+    - No new device support
+
+Bug fixes MSPDebugStack / debug probes PC drivers:
+--
+    - Update Linux udef rules to handle eZ430 emulators (G2 Launchpad).
+
+Header and Support File Changes:
+--
+    - added: MSP430FR2533, MSP430FR2633, MSP430FR2632, MSP430FR2532
+    - F673xA: added missing 3rd SD24 Channel definition
+    - FR59xx and FR69xx: removed not available defines for SYSSNIV_SVS and SYSSNIV_ACCTEIFG
+    - F677x: fixed wrong define DMAxTSEL__USCIB3TX to DMAxTSEL__USCIA3TX
+    - Improved handling of MPU/IP when both features are active at the same time
+    
+MSP430 Emulators and Device Support Files v6.2.0.1 - 08/11/2015
+========================================================================================
+Components:
+--
+    - MSPDebugStack 3.5.1.1
+    - Device Support Files v1.178
+    
+New device support MSPDebugStack:
+--
+    - MSP430FR2433
+
+Bug fixes MSPDebugStack:
+--
+    - Fixed error handling when reading TI-Txt/Intel Hex files and improved error messages
+    - Removed references to obsolete libraries (DriverX, HIL.dll) in README.txt
+    - Fixed overcurrent detection for JTAG lines on MSP-FET
+    - Fixed issue where flash access during debug could indefinitely trigger
+      oscillator fault flag when using XT1 in high frequency mode
+    - Fixed bug that could cause access violation on Windows after unloading msp430.dll
+    - Fixed possible crash during core and recovery update on some Linux systems
+
+Header and Support File Changes:
+--
+    - FR59xx and FR69xx: removed unavailable defines for SYSSNIV_SVS and SYSSNIV_ACCTEIFG
+    - F677x: fixed wrong define DMAxTSEL__USCIB3TX to DMAxTSEL__USCIA3TX
+    - added: MSP430FR2433
+    - F673xA: added missing 3rd SD24 Channel definition
+
+MSP430 Emulators and Device Support Files v6.1.0.8 - 05/27/2015
+========================================================================================
+Components:
+--
+    - MSPDebugStack 3.5.0.1
+    - Device Support Files v1.173
+    
+New device support MSPDebugStack:
+--
+    - RF430F5175, RF430F5155, RF430F5144
+    - MSP430FR5922(1)
+
+Enhancements MSPDebugStack:
+--
+    - Native 64 BIT OS X 10.9 (Mavericks) support
+        - OS X support for all FET debuggers (MSP-FET430UIF, MSP-FET, eZ-FET/eZ-FET Lite)
+        - OS X support for MSP-FET BSL programming in I2C and UART mode
+        - OS X support for MSP-FET and eZ-FET back channel UART
+        - OS X EnergyTrace support
+    - Remove LPT support including HIL.DLL
+    - Remove LPMx.5 debug support for all F5xx/F6xx and FR57xx devices due to hardware limitation
+        - please refer to device errata for more details
+
+Bug Fixes MSPDebugStack:
+--
+    - Fixed incorrect device string for MSP430FR59221
+    - Fixed that ISR was executed in the background when single stepping
+    - Fixed that ADC12 was running with a too high clock speed on MSP-FET and eZ-FET
+    - Fixed that MSP430FR4133 does not automatically resume running after fuse blow
+    - Fixed race condition between EnergyTrace event and EnergyTrace reset
+    - Fixed that the VMAIFG bit inside the SFR register was set to "1" because of debugger connect
+
+Header and Support File Changes:
+--
+    - Updated Segment size and calculation for FR57xx devices
+    - added Port 7 for MSP430F5239

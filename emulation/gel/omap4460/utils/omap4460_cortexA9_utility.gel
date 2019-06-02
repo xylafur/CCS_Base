@@ -1,0 +1,64 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* OMAP4460 cortexA9 reset config  		     					   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+menuitem "Utility Info"
+/**********************************************************************
+ *
+ *  FUNCTIONS
+ *
+ **********************************************************************/
+hotmenu Sample_DIE_ID_Info()
+{
+
+    int DIE_ID_0  = *(int*)0x4A002200;
+    int ID_CODE	  = *(int*)0x4A002204;
+    int DIE_ID_1  = *(int*)0x4A002208;
+    int DIE_ID_2  = *(int*)0x4A00220C;
+    int DIE_ID_3  = *(int*)0x4A002210;
+    int PROD_ID_0 = *(int*)0x4A002214;
+    int PROD_ID_1 = *(int*)0x4A002218;
+    int silicon_type;
+    
+    
+    silicon_type = (ID_CODE & 0xF0000000) >> 28;
+    
+   /*******************/
+   /* Display DIE ID */
+   /*******************/
+  
+   if  (silicon_type == 0) GEL_TextOut("\n--->>> OMAP 4460 ES 1.0 Device <<<---\n");
+   if  (silicon_type == 1) GEL_TextOut("\n--->>> OMAP 4460 ES 2.0 Device <<<---\n");
+   
+   if  (silicon_type == 3) GEL_TextOut("\n--->>> OMAP 4460 ES 2.1 Device <<<---\n");
+   
+   if  (silicon_type == 4) GEL_TextOut("\n--->>> OMAP 4460 ES 2.2 Device <<<---\n");
+   
+   if  (silicon_type == 5) GEL_TextOut("\n--->>> OMAP 4460 ES 2.2.1 Device <<<---\n");
+   
+   if  (silicon_type == 6) GEL_TextOut("\n--->>> OMAP 4460 ES 2.3 Device <<<---\n");
+
+   GEL_TextOut("\n*********\n",,2,,,);
+   GEL_TextOut("DIE ID\n",,2,,,);
+   GEL_TextOut("*********\n",,2,,,);
+   
+   
+   GEL_TextOut("WAFER X = %d\n\n",,1,,,((DIE_ID_0 & 0x00000FFF) >> 0));
+   GEL_TextOut("WAFER Y = %d\n\n",,1,,,((DIE_ID_0 & 0x00FFF000) >> 12));
+   GEL_TextOut("WAFER NUM = %d\n\n",,1,,,((DIE_ID_0 & 0x3F000000) >> 24));
+
+   GEL_TextOut("LOT NUM   = %d\n\n",,1,,,((DIE_ID_1 & 0x00FFFFFF) >> 0));
+   GEL_TextOut("FAB CODE1 = %d\n\n",,1,,,((DIE_ID_1 & 0x1F000000) >> 24));
+   GEL_TextOut("FAB CODE2 = %d\n\n",,1,,,((DIE_ID_1 & 0xE0000000) >> 29));
+
+   GEL_TextOut("DESIGN REV  = %d\n\n",,1,,,((DIE_ID_3 & 0x0000001F) >> 0));
+ 
+  
+}

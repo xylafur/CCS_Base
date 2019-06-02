@@ -1,0 +1,158 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* L4 CFG     			     					            	   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+memorymap_init_L4_CFG()
+{
+   GEL_MapAddStr(0x4A000000, 0, 0x00000800, "R|W|AS4", 0);  /* L4 CFG configuration AP */
+   GEL_MapAddStr(0x4A000800, 0, 0x00000800, "R|W|AS4", 0);  /* L4 CFG configuration IP */
+   GEL_MapAddStr(0x4A001000, 0, 0x00001000, "R|W|AS4", 0);  /* L4 CFG configuration LA */
+   /* GEL_MapAddStr(0x4A002000, 0, 0x00000008, "R|W|AS4", 0); */  /* Core control module - module */
+   /* GEL_MapAddStr(0x4A002010, 0, 0x00000004, "R|W|AS4", 0); */ /* Core control module - module */
+   /* GEL_MapAddStr(0x4A002100, 0, 0x00000F00, "R|W|AS4", 0); */ /* Core control module - module */
+   GEL_MapAddStr(0x4A002000, 0, 0x00001000, "R|W|AS4", 0);   /*  Core control module - module */
+   GEL_MapAddStr(0x4A003000, 0, 0x00001000, "R|W|AS4", 0);  /* Core control module - L4 interconnect */
+   GEL_MapAddStr(0x4A004000, 0, 0x00001000, "R|W|AS4", 0);  /* CM CORE AON - module */
+   GEL_MapAddStr(0x4A005000, 0, 0x00001000, "R|W|AS4", 0);  /* CM CORE AON - L4 interconnect */
+   GEL_MapAddStr(0x4A008000, 0, 0x00002000, "R|W|AS4", 0);  /* CM CORE - module */
+   GEL_MapAddStr(0x4A00A000, 0, 0x00001000, "R|W|AS4", 0);  /* CM CORE - L4 interconnect */
+   GEL_MapAddStr(0x4A020000, 0, 0x00020000, "R|W|AS4", 0);  /* USB OTG SS - module */
+   GEL_MapAddStr(0x4A040000, 0, 0x00001000, "R|W|AS4", 0);  /* USB OTG SS - L4 interconnect */
+   GEL_MapAddStr(0x4A056000, 0, 0x00001000, "R|W|AS4", 0);  /* System DMA configuration - module */
+   GEL_MapAddStr(0x4A057000, 0, 0x00001000, "R|W|AS4", 0);  /* System DMA configuration - L4 interconnect */
+   GEL_MapAddStr(0x4A058000, 0, 0x00001000, "R|W|AS4", 0);  /* HSI Top - module */
+   GEL_MapAddStr(0x4A059000, 0, 0x00001000, "R|W|AS4", 0);  /* HSI DMA - module */
+   GEL_MapAddStr(0x4A05A000, 0, 0x00001000, "R|W|AS4", 0);  /* HSI PORT1 - module */
+   GEL_MapAddStr(0x4A05B000, 0, 0x00001000, "R|W|AS4", 0);  /* HSI PORT2 - module */
+   GEL_MapAddStr(0x4A05C000, 0, 0x00001000, "R|W|AS4", 0);  /* HSI - L4 interconnect */
+   GEL_MapAddStr(0x4A05E000, 0, 0x00002000, "R|W|AS4", 0);  /* SAR_ROM - module */
+   GEL_MapAddStr(0x4A060000, 0, 0x00001000, "R|W|AS4", 0);  /* SAR_ROM - L4 interconnect */
+   GEL_MapAddStr(0x4A062000, 0, 0x00001000, "R|W|AS4", 0);  /* TLL module configuration - module */
+   GEL_MapAddStr(0x4A063000, 0, 0x00001000, "R|W|AS4", 0);  /* TLL module configuration - L4 interconnect */
+   GEL_MapAddStr(0x4A064000, 0, 0x00001000, "R|W|AS4", 0);  /* HSUSB Multi-ports configuration  - module */
+   GEL_MapAddStr(0x4A065000, 0, 0x00001000, "R|W|AS4", 0);  /* HSUSB Multi-ports configuration - L4 interconnect */
+   GEL_MapAddStr(0x4A066000, 0, 0x00001000, "R|W|AS4", 0);  /* TESLA-T configuration - module */
+   GEL_MapAddStr(0x4A067000, 0, 0x00001000, "R|W|AS4", 0);  /* TESLA-T configuration - L4 interconnect */   
+   GEL_MapAddStr(0x4A068000, 0, 0x00004000, "R|W|AS4", 0);  /* UNIPRO1 configuration - module */
+   GEL_MapAddStr(0x4A06C000, 0, 0x00001000, "R|W|AS4", 0);  /* UNIPRO1 configuration - L4 interconnect */   
+   GEL_MapAddStr(0x4A06D000, 0, 0x00001000, "R|W|AS4", 0);  /* BB2D configuration - module */
+   GEL_MapAddStr(0x4A06E000, 0, 0x00001000, "R|W|AS4", 0);  /* BB2D configuration - L4 interconnect */   
+   GEL_MapAddStr(0x4A070000, 0, 0x00004000, "R|W|AS4", 0);  /* UNIPRO2 configuration - module */
+   GEL_MapAddStr(0x4A074000, 0, 0x00001000, "R|W|AS4", 0);  /* UNIPRO2 configuration - L4 interconnect */   
+   GEL_MapAddStr(0x4A075000, 0, 0x00001000, "R|W|AS4", 0);  /* CAL configuration - module */
+   GEL_MapAddStr(0x4A076000, 0, 0x00001000, "R|W|AS4", 0);  /* CAL configuration - L4 interconnect */
+   
+   GEL_MapAddStr(0x4A080000, 0, 0x00004000, "R|W|AS4", 0);  /* OCP2SP1 */
+   GEL_MapAddStr(0x4A084000, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP1 USB PHY */
+   GEL_MapAddStr(0x4A084400, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP1 USB3RX PHY USB */
+   GEL_MapAddStr(0x4A084800, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP1 USB3TX PHY USB */
+   GEL_MapAddStr(0x4A084C00, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP1 DPLLCTRL USB OTG */
+   GEL_MapAddStr(0x4A088000, 0, 0x00001000, "R|W|AS4", 0);  /* OCP2SP1 - L4 interconnect */
+   
+   GEL_MapAddStr(0x4A090000, 0, 0x00004000, "R|W|AS4", 0);  /* OCP2SP3 */
+   GEL_MapAddStr(0x4A094000, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP3 UNIPRO 2_0 RX PHY USB */
+   GEL_MapAddStr(0x4A094400, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP3 UNIPRO 2_0 TX PHY USB */
+   GEL_MapAddStr(0x4A094800, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP3 UNIPRO 2_1 RX PHY USB */
+   GEL_MapAddStr(0x4A094C00, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP3 UNIPRO 2_1 TX PHY USB */
+   GEL_MapAddStr(0x4A095000, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP3 UNIPRO 2_2 RX PHY USB */
+   GEL_MapAddStr(0x4A096000, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP1 USB3RX PHY SATA */
+   GEL_MapAddStr(0x4A096400, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP1 USB3TX PHY SATA */
+   GEL_MapAddStr(0x4A096800, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP1 DPLLCTRL SATA */
+   GEL_MapAddStr(0x4A098000, 0, 0x00001000, "R|W|AS4", 0);  /* OCP2SP3 - L4 interconnect */
+   
+   GEL_MapAddStr(0x4A0A0000, 0, 0x00004000, "R|W|AS4", 0);  /* OCP2SP2 */
+   GEL_MapAddStr(0x4A0a4000, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP2 LLIA 0 RX PHY USB */
+   GEL_MapAddStr(0x4A0A4400, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP2 LLIA 0 TX PHY USB */
+   GEL_MapAddStr(0x4A0A5000, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP2 LLIA 1 RX PHY USB */
+   GEL_MapAddStr(0x4A0A5400, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP2 LLIA 1 TX PHY USB */
+   GEL_MapAddStr(0x4A0A6000, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP2 LLIA 2 RX PHY USB */
+   GEL_MapAddStr(0x4A0A6400, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP2 LLIA 2 TX PHY USB */
+   GEL_MapAddStr(0x4A0A8000, 0, 0x00000400, "R|W|AS4", 0);  /* OCP2SP2 - L4 interconnect */
+   
+   GEL_MapAddStr(0x4A0B6000, 0, 0x00001000, "R|W|AS4", 0);  /* ICR MPU Port - module */
+   GEL_MapAddStr(0x4A0B7000, 0, 0x00001000, "R|W|AS4", 0);  /* ICR MPU Port - L4 interconnect */
+   GEL_MapAddStr(0x4A0CD000, 0, 0x00001000, "R|W|AS4", 0);  /* ICR MODEM Port - module */
+   GEL_MapAddStr(0x4A0CE000, 0, 0x00001000, "R|W|AS4", 0);  /* ICR MODEM Port - L4 interconnect */
+   GEL_MapAddStr(0x4A0D9000, 0, 0x00001000, "R|W|AS4", 0);  /* SR MPU - module */
+   GEL_MapAddStr(0x4A0DA000, 0, 0x00001000, "R|W|AS4", 0);  /* SR MPU - L4 interconnect */
+   GEL_MapAddStr(0x4A0DB000, 0, 0x00001000, "R|W|AS4", 0);  /* SR IVA - module */
+   GEL_MapAddStr(0x4A0DC000, 0, 0x00001000, "R|W|AS4", 0);  /* SR IVA - L4 interconnect */
+   GEL_MapAddStr(0x4A0DD000, 0, 0x00001000, "R|W|AS4", 0);  /* SR CORE - module */
+   GEL_MapAddStr(0x4A0DE000, 0, 0x00001000, "R|W|AS4", 0);  /* SR CORE - L4 interconnect */
+   GEL_MapAddStr(0x4A0E0000, 0, 0x00001000, "R|W|AS4", 0);  /* CPFROM - module */
+   GEL_MapAddStr(0x4A0E1000, 0, 0x00001000, "R|W|AS4", 0);  /* CPFROM - L4 interconnect */
+   GEL_MapAddStr(0x4A0F4000, 0, 0x00001000, "R|W|AS4", 0);  /* MAILBOX - module */
+   GEL_MapAddStr(0x4A0F5000, 0, 0x00001000, "R|W|AS4", 0);  /* MAILBOX - L4 interconnect */
+   GEL_MapAddStr(0x4A0F6000, 0, 0x00001000, "R|W|AS4", 0);  /* SPIN LOCK - module */
+   GEL_MapAddStr(0x4A0F7000, 0, 0x00001000, "R|W|AS4", 0);  /* SPIN LOCK - L4 interconnect */
+   GEL_MapAddStr(0x4A102000, 0, 0x00001000, "R|W|AS4", 0);  /* OCPWP Shared - module */
+   GEL_MapAddStr(0x4A103000, 0, 0x00001000, "R|W|AS4", 0);  /* OCPWP Shared - L4 interconnect */
+   /* GEL_MapAddStr(0x4A104000, 0, 0x00001000, "R|W|AS4", 0); */  /* OCPWP EMIF1 - module */
+   /* GEL_MapAddStr(0x4A105000, 0, 0x00001000, "R|W|AS4", 0); */ /* OCPWP EMIF1 - L4 interconnect */
+   /* GEL_MapAddStr(0x4A106000, 0, 0x00001000, "R|W|AS4", 0); */ /* OCPWP EMIF2 - module */
+   /* GEL_MapAddStr(0x4A107000, 0, 0x00001000, "R|W|AS4", 0); */ /* OCPWP EMIF2 - L4 interconnect */ 
+   GEL_MapAddStr(0x4A108000, 0, 0x00001000, "R|W|AS4", 0);  /* P1500T - module */
+   GEL_MapAddStr(0x4A109000, 0, 0x00001000, "R|W|AS4", 0);  /* P1500T - L4 interconnect */
+   GEL_MapAddStr(0x4A10A000, 0, 0x00001000, "R|W|AS4", 0);  /* FDIF - module */ 
+   GEL_MapAddStr(0x4A10B000, 0, 0x00001000, "R|W|AS4", 0);  /* FDIF - L4 interconnect */
+   
+   GEL_MapAddStr(0x4A140000, 0, 0x00010000, "R|W|AS4", 0);  /* SATA - module */ 
+   GEL_MapAddStr(0x4A150000, 0, 0x00010000, "R|W|AS4", 0);  /* SATA - L4 interconnect */
+   
+   GEL_MapAddStr(0x4A202000, 0, 0x00001000, "R|W|AS4", 0);  /* LLI OCP FW - module */ 
+   GEL_MapAddStr(0x4A203000, 0, 0x00001000, "R|W|AS4", 0);  /* LLI OCP FW - L4 interconnect */
+   
+   GEL_MapAddStr(0x4A204000, 0, 0x00001000, "R|W|AS4", 0);  /* C2C I Fw - module */ 
+   GEL_MapAddStr(0x4A205000, 0, 0x00001000, "R|W|AS4", 0);  /* C2C I Fw - L4 interconnect */
+   GEL_MapAddStr(0x4A206000, 0, 0x00001000, "R|W|AS4", 0);  /* C2C T Fw - module */ 
+   GEL_MapAddStr(0x4A207000, 0, 0x00001000, "R|W|AS4", 0);  /* C2C T Fw - L4 interconnect */
+   
+   GEL_MapAddStr(0x4A208000, 0, 0x00001000, "R|W|AS4", 0);  /* LLI - module */ 
+   GEL_MapAddStr(0x4A209000, 0, 0x00001000, "R|W|AS4", 0);  /* LLI - L4 interconnect */
+   
+   GEL_MapAddStr(0x4A20A000, 0, 0x00001000, "R|W|AS4", 0);  /* MA FW - module */
+   GEL_MapAddStr(0x4A20B000, 0, 0x00001000, "R|W|AS4", 0);  /* MA FW - L4 interconnect */
+   GEL_MapAddStr(0x4A20C000, 0, 0x00001000, "R|W|AS4", 0);  /* EMIF FW - module */
+   GEL_MapAddStr(0x4A20D000, 0, 0x00001000, "R|W|AS4", 0);  /* EMIF FW - L4 interconnect */
+   GEL_MapAddStr(0x4A210000, 0, 0x00001000, "R|W|AS4", 0);  /* GPMC FW - module */
+   GEL_MapAddStr(0x4A211000, 0, 0x00001000, "R|W|AS4", 0);  /* GPMC FW - L4 interconnect */
+   GEL_MapAddStr(0x4A212000, 0, 0x00001000, "R|W|AS4", 0);  /* OCMCRAM FW - module */
+   GEL_MapAddStr(0x4A213000, 0, 0x00001000, "R|W|AS4", 0);  /* OCMCRAM FW - L4 interconnect */
+   GEL_MapAddStr(0x4A214000, 0, 0x00001000, "R|W|AS4", 0);  /* GFX FW - module */
+   GEL_MapAddStr(0x4A215000, 0, 0x00001000, "R|W|AS4", 0);  /* GFX FW - L4 interconnect */
+   GEL_MapAddStr(0x4A216000, 0, 0x00001000, "R|W|AS4", 0);  /* ISS FW - module */
+   GEL_MapAddStr(0x4A217000, 0, 0x00001000, "R|W|AS4", 0);  /* ISS FW - L4 interconnect */
+   GEL_MapAddStr(0x4A218000, 0, 0x00001000, "R|W|AS4", 0);  /* IPU FW - module */
+   GEL_MapAddStr(0x4A219000, 0, 0x00001000, "R|W|AS4", 0);  /* IPU FW - L4 interconnect */
+   GEL_MapAddStr(0x4A21C000, 0, 0x00001000, "R|W|AS4", 0);  /* DSS FW - module */
+   GEL_MapAddStr(0x4A21D000, 0, 0x00001000, "R|W|AS4", 0);  /* DSS FW - L4 interconnect */
+   GEL_MapAddStr(0x4A21E000, 0, 0x00001000, "R|W|AS4", 0);  /* SL2 FW - module */
+   GEL_MapAddStr(0x4A21F000, 0, 0x00001000, "R|W|AS4", 0);  /* SL2 FW - L4 interconnect */
+   GEL_MapAddStr(0x4A220000, 0, 0x00001000, "R|W|AS4", 0);  /* IVAHD FW - module */
+   GEL_MapAddStr(0x4A221000, 0, 0x00001000, "R|W|AS4", 0);  /* IVAHD FW - L4 interconnect */
+   
+   GEL_MapAddStr(0x4A222000, 0, 0x00001000, "R|W|AS4", 0);  /* CAL FW - module */
+   GEL_MapAddStr(0x4A223000, 0, 0x00001000, "R|W|AS4", 0);  /* CAL FW - L4 interconnect */
+   GEL_MapAddStr(0x4A224000, 0, 0x00001000, "R|W|AS4", 0);  /* DEBUGSS FW - module */
+   GEL_MapAddStr(0x4A225000, 0, 0x00001000, "R|W|AS4", 0);  /* DEBUGSS FW - L4 interconnect */  
+   
+   
+   GEL_MapAddStr(0x4A226000, 0, 0x00001000, "R|W|AS4", 0);  /* L3 INSTR FW - module */
+   GEL_MapAddStr(0x4A227000, 0, 0x00001000, "R|W|AS4", 0);  /* L3 INSTR FW - L4 interconnect */
+   GEL_MapAddStr(0x4A228000, 0, 0x00001000, "R|W|AS4", 0);  /* ABE FW - module */
+   GEL_MapAddStr(0x4A229000, 0, 0x00001000, "R|W|AS4", 0);  /* ABE FW - L4 interconnect */
+   GEL_MapAddStr(0x4A22A000, 0, 0x00001000, "R|W|AS4", 0);  /* CRYPTO FW - module */
+   GEL_MapAddStr(0x4A22B000, 0, 0x00001000, "R|W|AS4", 0);  /* CRYPTO FW - L4 interconnect */
+    
+    }
+    
+ 
+    
+    

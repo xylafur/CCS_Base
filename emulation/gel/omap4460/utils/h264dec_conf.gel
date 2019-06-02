@@ -1,0 +1,281 @@
+menuitem "h264_decode"
+
+hotmenu h264Dec_LoadTestProg()
+{
+    GEL_Load("S:/cdb/tcomap4440/tc_ivahd/ivahd_ducati_dec_frwk_board/cortexa9_cpu0_ape/cortexa9_cpu0_ape_silicon_image.axf");
+
+}
+
+hotmenu h264dec_GoToTestEntry()
+{
+	GEL_Go(M3DECFRWK_TestFunction);
+}
+
+dialog Decoderh264_config(stream_idx  "Index of the stream to play (-1 if useless)",
+					     image_width "image width",
+					     image_height "image height",	
+						 Stream_size "Stream size",					 
+                          disp_delay "Display Delay",
+                          tiler_on "0:RAW mode;1:Tiler mode",
+                          chroma_container "Chroma container:0 8 bits;1:16 bits",
+                          input_src "Input from: 1 DDR ;2 HD;3: MMC;4 EMMC",
+						  stream_idx_0 " 1st Stream index (loop mode)",
+						  stream_idx_1 "Last stream index (loop mode)",
+						  nb_runs "Number of iterations on stream",
+						  sw_uart "Use SW uart:0 NO / 1: YES)"
+                          )
+{
+
+     DisplayDelay =  disp_delay;
+     if (stream_idx != -1)
+		stream_id = stream_idx;
+	else
+	{
+	   InputWidth = image_width;
+	   InputHeight = image_height;	
+	   StreamSize = Stream_size;
+	}
+	 flag_data_loaded = input_src; 
+	
+	tiler_mode  = tiler_on    ;
+	if (tiler_mode == 1) {
+		chroma_tiled_mode = chroma_container    ;
+	}
+	
+	ScreenWidth = 1280; 
+	ScreenHeight = 720; 
+    
+    display_rate_us = 33333 ;
+	if (stream_idx_0  > 0 )
+	{
+		demo_loop =1;
+		if (stream_idx_0  < 2)
+			stream_id_min = 2;
+		else
+			stream_id_min = stream_idx_0;
+		 if (stream_idx_1 > 11)
+			stream_id_max =11;
+		else
+			stream_id_max = stream_idx_1;
+			
+		nb_run_to_launch =nb_runs *(stream_id_max-stream_id_min +1);
+	}
+	else
+	{
+		demo_loop =0;
+		nb_run_to_launch =nb_runs ;
+	}
+	use_sw_uart = sw_uart;
+}
+
+dialog Decoderh264_config_emmc(stream_idx  "Index of the stream to play ",
+                          tiler_on "0:RAW mode;1:Tiler mode",
+                          chroma_container "Chroma container:0 8 bits;1:16 bits",
+						  nb_runs "Number of iterations on stream",
+						  disp_on "Diplay: 0:OFF- 1: ON",
+						  sw_uart "Use SW uart:0 NO / 1: YES)"
+                          )
+{
+
+ 	stream_id = stream_idx;
+	if ((stream_id > 0) && (stream_id < 20))
+		flag_data_loaded = 4; // load from emmc
+	else // unknown stream id use default embedded stream
+		flag_data_loaded = 1;
+
+	tiler_mode  = tiler_on    ;
+	chroma_tiled_mode = chroma_container    ;
+	
+    
+    display_rate_us = 33333 ;
+
+	nb_run_to_launch =nb_runs ;
+	use_sw_uart = sw_uart;
+	flag_display_on = disp_on;
+}
+
+dialog Decoderh264_config_opp(stream_idx  "Index of the stream to play ",
+                          tiler_on "0:RAW mode;1:Tiler mode",
+                          chroma_container "Chroma container:0 8 bits;1:16 bits",
+						  nb_runs "Number of iterations on stream",
+                          input_src "Input from: 1 DDR ;2 HD;3: MMC;4 EMMC;5:GEL",
+						  opp "Target OPP:1 OPP50-2 OPP100-3 OPPTurbo-4 OPPNitro:" ,
+						  flag_loop "1:same opp/stream-2 toggle opp/stream",
+						  disp_on "Diplay: 0:OFF- 1: ON",
+						  sw_uart "Use SW uart:0 NO / 1: YES)"
+                          )
+{
+
+ 	stream_id = stream_idx;
+   	if ((stream_id < 0) && (stream_id > 20))
+   		stream_id = 4; // force 720p
+   flag_data_loaded = input_src; // load from emmc or ddr
+
+	tiler_mode  = tiler_on    ;
+	chroma_tiled_mode = chroma_container    ;
+	   
+    display_rate_us = 33333 ;
+
+	nb_run_to_launch =nb_runs ;
+	
+	if (flag_loop == 0 ){
+	// for 4460 only
+	    target_iva_opp = opp+1;
+		// for 4430 resp 4 6 12 13
+		flag_test_ivahd_opp = 1;
+	}
+	else if (flag_loop == 1)
+	{
+		flag_test_ivahd_opp = 1;
+	}
+	else if (flag_loop == 2)
+	{
+		flag_test_ivahd_opp = 3;
+	}
+	use_sw_uart = sw_uart;		
+	flag_display_on = disp_on;
+
+}
+
+dialog Decoderh264_config_mmc(stream_idx  "Index of the stream to play ",
+                          tiler_on "0:RAW mode;1:Tiler mode",
+                          chroma_container "Chroma container:0 8 bits;1:16 bits",
+						  nb_runs "Number of iterations on stream",
+						  disp_on "Diplay: 0:OFF- 1: ON",
+						  sw_uart "Use SW uart:0 NO / 1: YES)"
+                          )
+{
+
+ 	stream_id = stream_idx;
+   flag_data_loaded = 3; // load from mmc / sd
+	
+	tiler_mode  = tiler_on    ;
+	chroma_tiled_mode = chroma_container    ;
+	   
+    display_rate_us = 33333 ;
+
+	nb_run_to_launch =nb_runs ;
+	use_sw_uart = sw_uart;
+	flag_display_on = disp_on;
+}
+
+dialog Decoderh264_config_ddr(tiler_on "0:RAW mode;1:Tiler mode",
+	                          chroma_container "Chroma container:0 8 bits;1:16 bits",
+							  nb_runs "Number of iterations on stream",
+						      disp_on "Diplay: 0:OFF- 1: ON",
+							  sw_uart "Use SW uart:0 NO / 1: YES)"
+                          )
+{
+
+ 	stream_id = -1;
+   flag_data_loaded = 1; // load from ddr
+	
+	tiler_mode  = tiler_on    ;
+	chroma_tiled_mode = chroma_container    ;
+	   
+    display_rate_us = 33333 ;
+
+	nb_run_to_launch =nb_runs ;
+	use_sw_uart = sw_uart;
+	flag_display_on = disp_on;
+}
+
+dialog Decoderh264_reg_loop(tiler_on "0:RAW mode;1:Tiler mode",
+                          chroma_container "Chroma container:0 8 bits;1:16 bits",
+						  stream_idx_0  "Index of the 1st stream to play ",
+						  stream_idx_1  "Index of the last stream to play ",
+						  disp_on "Diplay: 0:OFF- 1: ON",
+						  sw_uart "Use SW uart:0 NO / 1: YES)"
+                          )
+{
+
+ 	stream_id_min = stream_idx_0;
+  	stream_id_max = stream_idx_1;
+	stream_id = stream_id_min;
+	demo_loop = 1;
+	flag_data_loaded = 4; // load from emmc
+
+	tiler_mode  = tiler_on    ;
+	chroma_tiled_mode = chroma_container    ;
+	
+    
+    display_rate_us = 33333 ;
+
+	nb_run_to_launch =stream_id_max - stream_id_min +1;
+	
+	use_sw_uart = sw_uart;
+	flag_display_on = disp_on;
+}
+
+// address where M3 pas sa9 the tiler param
+#define M3_0_A9_SYNC_WORD_ADDR     0x83ffff00
+#define M3_1_A9_SYNC_WORD_ADDR     0x84ffff00
+// addr where a9 returns DMM param
+#define DMM_PARAM_ADDR  (M3_A9_SYNC_WORD_ADDR +0x80)
+
+#define M3_A9_SYNC_WORD_IDX              0
+// parameter from a9 to m3
+#define M3_A9_DEC_PARAM_START_IDX        1
+// parameter from m3 to a9 for display
+
+// word to be written by m3 to inform a9 that application code is loaded
+#define M3_A9_SYNC_WORD_START                 0x40302010
+#define M3_A9_SYNC_WORD_INIT_OK         0x8596a7b8
+#define M3_A9_SYNC_WORD_END_OK          0x81716151
+#define M3_A9_SYNC_WORD_END_NOK         0xf7e6d5c4
+
+#define M3_A9_SYNC_WORD_FRAME_END                0x63748596
+#define M3_A9_SYNC_WORD_FRAME_DISPLAYED           0x95847364
+#define M3_A9_SYNC_WORD_FRAME_READY_TO_DISPLAY    0xa8b7c6d5
+
+menuitem "M3_0_9_SYNC"
+hotmenu SEND_M3_0_APPLI_LOADED()
+{
+      *(unsigned *)M3_0_A9_SYNC_WORD_ADDR = M3_A9_SYNC_WORD_START;
+}
+
+hotmenu SEND_M3_0_INIT_OK()
+{
+      *(unsigned *)M3_0_A9_SYNC_WORD_ADDR = M3_A9_SYNC_WORD_INIT_OK;
+}
+
+hotmenu SEND_M3_0_FRAME_DECODED()
+{
+      *(unsigned *)M3_0_A9_SYNC_WORD_ADDR = M3_A9_SYNC_WORD_FRAME_END;
+}
+hotmenu SEND_M3_0_FRAME_DISPLAYED()
+{
+      *(unsigned *)M3_0_A9_SYNC_WORD_ADDR = M3_A9_SYNC_WORD_FRAME_DISPLAYED;
+}
+hotmenu SEND_M3_0_END_OF_STREAM_OK()
+{
+      *(unsigned *)M3_0_A9_SYNC_WORD_ADDR = M3_A9_SYNC_WORD_END_OK;
+}
+hotmenu SEND_M3_0_END_OF_STREAM_NOK()
+{
+      *(unsigned *)M3_0_A9_SYNC_WORD_ADDR = M3_A9_SYNC_WORD_END_NOK;
+}
+
+menuitem "init_ivahd"
+hotmenu omap4430_ivahd_init()
+{
+ *(int*)0x4A306F10 = 0x00000007; // ASSERT RESET
+  // Set Force wakeUp domain transition
+   // IVAHD_CM2:CM_IVAHD_CLKSTCTRL = SW_WKUP
+
+    *(int*)0x4A008F00 = 0x00000002; // TO KEEP NEED TO TEST
+
+    // IVAHD_CM2:CM_IVAHD_IVAHD_CLKCTRL
+    *(int*)0x4A008F20 = 0x00000001; // TO KEEP NEED TO TEST
+
+    // IVAHD_CM2:CM_IVAHD_SL2_CLKCTRL
+    *(int*)0x4A008F28 = 0x00000001; // TO KEEP NEED TO TEST
+
+    //POWERSTATE : IVAHD_PRM:PM_IVAHD_PWRSTCTRL 
+   *(int*)0x4A306F00 = 0x00000003; // TO KEEP NEED TO TEST
+
+    *(int*)0x4A306F10 = 0x00000000; // RELEASE RESET
+
+
+}
+

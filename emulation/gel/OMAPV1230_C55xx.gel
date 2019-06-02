@@ -1,0 +1,374 @@
+/* This GEL file is loaded on the command line of Code Composer 
+ * The StartUp() function is called every time you start
+ * Code Composer.  You can customize this function to
+ * initialize wait states or to perform other initialization.
+ * 
+ * MGS3 GEL file is used for ARM9 and Megastar3 co-emulation:
+ *
+ * Revision 0.0:
+ * 	  Dec-2-2004    Jean-Marie PONS
+ *        Nov-18-2005    Madhav Vij
+ *							
+ */
+
+StartUp()
+{
+  GEL_MapOff();
+
+  /* Memory mapping */
+  GEL_MapReset();
+  
+  memorymap_init(); 
+
+  /* Enable New memory map */
+  GEL_MapOn();
+
+  GEL_TextOut("---->>>  End of StartUp() procedure!  <<<----\n");
+}  
+
+OnTargetConnect()
+{
+
+  Trstn_Reset();
+
+  /* Report Startup is done */
+  GEL_TextOut("StartUp done\n");
+}
+
+menuitem "MGS3 GEL File - N3G";
+
+OnReset()
+{
+    watchdog_disable();
+
+   *(short *)0xE00@IO = 0x0C; 	// Set GDMA free bit (allows ARM API accesses even if
+			   	// DSP generates a bus error which would have prevented
+                                                       // this)
+}
+
+
+hotmenu EnablePeripherals() 
+{
+  *(short *)0x4004@IO = 0x0036;
+  *(short *)0x400A@IO = 0x0003;
+}
+
+/* Initialize Megastar3 Test Mode Control Registers(TMCR) */ 
+dialog Trstn_Reset() 
+{
+#define TMCR_MGS3	0x07FE 
+#define TMCR_MM		0x07FF
+  *(short *)TMCR_MGS3@IO = 0x0510;
+  *(short *)TMCR_MM@IO    = 0x0000;
+}
+
+dialog watchdog_disable()
+{
+  /* Disable Megastar3 Watchdog Timer */
+  *(short *)0x3404@IO = 0xF5;
+  *(short *)0x3404@IO = 0xA0;
+   GEL_TextOut("watchdog_disable\n");
+}
+
+dialog memorymap_init()
+{
+
+  /* Reset default memory map */
+  GEL_MapReset();
+
+  /* Internal Memory mapping */
+  GEL_MapAdd(0x000000U, 1, 0x01A000U, 1, 1);   /* Data space */
+  GEL_MapAdd(0x000000U, 0, 0x034000U, 1, 1);   /* Program space */
+  GEL_MapAdd(0xFA0000U, 0, 0x060000U, 1, 0);   /* PDROM */
+  
+  /* External memory mapping */
+  /* WARNING: This memory is available only
+              after DSP MMU programming.
+              Memory map match helen2_dsp_mmu_mapping.h file.
+              Memory is mapped to both program and data section. */
+
+  GEL_MapAdd(0x080000U, 1, 0x002000U, 1, 1);   /* Test SRAM Data    Space */
+  GEL_MapAdd(0x100000U, 0, 0x004000U, 1, 1);   /* Test SRAM Program Space */
+
+  GEL_MapAdd(0x100000U, 1, 0x300000U, 1, 1);   /* SDRAM Data    Space */
+  GEL_MapAdd(0x200000U, 0, 0x600000U, 1, 1);   /* SDRAM Program Space */
+
+  GEL_MapAdd(0x400000U, 1, 0x100000U, 1, 0);   /* Strata1 Flash Data    Space */
+  GEL_MapAdd(0x800000U, 0, 0x200000U, 1, 0);   /* Strata1 Flash Program Space */
+
+  GEL_MapAdd(0x500000U, 1, 0x100000U, 1, 0);   /* Strata2 Flash Data    Space */
+  GEL_MapAdd(0xA00000U, 0, 0x200000U, 1, 0);   /* Strata2 Flash Program Space */
+
+  GEL_MapAdd(0x600000U, 1, 0x100000U, 1, 0);   /* AMD Flash Data    Space */
+  GEL_MapAdd(0xC00000U, 0, 0x200000U, 1, 0);   /* AMD Flash Program Space */
+
+  /* TODO: Verify SSI/GDD memory map */
+  GEL_MapAdd(0x040000U, 1, 0x008000U, 1, 1);   /* SSI Data    Space */
+  GEL_MapAdd(0x040800U, 1, 0x008000U, 1, 1);   /* GDD Data    Space */
+
+
+  /************************/
+  /* DSP TIPB peripherals */
+  /************************/
+  
+  /* ---------------- */
+  /* DSP Private TIPB */
+  /* ---------------- */
+  GEL_MapAddStr(0x0400, 2, 0x07F8, "R|W|AS2", 4); /* EMULATOR-TEST */
+
+  GEL_MapAddStr(0x0800, 2, 0x0014, "R|W|AS2", 4); /* EMIF */
+
+  GEL_MapAddStr(0x0E00, 2, 0x0004, "R|W|AS2", 4); /* DMA Control registers*/
+  GEL_MapAddStr(0x0C00, 2, 0x0013, "R|W|AS2", 4); /* DMA Channel 0 */
+  GEL_MapAddStr(0x0C20, 2, 0x0013, "R|W|AS2", 4); /* DMA Channel 1 */
+  GEL_MapAddStr(0x0C40, 2, 0x0013, "R|W|AS2", 4); /* DMA Channel 2 */ 
+  GEL_MapAddStr(0x0C60, 2, 0x0013, "R|W|AS2", 4); /* DMA Channek 3 */
+  GEL_MapAddStr(0x0C80, 2, 0x0013, "R|W|AS2", 4); /* DMA Channel 4 */
+  GEL_MapAddStr(0x0CA0, 2, 0x0013, "R|W|AS2", 4); /* DMA Channel 5 */
+
+  GEL_MapAddStr(0x1400, 2, 0x0009, "R|W|AS2", 4); /* Instruction Cache */
+  GEL_MapAddStr(0x1600, 2, 0x0080, "R|W|AS2", 4);
+
+  /* OS timers: Missing read registers */
+  GEL_MapAddStr(0x2800, 2, 0x0001, "R|W|AS2", 4); /* OS TIMER1 */
+  GEL_MapAddStr(0x2802, 2, 0x0004, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0x2C00, 2, 0x0001, "R|W|AS2", 4); /* OS TIMER2 */
+  GEL_MapAddStr(0x2C02, 2, 0x0004, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0x3000, 2, 0x0001, "R|W|AS2", 4); /* OS TIMER3 */
+  GEL_MapAddStr(0x3002, 2, 0x0004, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0x3400, 2, 0x0001, "R|W|AS2", 4); /* WATCHDOG TIMER */
+  GEL_MapAddStr(0x3404, 2, 0x0001, "R|W|AS2", 4);
+
+  /* TODO: Find register description
+  GEL_MapAddStr(0x3800, 2, 0x0400, "R|W|AS2", 4); /* DSPINT_IF Interrupt Priority */
+
+  /* ------------------------ */
+  /* DSP Public TIPB Strobe 0 */
+  /* ------------------------ */
+  GEL_MapAddStr(0x0000, 2, 0x0001, "R|W|AS2", 4); /* RHEA Configuration */
+  GEL_MapAddStr(0x0002, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x0004, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x0006, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x0008, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x000A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x000C, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x000E, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x0010, 2, 0x0001, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0x2000, 2, 0x0400, "R|W|AS2", 4); /* TRACE */
+
+  GEL_MapAddStr(0x4000, 2, 0x0001, "R|W|AS2", 4); /* CLKM2 */
+  GEL_MapAddStr(0x4002, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x4004, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x4006, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x4008, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x400A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x400C, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x400E, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x4010, 2, 0x0001, "R|W|AS2", 4);
+
+
+  /* TODO: Verify that DSP MMU is mapped to DSP IO space
+  GEL_MapAddStr(0x4400, 2, 0x0400, "R|W|AS2", 4); /* DSP MMU */
+
+  GEL_MapAddStr(0x4800, 2, 0x0026, "R|W|AS2", 4); /* Interrupt Handler level 2.0 */
+
+  GEL_MapAddStr(0x4C00, 2, 0x0400, "R|W|AS2", 4); /* Interrupt Handler level 2.1 */
+  
+  /* ------------------------ */
+  /* DSP Public TIPB Strobe 1 */
+  /* ------------------------ */
+  GEL_MapAddStr(0x8000, 2, 0x0013, "R|AS2",   4); /* UART1 */
+  GEL_MapAddStr(0x8014, 2, 0x0004, "R|AS2",   4);
+
+  GEL_MapAddStr(0x8400, 2, 0x0013, "R|W|AS2", 4); /* UART2 */
+  GEL_MapAddStr(0x8414, 2, 0x0004, "R|AS2",   4);
+
+  GEL_MapAddStr(0x8600, 2, 0x0002, "R|W|AS2", 4); /* SPI */
+  GEL_MapAddStr(0x8608, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x860A, 2, 0x0002, "R|AS2",   4);
+  GEL_MapAddStr(0x860C, 2, 0x0004, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8612, 2, 0x0006, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8618, 2, 0x0002, "R|AS2",   4);
+  GEL_MapAddStr(0x861A, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x861C, 2, 0x0002, "R|AS2",   4);
+  GEL_MapAddStr(0x861E, 2, 0x0002, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0x8800, 2, 0x001F, "R|W|AS2", 4); /* ULPDR */ 
+  GEL_MapAddStr(0x8A00, 2, 0x0002, "R|AS2",   4); /* GPTIMER1 *//* Ask additional reg to YO */
+  GEL_MapAddStr(0x8A08, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8A0A, 2, 0x0002, "R|AS2",   4);
+  GEL_MapAddStr(0x8A0C, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8A0E, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8A10, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8A12, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8A14, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8A16, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8A18, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8A1A, 2, 0x0002, "R|AS2",   4);
+  GEL_MapAddStr(0x8A1C, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8A1E, 2, 0x0002, "R|AS2",   4);
+  GEL_MapAddStr(0x8A20, 2, 0x0002, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0x8C00, 2, 0x001F, "R|W|AS2", 4); /* McBSP1 */
+
+  GEL_MapAddStr(0x8E00, 2, 0x0002, "R|AS2",   4); /* GPTIMER2 */ /* Ask additional reg to YO */
+  GEL_MapAddStr(0x8E08, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8E0A, 2, 0x0002, "R|AS2",   4);
+  GEL_MapAddStr(0x8E0C, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8E0E, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8E10, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8E12, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8E14, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8E16, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8E18, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8E1A, 2, 0x0002, "R|AS2",   4);
+  GEL_MapAddStr(0x8E1C, 2, 0x0002, "R|W|AS2", 4);
+  GEL_MapAddStr(0x8E1E, 2, 0x0002, "R|AS2",   4);
+  GEL_MapAddStr(0x8E20, 2, 0x0002, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0x9000, 2, 0x0001, "R|W|AS2", 4); /* MCSI2 */
+  GEL_MapAddStr(0x9002, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9004, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9008, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x900A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x900C, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x900E, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9010, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9012, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9014, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9016, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9018, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x901A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x901C, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x901E, 2, 0x0001, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0x9400, 2, 0x0001, "R|W|AS2", 4); /* MCSI1 */
+  GEL_MapAddStr(0x9402, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9404, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9408, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x940A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x940C, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x940E, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9410, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9412, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9414, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9416, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9418, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x941A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x941C, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x941E, 2, 0x0001, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0x9C00, 2, 0x0001, "R|W|AS2", 4); /* I2C_1 */
+  GEL_MapAddStr(0x9C02, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9C04, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9C08, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9C0A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9C0C, 2, 0x0001, "R|W|AS2", 4);
+  /*GEL_MapAddStr(0x9C0E, 2, 0x0001, "R|W|AS2", 4);*/
+  GEL_MapAddStr(0x9C10, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9C12, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9C14, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9C16, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9C18, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9C1A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9C1C, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9C1E, 2, 0x0001, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0x9E00, 2, 0x0001, "R|W|AS2", 4); /* I2C_2 */
+  GEL_MapAddStr(0x9E02, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9E04, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9E08, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9E0A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9E0C, 2, 0x0001, "R|W|AS2", 4);
+  /*GEL_MapAddStr(0x9C0E, 2, 0x0001, "R|W|AS2", 4);*/
+  GEL_MapAddStr(0x9E10, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9E12, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9E14, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9E16, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9E18, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9E1A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9E1C, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0x9E1E, 2, 0x0001, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0xB800, 2, 0x001F, "R|W|AS2", 4); /* McBSP Digital RF */
+
+  GEL_MapAddStr(0xBE00, 2, 0x0001, "R|W|AS2", 4); /* MMCSDIO2 */
+  GEL_MapAddStr(0xBE02, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE04, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE06, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE08, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE0A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE0C, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE0E, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE10, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE12, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE14, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE16, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE18, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE1A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE1C, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE1E, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE20, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE22, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE24, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE26, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE28, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE2A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE2C, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE2E, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE30, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE32, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xBE34, 2, 0x0001, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0xCC00, 2, 0x0013, "R|W|AS2", 4); /* UART3 */
+  GEL_MapAddStr(0xCC14, 2, 0x0004, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0xE200, 2, 0x0002, "R|AS2",   4); /* 32k Sync Timer */
+  GEL_MapAddStr(0xE208, 2, 0x0002, "R|AS2",   4);
+
+  GEL_MapAddStr(0xE400, 2, 0x0001, "R|W|AS2", 4); /* RHEA Static Switches */
+  GEL_MapAddStr(0xE410, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE420, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE448, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE450, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE458, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE460, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE468, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE470, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE478, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE480, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE488, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE498, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE4A0, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE4A8, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE4B0, 2, 0x0001, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0xE600, 2, 0x0002, "R|AS2",   4); /* NAND Flash Controller */
+  GEL_MapAddStr(0xE602, 2, 0x0004, "R|W|AS2", 4);
+  GEL_MapAddStr(0xE608, 2, 0x0030, "R|W|AS2", 4);
+  
+  GEL_MapAddStr(0xF800, 2, 0x0001, "R|W|AS2", 4); /* Mailbox */
+  GEL_MapAddStr(0xF802, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xF804, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xF806, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xF808, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xF80A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xF80E, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xF810, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xF812, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xF814, 2, 0x0001, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0xF878, 2, 0x0001, "R|W|AS2", 4); /* ID registers */ /* Check if this registers exist in NEPTUNE */					
+  GEL_MapAddStr(0xF87A, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xF87C, 2, 0x0001, "R|W|AS2", 4);
+  GEL_MapAddStr(0xF87E, 2, 0x0001, "R|W|AS2", 4);
+
+  GEL_MapAddStr(0xFC00, 2, 0x0002, "R|W|AS2", 4); /* API register */
+
+}
+
+/* EOF */

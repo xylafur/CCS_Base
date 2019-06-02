@@ -1,0 +1,5 @@
+memorymap_init_IVAhd_iCont1()
+{
+    GEL_MapAddStr(0x5A000000, 0, 0x00100000, "R|W|AS4", 0); 	/* IVA-HD domain - 16MBytes */
+    GEL_MapAddStr(0x5B000000, 0, 0x00100000, "R|W|AS4", 0); 	/* IVA-HD SL2 domain - 16MBytes */
+}

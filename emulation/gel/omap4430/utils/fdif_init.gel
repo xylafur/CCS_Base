@@ -1,0 +1,77 @@
+menuitem "FDIF_init"
+hotmenu FDIF_SW_change_EFUSE()
+ {
+ unsigned reg=1;
+ 
+  GEL_TextOut("Change MEM_RW_GWG (bits field 13:12)",,0);
+ *(unsigned *)(unsigned)0x4a002338 = 0x8000baaa;
+ GEL_TextOut("New register value must be equal to 0x8000BAAA",,0);
+  // read back value.. 
+ reg = *(unsigned *)(unsigned)0x4a002338;
+  GEL_TextOut("New register value: %x",,0,,,reg);
+ 
+ }
+ 
+ menuitem "FDIF_init"
+hotmenu FDIF_LoadTestWakeUP()
+{
+     GEL_Load ("F:/TIF/fdif_get_coord_board/cortexa9_cpu0_ape/a9_emu_si_ddr_test_wakeup.axf");
+}
+hotmenu FDIF_LoadTestDatabase()
+{
+     GEL_Load ("F:/TIF/fdif_get_coord_board/cortexa9_cpu0_ape/a9_emu_si_ddr_test_database.axf");
+}
+hotmenu FDIF_LoadTestPerfStat()
+{
+     GEL_Load ("F:/TIF/fdif_get_coord_board/cortexa9_cpu0_ape/a9_emu_si_ddr_test_perfstat.axf");
+}
+hotmenu FDIF_LoadTestIss()
+{
+     GEL_Load ("F:/TIF/fdif_get_coord_board/cortexa9_cpu0_ape/a9_emu_si_ddr_test_iss.axf");
+}
+hotmenu FDIF_LoadTestStandby()
+{
+     GEL_Load ("F:/TIF/fdif_get_coord_board/cortexa9_cpu0_ape/a9_emu_si_ddr_test_standby.axf");
+}
+
+dialog FDIF_initparam(work_addr "FDIF working buffer address",
+                       face_size "FDIF min face size to be detected in pixel(20,25,32 or 40)",
+                       orient  "ïmage orientation: 0 UP 1 RIGTH 2 LEFT",
+		       x0 "horizontal offset",
+		       y0 "vertical offset",
+		       x_max "bottom rigth absciss",
+		       y_max "bottom rigth ordinate",
+		       thresh "Deectection theshold (0 t0 9)",
+		       image_idx "Image library BD index(0 to 100, -1 if sl2)",
+		       db_idx "Database index (1 to 4)",
+		       Check_mode "0: pool status register;1: use interrupt",
+		       Image_src "Image from:1: DDR,2:MMC,3:GEL,4:Camera"
+		       )
+{
+GEL_Go(FDGETCOORD_TestFunction);
+fdif_working_addr = work_addr; // external woeking buffer
+if (face_size == 20)
+   fdif_face_size = 0; 
+if (face_size == 25)
+   fdif_face_size = 1; 
+if (face_size == 32)
+   fdif_face_size = 2; 
+if (face_size == 40)
+   fdif_face_size = 3; 
+   
+fdif_image_direction= dir;  // rigth, up or left
+fdif_horiz_offset = x0;
+fdif_vert_offset = y0;
+fdif_x_max = x_max; // end of region of interest
+fdif_y_max= y_max;
+fdif_threshold = thresh; 
+
+ image_lib_idx = image_idx;
+image_db_idx =db_idx;
+
+flag_input_source = Image_src;
+fdif_int_enabled = Check_mode;
+
+gel_init_done = 1;
+}
+

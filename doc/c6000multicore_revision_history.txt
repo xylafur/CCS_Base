@@ -1,0 +1,39 @@
+C6000 multicore Device Support Package
+======================================
+
+1.0.5
+-----
+Added the compiler end-of-life project wizard property for legacy devicess
+General cleanup of unused XML properties
+
+1.0.4
+-----
+Fixed the bitfield order of files cslr_gpio.xml of C647x devices.
+
+1.0.3
+-----
+Added more Linker CMD files
+Added project options to device XML files 
+Converted CR/LF (DOS) to LF (UNIX) in several files
+
+
+1.0.2
+-----
+Added c6472.gel file
+Added linker command files for c6472, c6474, c6678
+
+
+1.0.1
+-----
+Moved revision history to /doc
+
+
+1.0.0
+-----
+[tci6464 files]
+cslr_hpi.xml - fixed space in HPIAW
+cslr_gpio.xml - naming and bitfield overlap issues fixed
+cslr_ectl.xml - naming issues with [] fixed
+slr_srio.xml - fixed issues with bitfield end values
+slr_srio.xml - fixed naming issues with starting with a number
+

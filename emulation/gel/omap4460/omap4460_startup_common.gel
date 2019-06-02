@@ -1,0 +1,739 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* OMAP4460 startup common    		     			    */
+/*                                                                 */
+/*  OMAP4460 ES1.1                                                 */
+/*  version 4470 1				     		   */
+/* latest revisions update                                         */
+/* 04/11/2011             Jc Zigmann      documentation update	   */
+/* 11/11/2011             version tested for ELPIDA but values are not respecting the JEDEC std
+   other mem types not supported.*/
+/* 14/11/2011            JC Zigmann       add detection and modified phase of memory type detection*/
+/*                                        current memories managed by auto detection are ELPIDA 2x2, ELPIDA 2x4*/
+/* other memories can be supported by seting below defines
+ MEM_DETECTION = 0 and DEFAULT_MEMORY  {memory name supported)
+
+*/
+/*******************************************************************/
+
+#define INFO_PRINT	0
+
+// OPP definitions
+#define OPPBOOT		0
+#define	OPP50		1
+#define	OPP100		2
+#define	OPPTURBO	3
+#define	OPPNITRO	4
+#define	OPPNITROSB	5
+
+/* memories supported */
+#define ELPIDA2X2GBIT	1
+#define ELPIDA4X2GBIT	2
+#define HYNIX2x2GBIT	3
+#define SAMSUNG4X2GBIT	4
+#define SAMSUNG2X4GBIT	5
+#define SAMSUNG4X4GBIT	6
+#define ELPIDA2X4GBIT	5
+#define ELPIDA4X4GBIT	7
+
+/*#define SAMSUNG		1*/
+/*#define ELPIDA2X2GBIT	2*/
+/*#define ELPIDA4X2GBIT	3*/
+/*#define HYNIX		4*/
+/*#define MICRON		5*/
+#define ZEBU		11
+
+#define MEMORY_4GB 1
+#define MEMORY_8GB 2
+
+#define TPS 0
+
+#define PHOENIX 1
+
+#define MEM_DETECTION 1
+#define DEFAULT_MEMORY ELPIDA2X2GBIT
+
+OnTargetConnect()
+{ 
+  omap4460_startup_sequence();
+  GEL_TextOut("--->>> omap4460_startup_sequence DONE !!!!!  <<<---\n");
+
+}
+
+onResetDetected()
+{
+  GEL_TextOut("--->>> System Reset detected <<<---\n");
+  // commented for the moment feature not available in CCS 
+  // omap4460_startup_sequence(); 
+}
+
+
+//OnReset() function is called when board is doing a PWR
+// this fuction first detects the Device_type(GP,EMU) & silicon_type. the PC is then set.
+
+OnReset()
+{
+  int device_type;
+  int silicon_type;
+
+    
+  int ID_CODE	  = *(int*)0x4A002204;
+    
+  silicon_type = (ID_CODE & 0xF0000000) >> 28;
+    
+  GEL_TextOut("--->>> Reset occurs <<<---\n");
+    
+  device_type = *(int*)0x4A0022C4;
+    
+  if (((device_type & 0x300)>>8) == 0x3)
+    {
+      GEL_TextOut("--->>> GP device <<<---\n");
+      
+      if (silicon_type == 2)
+	{
+	  // ES1.1
+	  PC=0x20000;
+	}
+      else if (silicon_type == 0)
+	{
+	  // ES1.0 OR NON FUSED DEVICE  
+	  PC=0x20000;
+	}
+      else
+	{ 
+	  GEL_TextOut("--->>> !!! UNKNOWN DEVICE type !!! <<<---\n");
+	  PC=0x20000;
+	}   
+      			            
+      CPSR=0x193; 
+    }
+    
+  if (((device_type & 0x300) >> 8) == 0x1)
+    { 
+      GEL_TextOut("--->>> EMU device <<<---\n");
+      CPSR=0x1D3; 
+    }
+	
+  if (((device_type & 0x300) >> 8) == 0x0)
+    { 
+      GEL_TextOut("--->>> TEST device <<<---\n");
+      CPSR=0x1D3; 
+    }
+	
+  //Enter_Secure_Mode();
+  //Secure_Watchdog_disable();
+  //Enter_Non_Secure_Mode();
+  // Watchdog_disable();
+}
+
+
+//function called when connecting the board
+// this function enables emulation by doing minimal initialization of registers 
+// this function is detecting the device_type(GP,EMU,HS,TEST)
+// it is detecting if the device is trimmed and or fused.
+// silicon_type ES1.0 -> 0; ES1.1 -> 2
+// is select this sysclock() to 38,4Mhz
+// then the voltage is adjusted via TPS or PHOENIX modules
+// then an autodetection mechanism is set for memory detection 
+// note1: this version of script is managing only 38,4Mhz/OPP100 
+// only OMAP4/ELPIDA memory have been tested. Other configurations are not tested/supported.
+// Memory size :
+// memory size detection is done us
+// documentation 
+omap4460_startup_sequence()
+{  	
+  int reg;
+  
+  int ID_CODE	  = *(int*)0x4A002204;
+  int STATUS	  = *(int*)0x4A0022C4;
+  int TRIMMED   = *(int*)0x4A002260;    
+  
+  int silicon_type;
+  int device_type;
+  int trimmed; // 0 not trimmed / other value trimmed
+
+  int memory_type = 0;
+  int memory_name = 0;
+  int memory_tech = 0 ;
+  int memory_size = 0;
+  int mem_diedensity = 0;
+  int mem_s4=0; //speed ?      
+  int temp;
+  int k=0;
+
+  GEL_TextOut("--->>> omap4460_startup_sequence <<<---\n");
+  GEL_TextOut("--->>> ------------------------------------------------------------------\n");
+  //GEL_TextOut("--->>> WRKD sequence REG_SYSTEM_DOWNLOAD_STATUS set to 0 <<<---\n");
+  //REG_SYSTEM_DOWNLOAD_STATUS = 0;
+    	
+  silicon_type = (ID_CODE & 0xF0000000) >> 28;
+    
+  device_type = (STATUS & 0x300)>>8;
+  trimmed = TRIMMED;
+		  
+	
+  if (silicon_type == 0)
+    {
+      if (device_type == 0)
+	{      
+	  GEL_TextOut("--->>> OMAP4460 ES 1.0 Device or NON fused device <<<---\n");
+	}
+      else
+	{
+	  GEL_TextOut("--->>> OMAP4460 ES 1.0 Device <<<---\n");
+	}   
+    }
+  else if (silicon_type == 2)
+    {
+      GEL_TextOut("--->>> OMAP4460 ES 1.1 Device  <<<---\n");
+    }
+  else
+    {
+      GEL_TextOut("--->>> !!!! UNKNOWN DEVICE (%x), PLEASE UPDATE GEL FILES !!!! <<<---\n",,,,,silicon_type);
+    }   
+    	
+  if (device_type == 0x3)
+    { 
+      GEL_TextOut("--->>> GP device <<<---\n");    
+      reconfigure_gpmc();
+    }
+    
+  if (device_type == 0x2)
+    { 
+      GEL_TextOut("--->>> HS device <<<---\n"); 
+    }
+    
+  if (device_type == 0x1)
+    { 
+      GEL_TextOut("--->>> EMU device <<<---\n"); 
+    }
+    
+  if (device_type == 0x0)
+    { 
+      GEL_TextOut("--->>> TEST or NON FUSED device <<<---\n"); 
+    }           
+    
+  if ( trimmed == 0) 
+    {
+      GEL_TextOut("--->>> Warning : BANDGAP not trimmed LDOs will be wrong<<<---\n");
+    }
+  else
+    {
+      GEL_TextOut("--->>> BANDGAP  trimmed <<<---\n");
+
+    }
+
+  /* Disable Watchdog timer WDT2 */
+  Watchdog_disable();
+    
+  /* Setup sys.clk      */
+  SelectSysClock();
+   
+  /* set VCORE1 to 1.01V */
+  /* set VCORE2 to 1.01V */
+  /* set VCORE3 to 1.01V */
+  /* DEFAULT CONFIGURATION IS OPP100 */    
+    
+  GEL_TextOut("--->>> start FORCE VCORE1, VCORE2 and VCORE3 to 1010mV <<<---\n"); 
+    
+  adjust_voltage_tps();
+    
+  adjust_voltage_phoenix();
+    
+  GEL_TextOut("--->>> end FORCE VCORE1, VCORE2 and VCORE3 to 1010mV <<<---\n"); 
+    
+  configure_gpmc_pads(); /* REMOVE FOR SIVAL */
+
+  // this phase is computing from JEDEC std
+  // memory_type 
+  // memory_size
+  // die_density
+  if (MEM_DETECTION==1)
+    {
+      // Sdram CONFIG
+      *(int*)0x4C000008 = 0x98800EB9;
+      
+      // DDR PHY CTRL 1
+      *(int*)0x4C0000E4 = 0x449FFFF4;
+      
+      // set MR0 (line CS0) register and poll 
+      *(int*)0x4C000050 = 0x00000000;
+      while ( (*(int*)0x4C000040&0x1)!=0x0);
+      
+      // set MR0 (line CS1) register and poll 
+      *(int*)0x4C000050 = 0x80000000;
+      while ( (*(int*)0x4C000040&0x1)!=0x0);   
+      
+      // Mode Register 5 : Memory type // poll to detect memory_type
+      GEL_TextOut("searching... memory type\n");   
+      while (memory_type==0 && k<10) 
+	{
+	  k++;
+	  *(int*) 0x4c000050 = 0x5; 
+	  memory_type = *(int*)0x4c000040;
+	  memory_type = memory_type & 0xFF;
+
+	}
+      if (k==10){
+	GEL_TextOut(" Memory detection error: please reset the board ! ");
+      }
+
+      GEL_TextOut("found... memory type = (%d)\n",,,,,memory_type);   
+
+      if (memory_type == 0x3) // ELPIDA MEMORY Mode register nbr 5 is 3 !!!
+	{
+	  GEL_TextOut("Memory type is ELPIDA \n");
+	  
+	  
+	  // MR 6 reading techno Memory type 
+	  *(int*) 0x4c000050 = 0x6;    
+	  memory_tech = *(int*) 0x4c000040;
+	  
+	  memory_tech = memory_tech & 0x1;
+	  
+	  if (memory_tech == 0)
+	    {
+	      GEL_TextOut("Memory tech is 50nm \n");
+	    }
+	  
+	  if (memory_tech == 1)
+	    {
+	      GEL_TextOut("Memory tech is 40nm \n");
+	    }
+	  
+	  // Sdram CONFIG 
+	  *(int*)0x4D000008 = 0x98800EB9;
+	  
+	  // DDR PHY CTRL 1
+	  *(int*)0x4D0000E4 = 0x449FFFF4;
+	  
+	  // -->begin DDR config autodetection mechanism
+	  // set MR0 (line CS0) register and poll 
+	  *(int*)0x4D000050 = 0x00000000;
+	  while ( (*(int*)0x4D000040&0x1)!=0x0);
+	  
+	  // set MR0 (line CS1) register and poll 
+	  *(int*)0x4D000050 = 0x80000000;
+	  while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	  
+	  // read mode register 8 to find the die density
+	  *(int*) 0x4D000050 = 0x8;
+	  for (k=0; k<2000; k++); // wait loop
+	  temp = *(int*)0x4D000040;
+	  if (INFO_PRINT){
+	  GEL_TextOut("--->>> !!!! Register config 8 diedensitiy--> !!!! (%x)<<<---\n",,,,,temp);
+	  }
+	  mem_diedensity = temp & 0x3C;
+	  GEL_TextOut("Reading memory size ... \n");
+	  if (INFO_PRINT==1){
+	  GEL_TextOut("--->>> !!!! Register config 8 diedensitiy--> !!!! (%x)<<<---\n",,,,,mem_diedensity);
+	  }
+	  //type 00 : x32, 01:x16 10:x8 see JEDEC documentation
+	  mem_s4 = temp & 0x3;
+
+	  // density of die 
+	  
+	  if (mem_diedensity==0x2C)//2x4
+	    {
+	      GEL_TextOut("--->>> MEMORY SIZE is 8GB <<<---\n");
+	      memory_size = MEMORY_8GB; 
+	      GEL_TextOut("configuring ELPIDA2X4GBIT\n");
+	      memory_name = ELPIDA2X4GBIT;
+	    }
+	  else if  (mem_diedensity==0x14)//2x2
+	    {
+	      GEL_TextOut("--->>> MEMORY SIZE is 4GB <<<---\n"); 
+	      memory_size = MEMORY_4GB; 
+	      GEL_TextOut("configuring ELPIDA2X2GBIT\n");
+	      memory_name=ELPIDA2X2GBIT;
+	    }
+	  else 
+	    {
+	      GEL_TextOut("--->>> unknown MEMORY SIZE applying default size 4GB <<<---");
+	      memory_size = MEMORY_4GB; 
+	      GEL_TextOut("configuring ELPIDA2X2GBIT\n");
+	      memory_name=ELPIDA2X2GBIT;
+	    }
+	}
+      else{
+	//detect memory type all jedec stds and deduce meory name
+
+      if (memory_type == 0x1)
+	{
+
+	  GEL_TextOut("Memory type is SAMSUNG \n");
+	  
+	}
+      if (memory_type == 0x6) // Hynix 
+	{
+	  GEL_TextOut("Memory type is HYNIX \n");
+	  
+	}
+      }
+      
+      if ((memory_type!=0x6) &&(memory_type!=0x1) &&(memory_type!=0x3))
+	{   
+	  
+	  GEL_TextOut("--->>> !!!! UNKNOWN MEMORY (%x), PLEASE RETRY or UPDATE GEL FILES !!!! <<<---\n",,,,,memory_type);
+	  //trying with ELPIDA memory
+	}
+
+    }
+  else { //default value to be applied
+    memory_name=DEFAULT_MEMORY;
+    GEL_TextOut("Warning not using memory \ndetection default memory is %d \n",,,,,memory_name);
+  }        
+
+  //ES1.0 specific init. init / coniguration of memory 
+  // trimmed is forced
+  // we assume here everything is configured at OPP100
+
+
+
+  if (device_type == 0)
+    {
+      GEL_TextOut("--->>> SEETING LPDDR IO TRIM <<<---\n");
+      *(int*)0x4A100704 = 0x84000;
+    } 
+
+
+
+  //main call
+
+  GEL_TextOut("Memory name :%d\n",,,,,memory_name);
+  ddr_config_top(OPP100,memory_name);
+  opp_default_config_board_OPP100();
+  
+  
+
+  reg = REG_TZ_SECURE;
+  
+  if (reg == 0)
+    {
+      GEL_TextOut("The core is in non-SECURE state. \n");
+    }
+  else
+    {
+      GEL_TextOut("The core is in SECURE state!\n");
+    }
+
+}
+//function adjust_voltage_tps;
+// this function is used to set the default voltage
+// first we detect phoenix module version to read I2C config 
+// on 4460 we use TPS to set voltage on CORE1
+//TPS ---setPMIC---> VCORE1
+//VCORE2/Power2 ---setPMIC---> VCORE1
+//VCORE1/POWER1 ---setPMIC---> VCORE3
+
+hotmenu adjust_voltage_tps()
+{
+
+  char phoenixRevision = 0;
+  char phoenixVersion = 0;
+    
+  int value;
+    
+  omap4460_PHOENIX_Init();
+	     
+  phoenixRevision = PHOENIX_I2C_Read8(PHOENIX_I2C_SLAVE_ADDRESS, 0xDF, phoenixRevision);
+   	
+  if (phoenixRevision == 0)
+    {
+      GEL_TextOut("--->>> PHOENIX RELEASE NOT DETECTED, BY DEFAULT Phoenix Version set to 2--\n"); 
+      phoenixVersion = 2;
+    }
+  else
+    if (phoenixRevision >= 5)
+      {
+	phoenixVersion = 2;
+        GEL_TextOut("--->>> PHOENIX RELEASE => (%x), EEPROM => (%x)  <<<---\n",,,,,phoenixVersion,phoenixRevision); 
+   
+      }
+    else
+      {
+	if (phoenixRevision < 5)
+	  {
+	    phoenixVersion = 1;
+            GEL_TextOut("--->>> PHOENIX RELEASE => (%x), EEPROM => (%x)  <<<---\n",,,,,phoenixVersion,phoenixRevision); 
+   
+	  }
+      }
+   	      
+  // Configure I2C SR
+    
+  //OMAP4440:OMAP4440_CONTROL_WKUP:CONTROL_I2C_2 -> 0x22000000
+  *(int*)0x4A31E604 = 0x22000000;
+    
+  // Switch on SET1 register
+  // CONFIGURE SET1 to OPP100 nominal     
+  Force_PMIC_VCORE(TPS, 0x0, TPS_VSET1_REG, 1010);
+    
+  // enable GPIO bank1
+  value = *(int*)0x4A307838;    
+  value |= 0x1;      
+  *(int*)0x4A307838 = value;   
+    
+  // OMAP4440:OMAP4440_CONTROL_WKUP:PAD0_FREF_CLK3_OUT_PAD1_FREF_CLK4_REQ:FREF_CLK4_REQ_PULLUDENABLE -> BIT[19]=1
+  value = *(int*)0x4A31E058;
+  value |= 0x80000;
+  *(int*)0x4A31E058=value;
+    
+  // OMAP4440:OMAP4440_CONTROL_WKUP:PAD0_FREF_CLK3_OUT_PAD1_FREF_CLK4_REQ:FREF_CLK4_REQ_MUXMODE -> BIT[18-16]=3
+  value = *(int*)0x4A31E058;
+  value |= 0x30000;
+  *(int*)0x4A31E058=value;
+    
+  // READ value OMAP4440:GPIO_V2:GPIO_OE
+  value = *(int*)0x4A310134;
+    
+  // Configure SOC_GPIO_PIN_WK7 in output
+  value &=~(1 << 7);    
+  *(int*)0x4A310134 = value;
+    
+  // SET GPIO7 to 1
+  value = *(int*)0x4A31013C;
+  value |=(1 << 7);
+  *(int*)0x4A31013C = value;
+    
+    
+  // CONFIGURE VCORE 2 and VCORE 3 to OPP100 nominal.
+  Force_PMIC_VCORE(PHOENIX,phoenixVersion, PHOENIX_PMIC_VCORE2_CFG_FORCE_REG, 1010);
+  // VCORE3
+  Force_PMIC_VCORE(PHOENIX,phoenixVersion, PHOENIX_PMIC_VCORE1_CFG_FORCE_REG, 1010);
+}
+
+// in case of phoenix PMIC voltage is configured using this function
+// first phonix is initialized and then each vcore ( VCORE1, VCORE2, VCORE3) are configured to 1.010
+hotmenu adjust_voltage_phoenix()
+{
+
+  char phoenixRevision;
+  char phoenixVersion;
+    
+  int value;
+    
+  omap4460_PHOENIX_Init();
+    
+  phoenixRevision = PHOENIX_I2C_Read8(PHOENIX_I2C_SLAVE_ADDRESS, 0xDF, phoenixRevision);
+   	
+  if (phoenixRevision == 0)
+    {
+      GEL_TextOut("--->>> PHOENIX RELEASE NOT DETECTED, BY DEFAULT Phoenix Version set to 2--\n"); 
+      phoenixVersion = 2;
+    }
+  else
+    if (phoenixRevision >= 5)
+      {
+	phoenixVersion = 2;
+        GEL_TextOut("--->>> PHOENIX RELEASE => (%x), EEPROM => (%x)  <<<---\n",,,,,phoenixVersion,phoenixRevision); 
+   
+      }
+    else
+      {
+	if (phoenixRevision < 5)
+	  {
+	    phoenixVersion = 1;
+            GEL_TextOut("--->>> PHOENIX RELEASE => (%x), EEPROM => (%x)  <<<---\n",,,,,phoenixVersion,phoenixRevision); 
+   
+	  }
+      }
+  
+  // CONFIGURE VCORE 2 and VCORE 3 to OPP100 weak.
+  Force_PMIC_VCORE(PHOENIX,phoenixVersion, PHOENIX_PMIC_VCORE1_CFG_FORCE_REG, 1010);
+  Force_PMIC_VCORE(PHOENIX,phoenixVersion, PHOENIX_PMIC_VCORE2_CFG_FORCE_REG, 1010);
+  Force_PMIC_VCORE(PHOENIX,phoenixVersion, PHOENIX_PMIC_VCORE3_CFG_FORCE_REG, 1010);
+}
+
+
+configure_gpmc_pads()
+{
+  int value;
+
+  /* GPMC PSRAM Configuration to access all 26 bits of Address */
+  *(int*)0x4A100060 = 0x01080108; /* PAD0_GPMC_A16_PAD1_GPMC_A17 */
+  *(int*)0x4A100064 = 0x01080108; /* PAD0_GPMC_A18_PAD1_GPMC_A17 */
+  *(int*)0x4A100068 = 0x01080108; /* PAD0_GPMC_A20_PAD1_GPMC_A19 */
+  *(int*)0x4A10006C = 0x01080108; /* PAD0_GPMC_A22_PAD1_GPMC_A21 */
+  *(int*)0x4A100070 = 0x01080108; /* PAD0_GPMC_A24_PAD1_GPMC_A23 */
+    
+  /* CONFIGURE GPMC to support OPP100 on L3 */
+  value=*(int*)0x50000050;
+  *(int*) 0x50000050 = value | 0x2;    
+  *(int*) 0x50000060 = 0x00001113;
+    
+  /* Configure Pad to output GPMC Low byte signal:  PAD0_GPMC_NBE1_PAD1_GPMC_WAIT0 */
+  *(int*) 0x4A100088 = 0x01180108; /* PAD0_GPMC_NBE1_PAD1_GPMC_WAIT0 */
+
+  /* Configure PAD GPMC CS1 */
+  value = *(int*) 0x4A100074;
+  /* Select GPMC_NCS1 */
+  value &= ~0xFFF8FFFF;
+  /* Select PullUp/Down enabled and select PULL UP */
+  value |= 0x180000;  
+  *(int*) 0x4A100074 = value;
+       
+  /*Configure PAD GPMC CS1 for 64MPSRAM */
+  *(int*) 0x50000090 = 0x00401200; 
+  *(int*) 0x50000094 = 0x00101001;
+  *(int*) 0x50000098 = 0x22060514; 
+  *(int*) 0x5000009C = 0x10057016;	
+  *(int*) 0x500000A0 = 0x010F1111; 
+  *(int*) 0x500000A4 = 0x8F070000;
+  *(int*) 0x500000A8 = 0x00000F41;
+    
+
+  //	GEL_TextOut("--->>> GPMC Reconfiguration Complete <<<---\n");
+}	
+	
+reconfigure_gpmc()
+{
+  int value;
+      
+  GEL_TextOut("Reconfigure PSRAM for accessing if device type = GP \n");
+      
+  value = *(int*) 0x4A004120;
+  value &= 0xFFFFFFF8;
+  value |= 5;
+  *(int*) 0x4A004120 = value;
+      
+  *(int*) 0x50000060 = 0x1200;
+      
+  *(int*) 0x50000078 = 0xF48; 
+     
+  *(int*) 0x4A100040 = 0x01180118; 
+       
+  *(int*) 0x4A100040 = 0x01180118; 
+  *(int*) 0x4A100044 = 0x01180118; 
+  *(int*) 0x4A100048 = 0x01180118; 
+  *(int*) 0x4A10004C = 0x01180118; 
+  *(int*) 0x4A100050 = 0x01180118; 
+  *(int*) 0x4A100054 = 0x01180118; 
+  *(int*) 0x4A100058 = 0x01180118; 
+  *(int*) 0x4A10005c = 0x01180118; 
+     
+
+  /* GPMC PSRAM Configuration to access all 26 bits of Address */
+  *(int*) 0x4A100060 = 0x01000100; /* PAD0_GPMC_A16_PAD1_GPMC_A17 */
+  *(int*) 0x4A100064 = 0x01000100; /* PAD0_GPMC_A18_PAD1_GPMC_A17 */
+  *(int*) 0x4A100068 = 0x01000100; /* PAD0_GPMC_A20_PAD1_GPMC_A19 */
+  *(int*) 0x4A10006C = 0x01000100; /* PAD0_GPMC_A22_PAD1_GPMC_A21 */
+  *(int*) 0x4A100070 = 0x01000100; /* PAD0_GPMC_A24_PAD1_GPMC_A23 */
+  // *(int*) 0x4A100088 = 0x01180108; /* PAD0_GPMC_NBE1_PAD1_GPMC_WAIT0 */
+
+  value = *(int*) 0x4A10007c;
+  value &= 0xFFFFFFFE;
+  *(int*) 0x4A10007c = value;
+    
+  value = *(int*) 0x50000050;
+  value &= 0xFFFFFFFB;
+  *(int*) 0x50000050 = value;
+    
+  //PC=0x800000;    
+}    
+
+menuitem "utils"
+
+hotmenu Enter_Non_Secure_Mode()
+{
+  int reg;
+  GEL_TextOut("--->>> Enter Non secure Mode <<<---\n");
+
+  REG_TZ_SECURE = 0;
+  reg = REG_TZ_SECURE;
+  
+  if (reg == 0)
+    {
+      GEL_TextOut("The core is in non-SECURE state. \n");
+    }
+  else
+    {
+      GEL_TextOut("The core is still in SECURE state!\n");
+    }
+}
+
+hotmenu Enter_Secure_Mode()
+{
+  int reg;
+  GEL_TextOut("--->>> Enter secure Mode <<<---\n");
+
+  REG_TZ_SECURE = 1;
+  reg = REG_TZ_SECURE;
+  
+  if (reg == 0)
+    {
+      GEL_TextOut("The core is still in non-SECURE state. \n");
+    }
+  else
+    {
+      GEL_TextOut("The core is in SECURE state!\n");
+    }
+}
+
+hotmenu Watchdog_disable()
+{
+  if (INFO_PRINT) {
+    GEL_TextOut("--->>> Start WDT2 Watchdog Timer is disabled <<<---\n");
+  }
+	 
+  /* Enable clock */
+  *(int*)0x4A307830 = 0x02;
+
+  /* Check that module is Idle */
+  while (((*(int *)0x4A307830) & 0x20000));
+       
+  /* Disable  watchdog 2 */
+  /* Wait until reset complete */
+  while (!((*(int *)0x4A314014) & 0x01));
+
+  /* Disable watchdog timer */
+  *(int*)0x4A314048 = 0x0000AAAA;
+
+  while (((*(int *)0x4A314034) & 0x10));
+
+  /* Disable 32Khz watchdog timer */
+  *(int*)0x4A314048 = 0x00005555;
+
+  while (((*(int *)0x4A314034) & 0x10));
+
+  if (INFO_PRINT) {
+    GEL_TextOut("--->>> End WDT2 Watchdog Timer is disabled <<<---\n");
+  }
+
+}
+
+hotmenu Secure_Watchdog_disable()
+{
+  if (INFO_PRINT) {
+    GEL_TextOut("--->>> Start Secure Watchdog Timer is disabled <<<---\n");
+  }
+	
+  /* enable clock */
+  *(int*)0x4A307828 = 0x02;
+
+  /* Check that module is Idle */
+  while (((*(int *)0x4A307828) & 0x20000));
+       
+  /* Disable  watchdog 2 */
+  /* Wait until reset complete */
+  while (!((*(int *)0x4A322014) & 0x01));
+
+  /* Disable watchdog timer */
+  *(int*)0x4A322048 = 0x0000AAAA;
+
+  while (((*(int *)0x4A322034) & 0x10));
+
+  /* Disable 32Khz watchdog timer */
+  *(int*)0x4A322048 = 0x00005555;
+
+  while (((*(int *)0x4A322034) & 0x10));
+
+  if (INFO_PRINT) {
+    GEL_TextOut("--->>> End Secure Watchdog Timer is disabled <<<---\n");
+  }
+}

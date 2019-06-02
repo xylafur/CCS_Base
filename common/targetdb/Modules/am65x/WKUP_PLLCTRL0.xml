@@ -1,0 +1,130 @@
+<module name="WKUP_PLLCTRL0" acronym="" XML_version="1.0" HW_revision="n/a" description="">
+  <register id="WKUP_PLLCTRL0_PID" acronym="WKUP_PLLCTRL0_PID" offset="0x0" width="32" description="register">
+    <bitfield id="PID_MSB16" width="16" begin="31" end="16" resetval="0x4481" description="" range="" rwaccess="R"/>
+    <bitfield id="PID_MISC" width="5" begin="15" end="11" resetval="0xB" description="" range="" rwaccess="R"/>
+    <bitfield id="PID_MAJOR" width="3" begin="10" end="8" resetval="0x4" description="" range="" rwaccess="R"/>
+    <bitfield id="PID_CUSTOM" width="2" begin="7" end="6" resetval="0x0" description="" range="" rwaccess="R"/>
+    <bitfield id="PID_MINOR" width="6" begin="5" end="0" resetval="0x0" description="" range="" rwaccess="R"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_SHIFTDIV" acronym="WKUP_PLLCTRL0_SHIFTDIV" offset="0xD0" width="32" description="Shift divider register">
+    <bitfield id="RESERVED" width="24" begin="31" end="8" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="DIV_VALUE" width="8" begin="7" end="0" resetval="0x0" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_CS0" acronym="WKUP_PLLCTRL0_CS0" offset="0xD4" width="32" description="Catscan control register">
+    <bitfield id="RESERVED" width="31" begin="31" end="1" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="CS_CLK_START" width="1" begin="0" end="0" resetval="0x0" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_DFTFCNTR" acronym="WKUP_PLLCTRL0_DFTFCNTR" offset="0xD8" width="32" description="DFT frequency counter register">
+    <bitfield id="PLLREFCNT" width="16" begin="31" end="16" resetval="0x0" description="" range="" rwaccess="RW"/>
+    <bitfield id="PLLCNT" width="16" begin="15" end="0" resetval="0x0" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_DFTFCNTRCNTL" acronym="WKUP_PLLCTRL0_DFTFCNTRCNTL" offset="0xDC" width="32" description="DFT frequency counter control register">
+    <bitfield id="RESERVED" width="24" begin="31" end="8" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="CLKMUX" width="4" begin="7" end="4" resetval="0x0" description="" range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="2" begin="3" end="2" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="STATUS" width="1" begin="1" end="1" resetval="0x0" description="" range="" rwaccess="R"/>
+    <bitfield id="START" width="1" begin="0" end="0" resetval="0x0" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_FUSERR" acronym="WKUP_PLLCTRL0_FUSERR" offset="0xE0" width="32" description="Fusefarm error register">
+    <bitfield id="RESERVED" width="27" begin="31" end="5" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="ERR" width="5" begin="4" end="0" resetval="0xX" description="" range="" rwaccess="R"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_RSTYPE" acronym="WKUP_PLLCTRL0_RSTYPE" offset="0xE4" width="32" description="Reset type status register">
+    <bitfield id="RESERVED" width="2" begin="31" end="30" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="EMU1" width="1" begin="29" end="29" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="EMU0" width="1" begin="28" end="28" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="12" begin="27" end="16" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="RSTREQ" width="8" begin="15" end="8" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="5" begin="7" end="3" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="PLLCNTL" width="1" begin="2" end="2" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="RSTIN" width="1" begin="1" end="1" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="POR" width="1" begin="0" end="0" resetval="0xX" description="" range="" rwaccess="R"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_RSCTRL" acronym="WKUP_PLLCTRL0_RSCTRL" offset="0xE8" width="32" description="Reset control register">
+    <bitfield id="RESERVED" width="15" begin="31" end="17" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="SWRST" width="1" begin="16" end="16" resetval="0x1" description="" range="" rwaccess="RW"/>
+    <bitfield id="KEY" width="16" begin="15" end="0" resetval="0x3" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_RSCFG" acronym="WKUP_PLLCTRL0_RSCFG" offset="0xEC" width="32" description="Reset control register">
+    <bitfield id="RESERVED" width="2" begin="31" end="30" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="PLLCNTLBLOCK" width="1" begin="29" end="29" resetval="0x0" description="" range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="5" begin="28" end="24" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="RSTBLOCK" width="8" begin="23" end="16" resetval="0x0" description="" range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="2" begin="15" end="14" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="PLLCTRLSOFT" width="1" begin="13" end="13" resetval="0x0" description="" range="" rwaccess="RW"/>
+    <bitfield id="RSTPITYPE" width="1" begin="12" end="12" resetval="0x0" description="" range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="4" begin="11" end="8" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="RSTREQTYPE" width="8" begin="7" end="0" resetval="0x0" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_RSISO" acronym="WKUP_PLLCTRL0_RSISO" offset="0xF0" width="32" description="Reset isolation control register">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="SYSCLKISO" width="16" begin="15" end="0" resetval="0x0" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_PLLCTL" acronym="WKUP_PLLCTRL0_PLLCTL" offset="0x100" width="32" description="PLL control register">
+    <bitfield id="RESERVED" width="22" begin="31" end="10" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="EXCLKSRC" width="1" begin="9" end="9" resetval="0x0" description="" range="" rwaccess="RW"/>
+    <bitfield id="CLKMODE" width="1" begin="8" end="8" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="PLLSELB" width="1" begin="7" end="7" resetval="0x0" description="" range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="1" begin="6" end="6" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="PLLENSRC" width="1" begin="5" end="5" resetval="0x1" description="" range="" rwaccess="RW"/>
+    <bitfield id="PLLDIS" width="1" begin="4" end="4" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="PLLRST" width="1" begin="3" end="3" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="1" begin="2" end="2" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="PLLPWRDN" width="1" begin="1" end="1" resetval="0x1" description="" range="" rwaccess="RW"/>
+    <bitfield id="PLLEN" width="1" begin="0" end="0" resetval="0x0" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_PLLM" acronym="WKUP_PLLCTRL0_PLLM" offset="0x110" width="32" description="PLL multiplier control register">
+    <bitfield id="RESERVED" width="24" begin="31" end="8" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="_" width="8" begin="7" end="0" resetval="0xX" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_PLLDIV1" acronym="WKUP_PLLCTRL0_PLLDIV1" offset="0x118" width="32" description="PLL controller divider1 control register">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="DN_EN" width="1" begin="15" end="15" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="HALF_RATIO" width="1" begin="14" end="14" resetval="0x0" description="" range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="6" begin="13" end="8" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="RATIO" width="8" begin="7" end="0" resetval="0xX" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_PLLDIV2" acronym="WKUP_PLLCTRL0_PLLDIV2" offset="0x11C" width="32" description="PLL controller divider2 control register">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="DN_EN" width="1" begin="15" end="15" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="HALF_RATIO" width="1" begin="14" end="14" resetval="0x0" description="" range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="6" begin="13" end="8" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="RATIO" width="8" begin="7" end="0" resetval="0xX" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_BPDIV" acronym="WKUP_PLLCTRL0_BPDIV" offset="0x12C" width="32" description="Bypass divider register">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="BPDEN" width="1" begin="15" end="15" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="7" begin="14" end="8" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="RATIO" width="8" begin="7" end="0" resetval="0xX" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_WAKEUP" acronym="WKUP_PLLCTRL0_WAKEUP" offset="0x130" width="32" description="Wakeup register">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="WKEN" width="16" begin="15" end="0" resetval="0x0" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_PLLCMD" acronym="WKUP_PLLCTRL0_PLLCMD" offset="0x138" width="32" description="PLL Controller command register">
+    <bitfield id="RESERVED" width="30" begin="31" end="2" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="OSCPWRDN" width="1" begin="1" end="1" resetval="0x0" description="" range="" rwaccess="RW"/>
+    <bitfield id="GOSET" width="1" begin="0" end="0" resetval="0x0" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_PLLSTAT" acronym="WKUP_PLLCTRL0_PLLSTAT" offset="0x13C" width="32" description="PLL Controller status register">
+    <bitfield id="RESERVED" width="29" begin="31" end="3" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="STABLE" width="1" begin="2" end="2" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="LOCK" width="1" begin="1" end="1" resetval="0x0" description="" range="" rwaccess="R"/>
+    <bitfield id="GOSET" width="1" begin="0" end="0" resetval="0x0" description="" range="" rwaccess="R"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_ALNCTL" acronym="WKUP_PLLCTRL0_ALNCTL" offset="0x140" width="32" description="PLL Controller clock align control register">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="ALN" width="15" begin="15" end="1" resetval="0x1" description="" range="" rwaccess="RW"/>
+    <bitfield id="ALN1" width="1" begin="0" end="0" resetval="0x1" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_DCHANGE" acronym="WKUP_PLLCTRL0_DCHANGE" offset="0x144" width="32" description="PLLDIV ratio change register">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="SYS" width="15" begin="15" end="1" resetval="0x0" description="" range="" rwaccess="R"/>
+    <bitfield id="SYS1" width="1" begin="0" end="0" resetval="0x0" description="" range="" rwaccess="R"/>
+  </register>
+  <register id="WKUP_PLLCTRL0_SYSTAT" acronym="WKUP_PLLCTRL0_SYSTAT" offset="0x150" width="32" description="Sysclk status register">
+    <bitfield id="RESERVED" width="30" begin="31" end="2" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="SYS2_ON" width="1" begin="1" end="1" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="SYS1_ON" width="1" begin="0" end="0" resetval="0xX" description="" range="" rwaccess="R"/>
+  </register>
+</module>

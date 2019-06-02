@@ -1,0 +1,140 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* OMAP5430 CortexA15 CPU0 startup         						   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+StartUp()
+{ 
+
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_L3_ABE.gel");
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_L3_DSS.gel");
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_L4_ABE.gel");
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_L4_CFG.gel");
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_L3_EMU.gel");
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_L4_PER.gel");
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_L4_WKUP.gel");
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_ivahd.gel");
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_ipu.gel");
+  GEL_LoadGel("$(GEL_file_dir)//utils//omap5430_USB3_Debug_Observability.gel");
+ 
+ 
+  GEL_LoadGel("$(GEL_file_dir)//utils//omap5430_cortexA15_utility.gel");
+  //GEL_LoadGel("$(GEL_file_dir)//utils//Secure_WDTimer1.gel");
+  //GEL_LoadGel("$(GEL_file_dir)//utils//GPTimer12.gel");
+ 
+  /* Load Common Gel Files */
+  // prcm config
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_prcm_clock_config.gel");
+  // DDR config
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_ddr_config.gel");
+  
+  //GEL_LoadGel("$(GEL_file_dir)//i2c_driver//GlobalTypes.gel");
+    
+  //GEL_LoadGel("$(GEL_file_dir)//i2c_driver//mshsi2cocpAccInt.gel");
+  //GEL_LoadGel("$(GEL_file_dir)//i2c_driver//mshsi2cocpRegAcM.gel");
+  GEL_LoadGel("$(GEL_file_dir)//i2c_driver//msi2c.gel");
+  
+	
+ GEL_LoadGel("$(GEL_file_dir)//i2c_driver//omap5430_i2c_driver.gel");
+    
+  // Reset config
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_cortexA15_reset.gel");
+  // Emulation
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_cortexA15_basic_emulation.gel");
+    
+  // STM traces
+  // GEL_LoadGel("$(GEL_file_dir)//omap5430_stm.gel"); 
+    
+  // TPIU traces
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_tpiu.gel");  
+  
+  // cross triggering test
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_cortexA15_CTI.gel");
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_ivahd_cross_triggering.gel");
+  
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_startup_common.gel");
+  
+  GEL_MapOff();
+  GEL_MapReset();
+  memorymap_init();
+  GEL_MapOn(); 
+  
+}  
+
+memorymap_init()
+{
+    GEL_MapAddStr(0x00000000, 0, 0x30000000, "R|W|AS4", 0);  /* GPMC */
+    GEL_MapAddStr(0x30000000, 0, 0x10000000, "R|W|AS4", 0);  /* LLI */
+    GEL_MapAddStr(0x40000000, 0, 0x00037000, "R|AS4", 0);    /* Secure ROM - 220KBytes */
+    GEL_MapAddStr(0x40037000, 0, 0x00001000, "R|AS4", 0);    /* Secure ROM and restricted by EFUSE - 4KBytes */
+    GEL_MapAddStr(0x40038000, 0, 0x0000C000, "R|AS4", 0);    /* Public ROM - 48KBytes */
+       
+    memorymap_init_L4_ABE();
+    
+    GEL_MapAddStr(0x402F0000, 0, 0x00010000, "R|W|AS4", 0);  /* SRAM internal - 64KBytes */
+    
+    GEL_MapAddStr(0x40300000, 0, 0x00020000, "R|W|AS4", 0);  /* Secure/Public OCMCRAM - 128KBytes */   
+    
+    GEL_MapAddStr(0x44000000, 0, 0x01800000, "R|W|AS4", 0);  /* L3 configuration registers - 24 Mb */
+    
+    GEL_MapAddStr(0x47000000, 0, 0x01000000, "R|AS4", 0);    /* STM - 16MBytes */
+    
+    GEL_MapAddStr(0x48210000, 0, 0x00008000, "R|AS4", 0);    /* MPU Interrupt controller - 32KBytes */
+    
+    GEL_MapAddStr(0x48243000, 0, 0x00001000, "R|AS4", 0);    /* PRM MPU - 4KBytes */
+    
+    GEL_MapAddStr(0x48280000, 0, 0x00001000, "R|AS4", 0);    /* SCM MPU - 4KBytes */
+    
+    GEL_MapAddStr(0x48281000, 0, 0x00001000, "R|AS4", 0);    /* WUGEN MPU - 4KBytes */
+    
+    GEL_MapAddStr(0x48290000, 0, 0x00010000, "R|AS4", 0);    /* CMU - 64KBytes */
+    
+    GEL_MapAddStr(0x482A0000, 0, 0x0000F000, "R|AS4", 0);    /* AXI2OCP - 60KBytes */
+    
+    GEL_MapAddStr(0x482AF000, 0, 0x00001000, "R|AS4", 0);    /* MA - 4KBytes */
+       
+    memorymap_init_L4_PER();
+    
+    memorymap_init_L3_ABE();
+    
+    memorymap_init_L4_CFG();
+    
+    memorymap_init_L4_WKUP();
+    
+    GEL_MapAddStr(0x4B000000, 0, 0x00100000, "R|W|AS4", 0);  /* SHA2MD5_1 Module 0 - 1Mb */
+    GEL_MapAddStr(0x4B100000, 0, 0x00100000, "R|W|AS4", 0);  /* SHA2MD5_1 Module 1 - 1Mb */
+    GEL_MapAddStr(0x4B400000, 0, 0x00100000, "R|W|AS4", 0);  /* AES_1 Module 0 - 1Mb */
+    GEL_MapAddStr(0x4B500000, 0, 0x00100000, "R|W|AS4", 0);  /* AES_1 Module 1 - 1Mb */
+    GEL_MapAddStr(0x4B600000, 0, 0x00100000, "R|W|AS4", 0);  /* AES_2 Module 0 - 1Mb */
+    GEL_MapAddStr(0x4B700000, 0, 0x00100000, "R|W|AS4", 0);  /* AES_2 Module 1 - 1Mb */
+    GEL_MapAddStr(0x4C000000, 0, 0x01000000, "R|W|AS4", 0);  /* EMIF1 registers Configuration - 16Mb */
+    GEL_MapAddStr(0x4D000000, 0, 0x01000000, "R|W|AS4", 0);  /* EMIF2 registers Configuration - 16Mb */
+    GEL_MapAddStr(0x4E000000, 0, 0x02000000, "R|W|AS4", 0);  /* DMM registers Configuration - 32Mb */
+    GEL_MapAddStr(0x50000000, 0, 0x02000000, "R|W|AS4", 0);  /* GPMC registers Configuration - 32Mb */
+    GEL_MapAddStr(0x52000000, 0, 0x02000000, "R|W|AS4", 0);  /* ISS ISP5(128KB) + SIMCOP(128KB) registers Configuration - 32Mb */
+    
+    memorymap_init_L3_EMU();  /* L3 EMU - 16Mb */
+    
+    memorymap_omap5430_ipu_init(); /* IPU Target - 16Mb */
+      
+    GEL_MapAddStr(0x56000000, 0, 0x02000000, "R|W|AS4", 0);  /* GFX - 32Mb */
+    
+    memorymap_init_L3_DSS();
+    
+    memorymap_init_IVAhd_iCont1();
+    
+    GEL_MapAddStr(0x5C000000, 0, 0x04000000, "R|W|AS4", 0);  /* C2C - 64Mb */
+    
+    GEL_MapAddStr(0x60000000, 0, 0x20000000, "R|W|AS4", 0);  /* TILER OFF ALIAS VIEW */
+        
+    GEL_MapAddStr(0x80000000, 0, 0x40000000, "R|W|AS4", 0);  /* SDRC/SMS CS0 - 1GB */
+   	GEL_MapAddStr(0xC0000000, 0, 0x40000000, "R|W|AS4", 0);  /* SDRC/SMS CS1 -1GB */ 
+   	
+    GEL_TextOut("--->>> omap5430_memory_map_init DONE !!! <<<---\n");
+}

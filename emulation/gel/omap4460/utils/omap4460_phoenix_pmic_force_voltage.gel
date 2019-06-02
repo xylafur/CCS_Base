@@ -1,0 +1,248 @@
+/*******************************************************************/ 
+/* This GEL file allows controlling VCORE1/VCORE2/VCORE3 from      */
+/* OMAP SmartReflex Force command                                  */
+/* All voltages supported from Phoenix PMIC spec (cf. VSEL table)  */
+/* Note that it is matching Phoenix Power IC ES2.0 EEPROM 03       */
+/* (to be updated with EEPROM 05                                   */
+/* Author: Yoan Hebrard (y-hebrard@ti.com)                    	   */
+/*******************************************************************/
+
+menuitem "Force Voltage"
+
+
+#define INFO_PRINT								0
+
+#define TPS 0
+#define PHOENIX 1
+
+
+#define PHOENIX_PMIC_I2C_AD                     0x12
+#define PHOENIX_PMIC_VCORE1_CFG_FORCE_REG       0x55
+#define PHOENIX_PMIC_VCORE2_CFG_FORCE_REG       0x5B
+#define PHOENIX_PMIC_VCORE3_CFG_FORCE_REG       0x61
+#define PHOENIX_PMIC_V1V29_CFG_VOLTAGE_REG      0x44
+#define PHOENIX_PMIC_VCORE3_CFG_FORCE_CMD       (0x1 << 24)
+
+#define PHOENIX_PMIC_MIN_VOLTAGE_x10            6000
+#define PHOENIX_PMIC_MAX_VOLTAGE_x10            13000
+#define PHOENIX_PMIC_STEP_VOLTAGE_x10           125
+
+
+
+
+#define TPS_PMIC_I2C_AD                     0x60
+
+#define TPS_PMIC_VCORE3_CFG_FORCE_CMD       (0x1 << 24)
+
+#define TPS_PMIC_MIN_VOLTAGE_x10            5000
+#define TPS_PMIC_MAX_VOLTAGE_x10            17700
+#define TPS_PMIC_STEP_VOLTAGE_x10           100
+
+#define TPS_VSET0_REG 0
+#define TPS_VSET1_REG 1
+#define TPS_VSET2_REG 2
+#define TPS_VSET3_REG 3
+#define TPS_VSET4_REG 4
+#define PHOENIX_I2C_SLAVE_ADDRESS 0x4A
+
+dialog Force_TPS_PMIC_Voltage(voltage_rail "Voltage Rail (VCORE_MPU:1/VCORE_ISS:2/VCORE_CORE:3/V1V29:0", voltage_value "Voltage (mV)" )
+{
+	char rail    = voltage_rail;
+	int value = voltage_value;
+	
+	char phoenixRevision = 0;
+	char phoenixVersion = 0 ;
+     
+     omap4460_PHOENIX_Init();
+         	
+	phoenixRevision = PHOENIX_I2C_Read8(PHOENIX_I2C_SLAVE_ADDRESS, 0xDF, phoenixRevision);
+    
+	
+	if (phoenixRevision == 0)
+   	{
+        phoenixVersion = 2;
+   	}
+   	else
+   	if (phoenixRevision >= 5)
+   	{
+   		phoenixVersion = 2;
+        
+   	}
+   	else
+   	{
+   		if (phoenixRevision < 5)
+   		{
+   			phoenixVersion = 1;
+            
+   		}
+   	 }
+     
+     
+	if (!((value == 0) || (value >= 600) || (value <=1300) || (value == 1350) || (value == 1500) || (value == 1800) || (value == 1900))){
+	       GEL_TextOut("--->>> Sorry, unsupported voltage value!!! <<<---\n");	       
+								return;
+	} else {
+	       
+	       if (rail == 0){
+	               GEL_TextOut("--->>> Sorry, V1V29 not yet supported... <<<---\n");
+        	} else if (rail == 1){
+                GEL_TextOut("--->>> VCORE_MPU set to %d mV... <<<---\n",,,,,value);
+        	       Force_PMIC_VCORE(TPS,0x0, TPS_VSET1_REG, value);
+        	} else if (rail == 2){
+                GEL_TextOut("--->>> VCORE_ISS set to %d mV... <<<---\n",,,,,value);
+        	       Force_PMIC_VCORE(PHOENIX,phoenixVersion, PHOENIX_PMIC_VCORE2_CFG_FORCE_REG, value);	
+        	} else if (rail == 3){
+                GEL_TextOut("--->>> VCORE_CORE set to %d mV... <<<---\n",,,,,value);
+        	       Force_PMIC_VCORE(PHOENIX,phoenixVersion, PHOENIX_PMIC_VCORE1_CFG_FORCE_REG, value);
+
+        	} else {
+        	      GEL_TextOut("--->>> Error: Voltage rail unknown!!! <<<---\n");
+        							return;
+        	}
+	       
+	}
+
+}
+ 
+
+dialog Force_Phoenix_PMIC_Voltage(voltage_rail "Voltage Rail (VCORE_MPU:1/VCORE_ISS:2/VCORE_CORE:3/V1V29:0", voltage_value "Voltage (mV)" )
+{
+	char rail    = voltage_rail;
+	int value = voltage_value;
+	
+	char phoenixRevision = 0;
+	char phoenixVersion = 0;
+    
+    omap4460_PHOENIX_Init();
+    	
+	phoenixRevision = PHOENIX_I2C_Read8(PHOENIX_I2C_SLAVE_ADDRESS, 0xDF, phoenixRevision);
+	
+	if (phoenixRevision == 0)
+   	{
+        phoenixVersion = 2;
+   	}
+   	else
+   	if (phoenixRevision >= 5)
+   	{
+   		phoenixVersion = 2;
+        
+   	}
+   	else
+   	{
+   		if (phoenixRevision < 5)
+   		{
+   			phoenixVersion = 1;
+            
+   		}
+   	 }
+     
+	if (!((value == 0) || (value >= 600) || (value <=1300) || (value == 1350) || (value == 1500) || (value == 1800) || (value == 1900))){
+	       GEL_TextOut("--->>> Sorry, unsupported voltage value!!! <<<---\n");	       
+								return;
+	} else {
+	       
+	       if (rail == 0){
+	               GEL_TextOut("--->>> Sorry, V1V29 not yet supported... <<<---\n");
+        	} else if (rail == 1){
+                GEL_TextOut("--->>> VCORE_MPU set to %d mV... <<<---\n",,,,,value);
+        	       Force_PMIC_VCORE(PHOENIX,phoenixVersion, PHOENIX_PMIC_VCORE1_CFG_FORCE_REG, value);
+        	} else if (rail == 2){
+                GEL_TextOut("--->>> VCORE_ISS set to %d mV... <<<---\n",,,,,value);
+        	       Force_PMIC_VCORE(PHOENIX,phoenixVersion, PHOENIX_PMIC_VCORE2_CFG_FORCE_REG, value);	
+        	} else if (rail == 3){
+                GEL_TextOut("--->>> VCORE_CORE set to %d mV... <<<---\n",,,,,value);
+        	       Force_PMIC_VCORE(PHOENIX,phoenixVersion, PHOENIX_PMIC_VCORE3_CFG_FORCE_REG, value);
+
+        	} else {
+        	      GEL_TextOut("--->>> Error: Voltage rail unknown!!! <<<---\n");
+        							return;
+        	}
+	       
+	}
+}
+
+
+
+/*******************************************************************/ 
+/* Forcing VCORE thru VCORE3_CFG_FORCE Register                    */
+/*******************************************************************/ 
+Force_PMIC_VCORE(int power_ic_type, int phoenix_version, int reg_adress, int voltage_value_mV){
+
+        int vcore_force_value, vsel_code, voltage_value_mV_x10;
+        
+        voltage_value_mV_x10 = voltage_value_mV * 10; // to avoid computing float numbers
+        
+        if (power_ic_type == PHOENIX)
+        {
+
+        
+								
+        if ((voltage_value_mV_x10 >= PHOENIX_PMIC_MIN_VOLTAGE_x10) && (voltage_value_mV_x10 <= PHOENIX_PMIC_MAX_VOLTAGE_x10)){
+								       vsel_code =  ((voltage_value_mV_x10 - PHOENIX_PMIC_MIN_VOLTAGE_x10) / PHOENIX_PMIC_STEP_VOLTAGE_x10) + 1;
+								} else if (voltage_value_mV_x10 == 0){
+								        vsel_code = 0;
+								} else if (voltage_value_mV_x10 == 13500){
+								        vsel_code = 0x3A;
+								} else if (voltage_value_mV_x10 == 15000){
+								        vsel_code = 0x3B;
+								} else if (voltage_value_mV_x10 == 18000){
+								        vsel_code = 0x3C;
+								} else if (voltage_value_mV_x10 == 19000){
+								        vsel_code = 0x3D;				
+								}
+								
+		if (phoenix_version >= 2)
+		{
+				vsel_code = vsel_code - 8;
+		}																														
+        vcore_force_value = PHOENIX_PMIC_VCORE3_CFG_FORCE_CMD + (vsel_code<<16) + (reg_adress<<8) + PHOENIX_PMIC_I2C_AD;
+        
+								
+
+        // Forcing VCORE thru VCORE3_CFG_FORCE Register
+        *(int*)0x4A307BAC = 0x6026;
+        *(int*)0x4A307BA8 = 0x0;
+        *(int*)0x4A307BA0 = vcore_force_value;
+        
+        if (INFO_PRINT) 
+        {
+			  GEL_TextOut("--->>> Voltage update done (%x) <<<---\n",,,,,vcore_force_value);
+			  GEL_TextOut("--->>> Voltage PHOENIX update done to (%d) mv <<<---\n",,,,, voltage_value_mV);
+		}
+        
+        
+        }
+        
+        if (power_ic_type == TPS)
+        {
+            if ((voltage_value_mV_x10 >= TPS_PMIC_MIN_VOLTAGE_x10) && (voltage_value_mV_x10 <= TPS_PMIC_MAX_VOLTAGE_x10)){
+            
+            vsel_code =  (voltage_value_mV_x10 - TPS_PMIC_MIN_VOLTAGE_x10) / TPS_PMIC_STEP_VOLTAGE_x10;
+                      
+            }
+            
+            vcore_force_value = TPS_PMIC_VCORE3_CFG_FORCE_CMD + (vsel_code<<16) + (reg_adress<<8) + TPS_PMIC_I2C_AD;
+          
+            if (INFO_PRINT) 
+        	{  
+            	GEL_TextOut("--->>> Voltage TPS update done on VCORE MPU to (%d) mv <<<---\n",,,,, voltage_value_mV);
+            }
+            
+            // OMAP4440:DEVICE_PRM:PRM_VC_CFG_I2C_MODE -> 0XA
+            *(int*)0x4A307BA8 = 0xA;
+    
+            // OMAP4440:DEVICE_PRM:PRM_VC_CFG_I2C_CLK -> 0xB004119
+            *(int*)0x4A307BAC = 0xB004119;
+            
+            *(int*)0x4A307BA0 = vcore_force_value;
+        }
+    }
+        
+
+            
+        
+            
+        
+        
+
+

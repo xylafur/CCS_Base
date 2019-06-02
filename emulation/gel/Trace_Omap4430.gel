@@ -1,0 +1,35 @@
+/*--------------------------------------------------------------*/
+/* STM_Config_omap4.gel                                         */
+/* version 0.01                                                 */
+/*                                                              */
+/* SUMMARY:                                                     */
+/*                                                              */
+/* This gel file is to be used to configure the STM module      */
+/* on OMAP4                                                     */
+/*                                                              */
+/* LIMITATIONS:                                                 */
+/*                                                              */
+/*                                                              */
+/*--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------*/
+/* FUNCTION SUMMARY                                             */
+/*                                                              */
+/* EnableTraceFunnel    -- Enable Trace Funnel for STM ETB      */
+/*                                                              */
+/*--------------------------------------------------------------*/
+
+menuitem "Config STM";
+
+#define UNLOCK_VALUE             0xC5ACCE55
+
+hotmenu EnableTraceFunnelforETB()
+{
+
+	// Configure Trace Funnel
+	*(int*)0x54164FB0 = UNLOCK_VALUE;
+
+	//Enable port 7 to pass STM data to ETB
+	*(int*)0x54164000 = 0x380; 
+		
+}

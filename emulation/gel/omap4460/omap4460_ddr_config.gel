@@ -1,0 +1,610 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* ATTILA DDR Config              		     				 */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     		       */
+/*******************************************************************/
+menuitem "Memory config"
+/**********************************************************************
+ *
+ *  FUNCTIONS
+ *
+ **********************************************************************/
+
+#define INFO_PRINT	1
+
+
+#define ELPIDA2X2GBIT	1
+#define ELPIDA4X2GBIT	2
+#define HYNIX2X2GBIT	3
+#define SAMSUNG4X2GBIT	4
+#define SAMSUNG2X4GBIT	5
+#define SAMSUNG4X4GBIT	6
+#define ELPIDA2X4GBIT	5
+#define ELPIDA4X4GBIT	7
+#define ZEBU		11
+
+#define OPPBOOT		0
+#define	OPP50		1
+#define	OPP100		2
+#define	OPPTURBO	3
+#define	OPPNITRO	4
+#define	OPPNITROSB	5
+
+#define	OPP50_200MHz	1
+#define	OPP50_233MHz	2
+#define	OPP100_400MHz	3
+#define	OPP100_466MHz	4
+
+#define JEDEC_TIM1_OPPBOOT		0x04442049
+#define JEDEC_TIM1_OPP100_400MHz	0x10EB065A
+#define JEDEC_TIM1_OPP100_466MHz	0x130D3763	// for OMAP4470 at 466MHz
+#define JEDEC_TIM1_OPP50_200MHz		0x08648309
+#define JEDEC_TIM1_OPP50_233MHz		0x08869391	// for OMAP4470 at 233MHz
+
+#define JEDEC_TIM2_OPPBOOT		0x1002008A
+#define JEDEC_TIM2_OPP100_400MHz	0x20370DD2
+#define JEDEC_TIM2_OPP100_466MHz	0x3041105A	// for OMAP4470 at 466MHz
+#define JEDEC_TIM2_OPP50_200MHz		0x101B06CA
+#define JEDEC_TIM2_OPP50_233MHz		0x1020080A	// for OMAP4470 at 233MHz
+
+#define JEDEC_TIM3_3_9_us_OPP100_400MHz	0x00B1C33F
+#define JEDEC_TIM3_3_9_us_OPP100_466MHz	0x00D4C3CF	// for OMAP4470 at 466MHz
+#define JEDEC_TIM3_3_9_us_OPP50_200MHz	0x0048A19F
+#define JEDEC_TIM3_3_9_us_OPP50_233MHz	0x006A21EF	// for OMAP4470 at 233MHz
+
+// this modification should be reported on 4430 as well.
+#define SDRAM_CONFIG_1X_2GBIT_MAP3_CL3	0x98800EB1
+#define SDRAM_CONFIG_1X_2GBIT_MAP3_CL6	0x98801AB1
+#define SDRAM_CONFIG_1X_2GBIT_MAP3_CL7	0x98801EB1
+#define SDRAM_CONFIG_2X_2GBIT_MAP3_CL3	0x98800EB9
+#define SDRAM_CONFIG_2X_2GBIT_MAP3_CL6	0x98801AB9
+#define SDRAM_CONFIG_2X_2GBIT_MAP3_CL7	0x98801EB9
+#define SDRAM_CONFIG_1X_4GBIT_MAP3_CL3	0x98800EB2
+#define SDRAM_CONFIG_1X_4GBIT_MAP3_CL6	0x98801AB2
+#define SDRAM_CONFIG_1X_4GBIT_MAP3_CL7	0x98801EB2
+#define SDRAM_CONFIG_1X_2GBIT_MAP0_CL3	0x80800EB1
+#define SDRAM_CONFIG_1X_2GBIT_MAP0_CL6	0x80801AB1
+#define SDRAM_CONFIG_1X_2GBIT_MAP0_CL7	0x80801EB1
+#define SDRAM_CONFIG_2X_2GBIT_MAP0_CL3	0x80800EB9
+#define SDRAM_CONFIG_2X_2GBIT_MAP0_CL6	0x80801AB9
+#define SDRAM_CONFIG_2X_2GBIT_MAP0_CL7	0x80801EB9
+#define SDRAM_CONFIG_1X_4GBIT_MAP0_CL3	0x80800EB2
+#define SDRAM_CONFIG_1X_4GBIT_MAP0_CL6	0x80801AB2
+#define SDRAM_CONFIG_1X_4GBIT_MAP0_CL7	0x80801EB2
+#define SDRAM_CONFIG_2X_4GBIT_MAP0_CL3	0x80800EBA
+#define SDRAM_CONFIG_2X_4GBIT_MAP0_CL6	0x80801ABA
+#define SDRAM_CONFIG_2X_4GBIT_MAP0_CL7	0x80801EBA
+
+#define DDR_PHY_CTRL1_OPPBOOT_RL3	0x449FFFF4
+#define DDR_PHY_CTRL1_OPP50_RL3		0x449FF814
+#define DDR_PHY_CTRL1_OPP100_RL3	0x449FF414
+#define DDR_PHY_CTRL1_OPPBOOT_RL5	0x449FFFF7
+#define DDR_PHY_CTRL1_OPP50_RL5		0x449FF817
+#define DDR_PHY_CTRL1_OPP100_RL5	0x449FF417
+#define DDR_PHY_CTRL1_OPPBOOT_RL6	0x449FFFF8
+#define DDR_PHY_CTRL1_OPP50_RL6		0x449FF818
+#define DDR_PHY_CTRL1_OPP100_RL6	0x449FF418
+#define DDR_PHY_CTRL1_OPPBOOT_RL7	0x449FFFF9
+#define DDR_PHY_CTRL1_OPP50_RL7		0x449FF819
+#define DDR_PHY_CTRL1_OPP100_RL7	0x449FF419
+
+#define ZQ_CFG_0CS			0x100B3215
+#define ZQ_CFG_1CS			0x500B3215
+#define ZQ_CFG_2CS			0xD00B3215
+
+#define REF_CTRL_3_9_US_OPPBOOT		0x0000004A
+#define REF_CTRL_3_9_US_OPP50_200MHz	0x0000030C
+#define REF_CTRL_3_9_US_OPP100_400MHz	0x00000618
+#define REF_CTRL_3_9_US_OPP100_466MHz	0x00000719	// for OMAP4470 at 466MHz
+#define REF_CTRL_3_9_US_OPP50_233MHz	0x0000038C	// for OMAP4470 at 233MHz
+
+#define REF_CTRL_7_8_US_OPPBOOT		0x00000095
+#define REF_CTRL_7_8_US_OPP50		0x00000618
+#define REF_CTRL_7_8_US_OPP100		0x00000C30
+
+#define LISA_MAP0_256MBYTE_INTL128	0x80440300
+#define LISA_MAP0_512MBYTE_INTL128	0x80540300
+#define LISA_MAP0_1GBYTE_INTL128	0x80640300
+#define LISA_MAP0_2GBYTE_INTL128	0x80740300
+
+
+// looping through EMIf1 and EMIf2
+hotmenu incremental_ddr_debug()
+{
+
+  int i = 0;
+  int j = 0;
+
+  while (j<128)
+    {
+      *(int*)(j+0x80000000) = (int)(0xAABBCC00+i);        
+      GEL_TextOut(">> address (%x) \n",,,,,(int)(j+0x80000000));
+      GEL_TextOut(">> value (%x) \n",,,,,*(int*)((int)(j+0x80000000))); 
+      i=i+1;
+      j=j+4;
+      GEL_TextOut("------------------------- \n");
+    }
+
+  check_incremental_ddr_debug();
+}   
+
+// looping through EMIf1 and EMIf2
+check_incremental_ddr_debug()
+{
+  int i = 0;
+  int j = 0;
+
+  while(j<128)
+    {
+      if (*(int*)((int)(j+0x80000000))!= (int)((int)(0xAABBCC00+i)))
+	{
+	  GEL_TextOut(">> error index (%x) \n",,,,,i);
+	  GEL_TextOut(">> error address (%x) \n",,,,,j+0x80000000);
+	  GEL_TextOut(">> read value (%x) \n",,,,,*(int*)(j+0x80000000));
+	  GEL_TextOut(">> value expected (%x) \n",,,,,(int)(0xAABBCC00+i));
+	  GEL_TextOut("------------------------- \n");
+	}
+      i=i+1;
+      j=j+4;
+
+    }        
+
+
+}
+
+
+
+hotmenu incremental_ddr_debug_fill_0xFFFFFFFF()
+{
+  int j = 0;
+
+  while (j<256)
+    {
+      *(int*)(j+0x80000000) = 0xFFFFFFFF; 
+      GEL_TextOut(">> address (%x) \n",,,,,j); 
+      j=j+4;
+    }
+} 
+
+hotmenu incremental_ddr_debug_fill_0x00000000()
+{
+  int j = 0;
+
+  while (j<256)
+    {
+      *(int*)(j+0x80000000) = 0x0;
+      GEL_TextOut(">> address (%x) \n",,,,,j);
+      j=j+4; 
+    }
+} 
+
+ddr_config_top(int OPP, int memoryType)
+{
+
+  int CORE_OPP;
+  // determine the OPP to be set for the CORE domain
+  int perf=1;
+  if (perf==0)//high perf
+    {
+      if (OPP == OPP50) CORE_OPP = OPP50_233MHz;
+      if ((OPP == OPP100)||(OPP == OPPTURBO)||(OPP == OPPNITRO)||(OPP == OPPNITROSB)) 
+	{
+	  CORE_OPP = OPP100_466MHz;
+	  GEL_TextOut(">>OPP100_466");
+	}
+    }
+  else if (perf==1)
+    {
+
+      // comment 8/11 utiliser par defaut OPP100_400 a voir Yoan !
+      if (OPP == OPP50) CORE_OPP = OPP50_200MHz;
+      if ((OPP == OPP100)||(OPP == OPPTURBO)||(OPP == OPPNITRO)||(OPP == OPPNITROSB))
+	{ 
+	  CORE_OPP = OPP100_400MHz;
+	  GEL_TextOut(">>OPP100_400");
+	}
+    }  
+
+  emif_config(CORE_OPP,1,memoryType);	// EMIF1
+  emif_config(CORE_OPP,2,memoryType);	// EMIF2
+  
+  dmm_settings_board(memoryType);
+  *(int*)0x4A100638 = 0x9C9C9C9C;
+  *(int*)0x4A10063C = 0x9C9C9C9C;
+  *(int*)0x4A100640 = 0x9C9C9C9C;
+  *(int*)0x4A100648 = 0x9C9C9C9C;
+  *(int*)0x4A10064C = 0x9C9C9C9C;
+  *(int*)0x4A100650 = 0x9C9C9C9C;
+  
+  // BE CAREFULL FOR THE FIRST DEVICE NON TRIMMED 
+  // *(int*)0x4A100704 = 0x00084000;
+  
+}
+
+
+emif_config(int OPP,int emif_index,int memoryType)
+{
+  
+  int emif_base_address;
+  int register_address;
+  
+  if (INFO_PRINT) {
+    GEL_TextOut(">> Start emif_config\n");
+  }
+  
+  if (emif_index == 1)	emif_base_address = 0x4C000000;
+  else			emif_base_address = 0x4D000000;
+  
+  // SDRAM CONFIG
+  if ((memoryType==ELPIDA2X2GBIT)||(memoryType==HYNIX2X2GBIT))
+    {
+      register_address = (int)(emif_base_address+0x8);
+      *(int*)register_address = SDRAM_CONFIG_1X_2GBIT_MAP0_CL3;
+    }
+  if ((memoryType==ELPIDA4X2GBIT)||(memoryType==SAMSUNG4X2GBIT))
+    {
+      register_address = (int)(emif_base_address+0xC);
+      // using address mapping with CS line at low order address bit
+      *(int*)(register_address)&=0xF7FFFFFF;	// reset bit 27 - REG_EBANK_POS
+      // removing NVM mode on nCS1 in order to select 2 CS of DDRAM for each EMIF4D instance
+      *(int*)(register_address)&=0xBFFFFFFF;	// reset bit 30 - REG_CS1NVMEN
+
+      register_address = (int)(emif_base_address+0x8);
+      *(int*)register_address = SDRAM_CONFIG_2X_2GBIT_MAP0_CL3;
+    }
+  if ((memoryType==SAMSUNG2X4GBIT) || (memoryType==ELPIDA2X4GBIT))
+    {
+      register_address = (int)(emif_base_address+0x8);
+      *(int*)register_address = SDRAM_CONFIG_1X_4GBIT_MAP0_CL3;
+    }
+  if ((memoryType==SAMSUNG4X4GBIT)||(memoryType==ELPIDA4X4GBIT))
+    {
+      register_address = (int)(emif_base_address+0xC);
+      // using address mapping with CS line at low order address bit
+      *(int*)(register_address)&=0xF7FFFFFF;	// reset bit 27 - REG_EBANK_POS
+      // removing NVM mode on nCS1 in order to select 2 CS of DDRAM for each EMIF4D instance
+      *(int*)(register_address)&=0xBFFFFFFF;	// reset bit 30 - REG_CS1NVMEN
+
+      register_address = (int)(emif_base_address+0x8);
+      *(int*)register_address = SDRAM_CONFIG_2X_4GBIT_MAP0_CL3;
+    }
+
+  // DDR PHY CTRL 1
+  register_address = (int)(emif_base_address+0xE4);
+  *(int*)register_address = DDR_PHY_CTRL1_OPPBOOT_RL3;
+
+  // set MR0 (line CS0) register and poll 
+  register_address = (int)(emif_base_address+0x50);
+  *(int*)register_address = 0x00000000;
+  register_address = (int)(emif_base_address+0x40);
+  while ( (*(int*)register_address&0x1)!=0x0);
+
+  // set MR0 (line CS1) register and poll 
+  if ((memoryType==ELPIDA4X2GBIT)||(memoryType==SAMSUNG4X2GBIT)||(memoryType==SAMSUNG4X4GBIT)||(memoryType==ELPIDA4X4GBIT))
+    {
+      register_address = (int)(emif_base_address+0x50);
+      *(int*)register_address = 0x80000000;
+      register_address = (int)(emif_base_address+0x40);
+      while ( (*(int*)register_address&0x1)!=0x0);
+    }
+
+  // set MR10 (line CS0) register
+  register_address = (int)(emif_base_address+0x50);
+  *(int*)register_address = 0x0000000A;
+  register_address = (int)(emif_base_address+0x40);
+  *(int*)register_address = 0x000000FF;
+
+  // set MR10 (line CS1) register
+  if ((memoryType==ELPIDA4X2GBIT)||(memoryType==SAMSUNG4X2GBIT)||(memoryType==SAMSUNG4X4GBIT)||(memoryType==ELPIDA4X4GBIT))
+    {
+      register_address = (int)(emif_base_address+0x50);
+      *(int*)register_address = 0x8000000A;
+      register_address = (int)(emif_base_address+0x40);
+      *(int*)register_address = 0x000000FF;
+    }
+
+  // set MR1 (line CS0) register
+  register_address = (int)(emif_base_address+0x50);
+  *(int*)register_address = 0x00000001;
+  register_address = (int)(emif_base_address+0x40);
+  *(int*)register_address = 0x00000023;
+
+  // set MR1 (line CS1) register
+  if ((memoryType==ELPIDA4X2GBIT)||(memoryType==SAMSUNG4X2GBIT)||(memoryType==SAMSUNG4X4GBIT)||(memoryType==ELPIDA4X4GBIT))
+    {
+      register_address = (int)(emif_base_address+0x50);
+      *(int*)register_address = 0x80000001;
+      register_address = (int)(emif_base_address+0x40);
+      *(int*)register_address = 0x00000023;
+    }
+
+  // change RL
+  if ((OPP==OPP50_200MHz)||(OPP==OPP100_400MHz))	// case OMAP4430-OMAP4460 (the max OPP for CORE domain is 400MHz)
+    {
+      // set MR2 (line CS0) register 
+      register_address = (int)(emif_base_address+0x50);
+      *(int*)register_address = 0x00000002;
+      register_address = (int)(emif_base_address+0x40);
+      *(int*)register_address = 0x00000004;
+      // set MR2 (line CS1) register 
+      if ((memoryType==ELPIDA4X2GBIT)||(memoryType==SAMSUNG4X2GBIT)||(memoryType==SAMSUNG4X4GBIT)||(memoryType==ELPIDA4X4GBIT))
+	{
+	  register_address = (int)(emif_base_address+0x50);
+	  *(int*)register_address = 0x80000002;
+	  register_address = (int)(emif_base_address+0x40);
+	  *(int*)register_address = 0x00000004;
+	}
+      // SDRAM CONFIG
+      register_address = (int)(emif_base_address+0x8);
+      if ((memoryType==ELPIDA2X2GBIT)||(memoryType==HYNIX2X2GBIT))
+	{
+	  *(int*)register_address = SDRAM_CONFIG_1X_2GBIT_MAP0_CL6;
+	}
+      if ((memoryType==ELPIDA4X2GBIT)||(memoryType==SAMSUNG4X2GBIT))
+	{
+	  *(int*)register_address = SDRAM_CONFIG_2X_2GBIT_MAP0_CL6;
+	}
+      if ((memoryType==SAMSUNG2X4GBIT) || (memoryType==ELPIDA2X4GBIT))	
+	{
+	  // on est dans la config 200 / 400
+	  *(int*)register_address = SDRAM_CONFIG_1X_4GBIT_MAP0_CL6;
+	}
+      if ((memoryType==SAMSUNG4X4GBIT)||(memoryType==ELPIDA4X4GBIT))
+	{
+	  *(int*)register_address = SDRAM_CONFIG_2X_4GBIT_MAP0_CL6;
+	}
+      // DDR PHY CTRL 1
+      register_address = (int)(emif_base_address+0xE4);
+      *(int*)register_address = DDR_PHY_CTRL1_OPPBOOT_RL6;
+    }
+  if ((OPP==OPP50_233MHz)||(OPP==OPP100_466MHz))	// case OMAP4470 (the max OPP for CORE domain is 466MHz)
+    {
+      // set MR2 (line CS0) register 
+      register_address = (int)(emif_base_address+0x50);
+      *(int*)register_address = 0x00000002;
+      register_address = (int)(emif_base_address+0x40);
+      *(int*)register_address = 0x00000005;
+      // set MR2 (line CS1) register 
+      if ((memoryType==ELPIDA4X2GBIT)||(memoryType==SAMSUNG4X2GBIT)||(memoryType==SAMSUNG4X4GBIT)||(memoryType==ELPIDA4X4GBIT))
+	{
+	  register_address = (int)(emif_base_address+0x50);
+	  *(int*)register_address = 0x80000002;
+	  register_address = (int)(emif_base_address+0x40);
+	  *(int*)register_address = 0x00000005;
+	}
+      // SDRAM CONFIG
+      register_address = (int)(emif_base_address+0x8);
+      if ((memoryType==ELPIDA2X2GBIT)||(memoryType==HYNIX2X2GBIT))
+	{
+	  *(int*)register_address = SDRAM_CONFIG_1X_2GBIT_MAP0_CL7;
+	}
+      if ((memoryType==ELPIDA4X2GBIT)||(memoryType==SAMSUNG4X2GBIT))
+	{
+	  *(int*)register_address = SDRAM_CONFIG_2X_2GBIT_MAP0_CL7;
+	}
+      if ((memoryType==SAMSUNG2X4GBIT) || (memoryType==ELPIDA2X4GBIT))	
+	{
+	  // valeur propre a l'OPP 233 / 466
+	  *(int*)register_address = SDRAM_CONFIG_1X_4GBIT_MAP0_CL7;
+	}
+      if ((memoryType==SAMSUNG4X4GBIT)||(memoryType==ELPIDA4X4GBIT))
+	{
+	  *(int*)register_address = SDRAM_CONFIG_2X_4GBIT_MAP0_CL7;
+	}
+      // DDR PHY CTRL 1
+      register_address = (int)(emif_base_address+0xE4);
+      *(int*)register_address = DDR_PHY_CTRL1_OPPBOOT_RL7;
+    }
+
+  // DDR PHY CTRL 2
+  register_address = (int)(emif_base_address+0xEC);
+  *(int*)register_address = 0x00000000;
+
+  // READ IDLE CTRL
+  register_address = (int)(emif_base_address+0x98);
+  *(int*)register_address = 0x000501FF;
+
+  // PWR MGMT CTRL
+  register_address = (int)(emif_base_address+0x38);
+  *(int*)register_address = 0x80000000;
+
+  // ZQ INIT
+  if ((memoryType==ELPIDA2X2GBIT)||(memoryType==HYNIX2X2GBIT))
+    {
+      register_address = (int)(emif_base_address+0xC8);
+      *(int*)register_address = ZQ_CFG_1CS;
+    }
+  if ((memoryType==ELPIDA4X2GBIT)||(memoryType==SAMSUNG4X2GBIT)||(memoryType==SAMSUNG4X4GBIT)||(memoryType==ELPIDA4X4GBIT))
+    {
+      register_address = (int)(emif_base_address+0xC8);
+      *(int*)register_address = ZQ_CFG_2CS;
+    }
+
+  // SDRAM REF CTRL
+  register_address = (int)(emif_base_address+0x10);
+  *(int*)register_address = REF_CTRL_3_9_US_OPPBOOT;
+
+  // program shadow registers
+  emif_shadow_reg(OPP,emif_index);
+
+  // set MR16 (line CS0) 
+  register_address = (int)(emif_base_address+0x50);
+  *(int*)register_address = 0x40000010;
+  register_address = (int)(emif_base_address+0x40);
+  *(int*)register_address = 0x00000000;
+
+  // set MR16 (line CS1) 
+  if ((memoryType==ELPIDA4X2GBIT)||(memoryType==SAMSUNG4X2GBIT)||(memoryType==SAMSUNG4X4GBIT)||(memoryType==ELPIDA4X4GBIT))
+    {
+      register_address = (int)(emif_base_address+0x50);
+      *(int*)register_address = 0xC0000010;
+      register_address = (int)(emif_base_address+0x40);
+      *(int*)register_address = 0x00000000;
+    }
+
+  if (INFO_PRINT) {   
+    GEL_TextOut(">> End ELPIDA E1471E10 DDR config EMIF4D1\n");
+  }
+}
+
+
+emif_shadow_reg(int OPP,int emif_index)
+{
+  int emif_base_address;
+  int register_address;
+
+  if (emif_index == 1)	emif_base_address = 0x4C000000;
+  else			emif_base_address = 0x4D000000;
+
+  // DDR PHY CTRL1 SHDW
+  register_address = (int)(emif_base_address+0xE8);
+  if (OPP==OPP100_466MHz)
+    {
+      *(int*)register_address = DDR_PHY_CTRL1_OPP100_RL7;
+    }
+  if (OPP==OPP50_233MHz)
+    {
+      *(int*)register_address = DDR_PHY_CTRL1_OPP50_RL7;
+    }
+  if (OPP==OPP100_400MHz)
+    {
+      *(int*)register_address = DDR_PHY_CTRL1_OPP100_RL6;
+    }
+  if (OPP==OPP50_200MHz)
+    {
+      *(int*)register_address = DDR_PHY_CTRL1_OPP50_RL6;
+    }
+
+  // READ IDLE CTRL SHDW
+  register_address = (int)(emif_base_address+0x9C);
+  *(int*)register_address = 0x000501FF;
+
+  // SDRAM TIM 1 SHDW
+  register_address = (int)(emif_base_address+0x1C);
+  if (OPP==OPP100_466MHz)
+    {
+      *(int*)register_address = JEDEC_TIM1_OPP100_466MHz;
+    }
+  if (OPP == OPP50_233MHz)
+    {
+      *(int*)register_address = JEDEC_TIM1_OPP50_233MHz;
+    }
+  if (OPP==OPP100_400MHz)
+    {
+      *(int*)register_address = JEDEC_TIM1_OPP100_400MHz;
+    }
+  if (OPP == OPP50_200MHz)
+    {
+      *(int*)register_address = JEDEC_TIM1_OPP50_200MHz;
+    }
+
+  // SDRAM TIM 2 SHDW
+  register_address = (int)(emif_base_address+0x24);
+  if (OPP==OPP100_466MHz)
+    {
+      *(int*)register_address = JEDEC_TIM2_OPP100_466MHz;
+    }
+  if (OPP == OPP50_233MHz)
+    {
+      *(int*)register_address = JEDEC_TIM2_OPP50_233MHz;
+    }
+  if (OPP==OPP100_400MHz)
+    {
+      *(int*)register_address = JEDEC_TIM2_OPP100_400MHz;
+    }
+  if (OPP == OPP50_200MHz)
+    {
+      *(int*)register_address = JEDEC_TIM2_OPP50_200MHz;
+    }
+
+  // SDRAM TIM 3 SHDW
+  register_address = (int)(emif_base_address+0x2C);
+  if (OPP==OPP100_466MHz)
+    {
+      *(int*)register_address = JEDEC_TIM3_3_9_us_OPP100_466MHz;
+    }
+  if (OPP == OPP50_233MHz)
+    {
+      *(int*)register_address = JEDEC_TIM3_3_9_us_OPP50_233MHz;
+    }
+  if (OPP==OPP100_400MHz)
+    {
+      *(int*)register_address = JEDEC_TIM3_3_9_us_OPP100_400MHz;
+    }
+  if (OPP == OPP50_200MHz)
+    {
+      *(int*)register_address = JEDEC_TIM3_3_9_us_OPP50_200MHz;
+    }
+
+  // PWR MGMT CTRL SHDW
+  register_address = (int)(emif_base_address+0x3C);
+  *(int*)register_address = 0x00000000;
+
+  // SDRAM REF CTRL SHDW
+  register_address = (int)(emif_base_address+0x14);
+  if (OPP==OPP100_466MHz)
+    {
+      *(int*)register_address = REF_CTRL_3_9_US_OPP100_466MHz;
+    }
+  if (OPP == OPP50_233MHz)
+    {
+      *(int*)register_address = REF_CTRL_3_9_US_OPP50_233MHz;
+    }
+  if (OPP==OPP100_400MHz)
+    {
+      *(int*)register_address = REF_CTRL_3_9_US_OPP100_400MHz;
+    }
+  if (OPP == OPP50_200MHz)
+    {
+      *(int*)register_address = REF_CTRL_3_9_US_OPP50_200MHz;
+    }
+}
+
+
+
+dmm_settings_board(int memoryType)
+{
+
+  if (INFO_PRINT) {
+    GEL_TextOut(">> START dmm_settings_board \n");
+  }    
+
+  if ((memoryType==ELPIDA2X2GBIT)||(memoryType==HYNIX2X2GBIT))
+    {
+      /* Write @40 LISA_MAP_0 */
+      *(int*)0x4e000040 = LISA_MAP0_512MBYTE_INTL128;
+    }
+  if ((memoryType==ELPIDA4X2GBIT)||(memoryType==SAMSUNG4X2GBIT)||(memoryType==SAMSUNG2X4GBIT) ||(memoryType==ELPIDA2X4GBIT))
+    {
+      /* Write @40 LISA_MAP_0 */
+      *(int*)0x4e000040 = LISA_MAP0_1GBYTE_INTL128;
+    }
+  if ((memoryType==SAMSUNG4X4GBIT)||(memoryType==ELPIDA4X4GBIT))
+    {
+      /* Write @40 LISA_MAP_0 */
+      *(int*)0x4e000040 = LISA_MAP0_2GBYTE_INTL128;
+    }
+
+  /* Write @48 LISA_MAP_3 */
+  *(int*)0x4e00004C = 0xFF020100;
+
+  /* DUPLICATE LISA MAP0 TO MA */
+  *(int*)0x482AF040 = *(int*)0x4e000040;
+        
+  /* DUPLICATE LISA MAP1 TO MA */
+  *(int*)0x482AF044 = 0x0;
+        
+  /* DUPLICATE LISA MAP2 TO MA */
+  *(int*)0x482AF048 = 0x0;
+        
+  /* DUPLICATE LISA MAP3 TO MA */
+  *(int*)0x482AF04C = *(int*)0x4e00004C;
+}
+
+

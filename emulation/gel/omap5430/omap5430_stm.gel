@@ -1,0 +1,623 @@
+/*******************************************************************/ 
+/* OMAP5430 Sequences for STM system trace   		     		 */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Madhav Vij (SDO)				     		   	    */
+/*  Latest updated by zhenyu wang and Thomas Salamito			 */
+/*    we cannot determine the revision of silicon automatically     */
+/*  - this gel file needed to be loaded from cs_dap_debugSS to      */
+/*    better support for EMU device                                */
+/*    Revision	Date      	Description					       */
+/*    1.0       Jan, 2012  	Base Line to support Omap5430 ES1     */
+/*    2.0       May, 2012  	1) Provide Functions to switch between SYS STM  */
+/*                             and CS STM (MPU)    							*/
+/*                          2) Add 2 functions to enable PTM Trace to ETB   */
+/*******************************************************************/
+
+/**********************************************************************
+ *
+ *  DEFINITIONS
+ *
+ **********************************************************************/
+
+// omap5430 control core: PAD CONF Registers
+
+#define INFO_PRINT	1
+
+#define SEC_EMU_MRM_PERM_REG_LOW_0   0x4A226088
+
+//------------------------
+//  SYS_CLK definitions.
+//------------------------
+#define SYS_CLK_38_4     1
+#define SYS_CLK_26       2
+#define SYS_CLK_19_2     3
+
+//default when no menu used.
+int SYSCLKFREQ = SYS_CLK_19_2;
+
+#define PAD0_DRM_EMU0_PAD1_DRM_EMU1     0x4AE0C844  
+#define PAD0_RFBI_WE_PAD1_RFBI_CS0      0x4A002924
+#define PAD0_RFBI_DATA1_PAD1_RFBI_DATA0 0x4A002920
+
+
+#define DEBUGSS_CFGBUS_PLLCTRL 0x80031800
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS  *(unsigned int *) 0x80031804
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_GO  *(unsigned int *) 0x80031808
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1  *(unsigned int *) 0x8003180C
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2  *(unsigned int *) 0x80031810
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3  *(unsigned int *) 0x80031814
+
+
+#define CM_EMU_DEBUGSS_CLKCTRL       0x4A307A20
+#define CM_L3INSTR_L3_3_CLKCTRL      0x4A008E20
+#define CM_L3INSTR_L3_INSTR_CLKCTRL  0x4A008E28
+
+#define DRM_CLAIM                    0xD4160050
+#define DPM_CTRL0                    0xD4160080
+#define DPM_CTRL1                    0xD4160084
+#define DPM_CTRL2                    0xD4160088
+#define DPM_CTRL3                    0xD416008C
+#define DPM_CTRL4                    0xD4160090
+#define DPM_CTRL5                    0xD4160094
+
+#define STM_SWMCTRL0                 0x54161024
+#define STM_PTI_CONFIG               0x5416103C
+#define STM_LOCK_ACCESS              0x54161FB0
+#define STM_TESTCTRL                 0x54161050
+
+#define		DEBUG_TRACE_FUNNEL_PORT_REG	0xD4164000
+#define 	MPU_TRACE_FUNNEL_PORT_REG	0xD4158000
+
+#define		TPIU_FORMAT_STATUS_REG		0xd4163300
+#define		TPIU_FORMAT_CONTROL_REG		0xd4163304
+
+#define		PTM0_OS_LOCK				0x8000c300
+#define		PTM1_OS_LOCK				0x8000d300
+
+#define UNLOCK_VALUE             0xC5ACCE55
+
+menuitem "STM_Utility";
+
+
+/**********************************************************************
+ *
+ *  FUNCTIONS
+ *
+ *  STM Clock is enabled by running the gel file at cortexA15.
+ *   
+ *   The sequences in this gel FILE SHOULD BE used in the following order:
+ *    (Cortex-A9)
+ *    1/ Setup_STM_Clocking_Modes()
+ *    2/ Configure_EMU0_4_For_STM for 4 pin trace or Configure_EMU0_1_For_STM()
+ *              for 1 pin trace
+ *    3/ Enable_Pattern_Generator_in_STM_1_pin_mode() or 
+ *             Enable_Pattern_Generator_in_STM_4_pin_mode()
+ *
+ *
+ *    Note that the drive strength of the I/O (EMU0..4) are for 1-10pF external
+ *    load. It can be changed by using the hotmenu GEL functions to use 10-16pF
+ *    external load (Configure_EMU0_4_SmartIO_Load_10pF_16pF())
+ *
+ *   Configure FPGA as follows: (on TEB)
+ *      * Do not allow FPGA to drive EMU0/1 pins (disable WIR mode)
+ *      * Configure QSWITCH2 register in FPGA using HPC tool as follows
+ *        Set bits 25:24 to 0x1 and 23:22 to 0x1 to route EMU2..4 through
+ *        switches controlled by the FPGA to the 20 Pin TI header.
+ *
+ *      * Also configure QSWITCH4 register to disconnect FPGA from EMU0/1
+ *
+ *
+ *      * Also need to ensure EMU0..4 disconnected from MIPI 60 connector 
+ *        through resistor bank on board.
+ *
+ *      * Also need to ensure EMU2..4 connected to TI-20 JTAG header
+ *              
+ **********************************************************************/
+
+ /***********************************************************************
+  Enable System level STM module and store data into ETB
+ ************************************************************************/
+hotmenu Enable_ETB_For_SYSSTM()
+{
+    dpll_dbgss_config_board();
+
+	// Configure Trace Funnel
+	//*(int*)0xD4164FB0@data = UNLOCK_VALUE;
+
+	//Enable port 7 to pass STM data to ETB
+	*(int*)DEBUG_TRACE_FUNNEL_PORT_REG@data = 0x380; 
+		
+}
+
+/***********************************************************************
+  Enable CS STM module(inside of MPUSS) and store data into ETB
+  In our support, there will be only 1 STM data stream, either from SYSSTM
+  or CS_STM stored to ETB module. The implementation is to use trace funnel
+  port to enable to the right STM data stream to ETB (or TPIU).
+  The trace funnel is at 0xD4164000
+  In addition, we need to disable TPIU so that data can be routed to ETB
+  This step is needed only for those data come from MPUSS
+ ************************************************************************/
+Enable_ETB_For_CS_STM()
+{
+    int temp;
+	//Setup clock
+    dpll_dbgss_config_board();
+
+	// Configure Trace Funnel
+	//*(int*)0xD4164FB0@data = UNLOCK_VALUE;
+
+	//Enable port 1 to pass MPU_SS (PTM and\or CS_STM) data to ETB
+	*(int*)DEBUG_TRACE_FUNNEL_PORT_REG@data = 0x301; 
+	
+	//Enable CS_TF for CS_STM
+	*(int*)MPU_TRACE_FUNNEL_PORT_REG@data = 0x3FF;	
+	
+	DisableTPIU();	
+}
+
+/************************************************************************
+ This function is to use GPIO5 pin to select the right mux for STM usage
+ it is only valid for ES1 as in ES2, the inferface and mux will be changed
+************************************************************************/
+hotmenu SetGPIOwakeUp5ToOutputAndSetTo1()
+{
+    int value;
+    
+    if (INFO_PRINT) {
+    GEL_TextOut("> SetGPIOwakeUp5ToOutputAndSetTo1\n");
+    }
+    
+    // Enable SW domain du AON domain .
+   value = *(int*)0x4AE07800;
+   value|=0x2;
+   *(int*)0x4AE07800=value;
+   
+   // Enable AON domain in auto
+   value = *(int*)0x4AE07838;
+   value|=0x1;
+   *(int*)0x4AE07838=value;
+    
+    	
+    // Set pin mux for wakeUp GPIO5.
+   value = *(int*)0x4AE0C878;
+   value&=0xFFF8FFFF;
+   value|=0x6<<16;
+   *(int*)0x4AE0C878=value;
+   
+    
+// READ value OMAP5430:GPIO1:GPIO_OE
+  value = *(int*)0x4AE10134;
+    
+  // Configure SOC_GPIO_PIN_WK5 in output
+  value &=~(1 << 5);    
+  *(int*)0x4AE10134 = value;
+    
+  // SET GPIO5 to 1
+  value = *(int*)0x4AE1013C;
+  value |=(1 << 5);
+  *(int*)0x4AE1013C = value;
+  
+  dpll_dbgss_config_board();
+  
+
+  GEL_TextOut("< SetGPIOwakeUp5ToOutputAndSetTo1\n");
+}
+
+/************************************************************************
+ Configure chip to use 4 data pin and 1 clock pin to transmit STM data
+************************************************************************/
+hotmenu Configure_EMU0_4_For_STM()
+{
+
+   SetGPIOwakeUp5ToOutputAndSetTo1();
+
+   Configure_DRM_to_assign_STM_to_DP0_4();
+
+   Configure_Spinner_For_STM_trace_Pins_EMU0_EMU4();
+}
+
+/************************************************************************
+ Configure chip to use 2 data pins and 1 clock pin to transmit STM data
+************************************************************************/
+hotmenu Configure_EMU0_2_For_STM()
+{
+
+   SetGPIOwakeUp5ToOutputAndSetTo1();
+
+   Configure_DRM_to_assign_STM_to_DP0_2();
+
+   Configure_Spinner_For_STM_trace_Pins_EMU0_EMU4();
+}
+
+/************************************************************************
+ Configure chip to use 1 data pin and 1 clock pin to transmit STM data
+************************************************************************/
+hotmenu Configure_EMU0_1_For_STM()
+{
+   SetGPIOwakeUp5ToOutputAndSetTo1();
+
+   Configure_DRM_to_assign_STM_to_DP0_1();
+
+   Configure_Spinner_For_STM_trace_Pins_EMU0_EMU4();
+}
+
+Enable_Pattern_Generator_in_STM_4_pin_mode()
+{
+ /* Enable Pattern Generator in STM */
+  // unlock access of stm (ONLY needed for application access)
+   *(int*)STM_LOCK_ACCESS = 0xC5ACCE55;
+
+   // Release any prior ownership
+   *(int*)STM_SWMCTRL0 = 0x20000000;
+
+   // claim ownersip
+    *(int*)STM_SWMCTRL0 = 0x40000000;
+   // Set PTISize and PTIEnable
+   // Double data rate
+   // 4-pin data
+    *(int*)STM_PTI_CONFIG = (0x0 << 3) |
+                            (0x2 << 4) |
+                            (0x1 << 8);
+
+   // Enable Simple Pattern A
+    *(int*)STM_TESTCTRL = 0x1; 
+   // Enable STM
+    *(int*)STM_SWMCTRL0 = 0x80000000;
+   GEL_TextOut("Enable Pattern Generator in STM,4 pin mode \n"); 
+}
+
+Enable_Pattern_Generator_in_STM_2_pin_mode()
+{
+ /* Enable Pattern Generator in STM */
+  // unlock access of stm (ONLY needed for application access)
+   *(int*)STM_LOCK_ACCESS = 0xC5ACCE55;
+
+   // Release any prior ownership
+   *(int*)STM_SWMCTRL0 = 0x20000000;
+
+   // claim ownersip
+    *(int*)STM_SWMCTRL0 = 0x40000000;
+   // Set PTISize and PTIEnable
+   // Double data rate
+   // 2-pin data
+    *(int*)STM_PTI_CONFIG = (0x0 << 3) |
+                            (0x1 << 4) |
+                            (0x1 << 8);
+
+   // Enable Simple Pattern A
+    *(int*)STM_TESTCTRL = 0x1; 
+   // Enable STM
+    *(int*)STM_SWMCTRL0 = 0x80000000;
+   GEL_TextOut("Enable Pattern Generator in STM,2 pin mode \n"); 
+}
+
+Enable_Pattern_Generator_in_STM_1_pin_mode()
+{
+ /* Enable Pattern Generator in STM */
+  // unlock access of stm (ONLY needed for application access)
+   *(int*)STM_LOCK_ACCESS = 0xC5ACCE55;
+
+   // Release any prior ownership
+   *(int*)STM_SWMCTRL0 = 0x20000000;
+
+   // claim ownersip
+    *(int*)STM_SWMCTRL0 = 0x40000000;
+   // Set PTISize and PTIEnable
+   // Double data rate
+   // 1-pin data
+    *(int*)STM_PTI_CONFIG = (0x0 << 3) |
+                            (0x0 << 4) |
+                            (0x1 << 8);
+
+   // Enable Simple Pattern A
+    *(int*)STM_TESTCTRL = 0x1; 
+   // Enable STM
+    *(int*)STM_SWMCTRL0 = 0x80000000;
+   GEL_TextOut("Enable Pattern Generator in STM, 1 pin mpde\n"); 
+}
+
+
+Configure_Spinner_For_STM_trace_Pins_EMU0_EMU4()
+{
+
+    *(int*)PAD0_DRM_EMU0_PAD1_DRM_EMU1 = 0x01180118;    //set bit 18:16 and 2:0 to 0 to enable both emu0 and emu1. Set 0 to other bits
+
+    *(int*)PAD0_RFBI_WE_PAD1_RFBI_CS0  = 0x010D010D;  //Set the lower 3 bit to value 0x5 to enable each emu pin (16 bits per emu channel)5
+
+    *(int*)PAD0_RFBI_DATA1_PAD1_RFBI_DATA0 &= 0xffff;	//clear upper 16 bits and then set it to 0x5 to configure emu4 pin
+    *(int*)PAD0_RFBI_DATA1_PAD1_RFBI_DATA0 |= (0x010D << 16);
+
+    /* Configure EMU0..4 for DBG pin usage */
+    /* All are MUX MODE 0 and for all the input buffer has been disabled */
+    /* Input buffer enabling for output only signals may result in reflections */
+    /* Pull-ups/down have been disabled as well */
+
+    GEL_TextOut("Set pad registers to enble emu pins \n");
+}                                           
+
+
+Configure_DRM_to_assign_STM_to_DP0_4()
+{
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x2 << 30);
+   *(int*)DPM_CTRL0@data = 0x2; // STM_DATA[0] (DP0)
+   *(int*)DPM_CTRL1@data = 0x3; // STM_DATA[1] (DP1)
+   *(int*)DPM_CTRL2@data = 0x6; // STM_CLK     (DP2)
+   *(int*)DPM_CTRL3@data = 0x4; // STM_DATA[2] (DP3)
+   *(int*)DPM_CTRL4@data = 0x5; // STM_DATA[3] (DP4)
+
+   // Note the app owned state status bit should be '0' after PAD configuration
+   // (i checked, it appears to work)
+
+   // Debug only status bit is always '0' because on OMAP-4 no DP pin is exclusively 
+   // available for debug
+
+   // The output and output enable status bits should reflect the way STM is driving
+   // the pins (output enable should go to zero and stay zero)
+
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 4 pin STM data \n");
+}
+
+Configure_DRM_to_assign_STM_to_DP0_2()
+{
+
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x2 << 30);
+   *(int*)DPM_CTRL0@data = 0x2; // STM_DATA[0] (DP0)
+   *(int*)DPM_CTRL1@data = 0x3; // STM_DATA[1] (DP1)
+   *(int*)DPM_CTRL2@data = 0x6; // STM_CLK     (DP2)
+
+   /* clear\disable the other 2 data pins */
+   *(int*)DPM_CTRL3@data = 0x0; // STM_DATA[2] (DP3)
+   *(int*)DPM_CTRL4@data = 0x0; // STM_DATA[3] (DP4)
+
+   // Note the app owned state status bit should be '0' after PAD configuration
+   // (i checked, it appears to work)
+
+   // Debug only status bit is always '0' because on OMAP-4 no DP pin is exclusively 
+   // available for debug
+
+   // The output and output enable status bits should reflect the way STM is driving
+   // the pins (output enable should go to zero and stay zero)
+
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 2 pin STM data \n");
+}
+
+Configure_DRM_to_assign_STM_to_DP0_1()
+{
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x2 << 30);
+   *(int*)DPM_CTRL0@data = 0x2; // STM_DATA[0] (DP0)
+   *(int*)DPM_CTRL1@data = 0x6; // STM_CLK (DP1)
+
+   /* clear\disable the other 3 data pins */
+   *(int*)DPM_CTRL2@data = 0x0; // STM_DATA[2] (DP2)
+   *(int*)DPM_CTRL3@data = 0x0; // STM_DATA[2] (DP3)
+   *(int*)DPM_CTRL4@data = 0x0; // STM_DATA[3] (DP4)
+   // Note the app owned state status bit should be '0' after PAD configuration
+   // Debug only status bit is always '0' because on OMAP-4 no DP pin is exclusively available for debug
+
+   // The output and output enable status bits should reflect the way STM is driving
+   // the pins (output enable should go to zero and stay zero)
+
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 1 pin STM data \n");
+}
+
+/************************************************************************
+ Function to configure clock that used by pin to transmitt STM data
+ right now, the output clock rate is ~90MHz
+************************************************************************/
+dpll_dbgss_config_board()
+{
+    unsigned int temp;
+
+    GEL_TextOut("> Setup DebugSS Clocking\n");
+           
+    
+    if (SYSCLKFREQ==SYS_CLK_38_4)
+    {
+		//2X(M/(N+1) X Input Clock) = 1.6GHz.
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1C60FA0A; //PTI clock bit 30:26 = 7 (M5 dividier)  M(bit 20:9) = 0x7D; N(bit 8:1) = 0x5
+    }
+    
+    if (SYSCLKFREQ==SYS_CLK_19_2)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1@data = 0x1C61F40A;
+    }
+    
+    // PLL CONFIGURATION2
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2@data = 0xE52008;
+            
+    // PLL CONFIGURATION3
+    // Trace export frequencies at different settings [MHz]
+    // 0xf=50, 0xe=53, 0xd=57, 0xc=62, 0xb=, 0xa=, 0x9=, 0x8=89, 0x7=100
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3@data = 0xc;  //use for TPIU 1.6GHz /(4+1) = 320Mhz. with value of 0x8, the TPIU output frequency is at around 90Mhz
+     
+    // REQUEST DPLL
+    DEBUGSS_CFGBUS_PLLCTRL_PLL_GO@data = 0x1;
+    
+	temp = DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS@data;
+
+    // Reading 1 : DPLL is locked.
+    while ((temp & 0x2)& ~0x2);
+ 
+  	
+    // Allow Arteris L3_3 clock to be provided
+    *(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1;
+
+    // Allow l3 instr clock to be provided
+    *(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+   
+    GEL_TextOut("< Done with Setup DebugSS Clocking \n");
+}
+
+/************************************************************************
+ Enable TPIU 4 pin mode support
+ In ES2 silicon, STM Trace data will be directed to TPIU interface instead
+ of previous PTI interface
+ This function will be published for ES2
+************************************************************************/
+hotmenu Configure_TPIU_4Pins()
+{
+	SetGPIOwakeUp5ToOutputAndSetTo1();
+	//Configure_DRM_to_assign_TPIU_to_DP0_5();
+	Configure_Spinner_For_TPIU_Pins_EMU0_EMU5();
+}
+
+/************************************************************************
+ Enable TPIU 2 pin mode support
+ In ES2 silicon, STM Trace data will be directed to TPIU interface instead
+ of previous PTI interface
+ This function will be published for ES2
+************************************************************************/
+hotmenu Configure_TPIU_2Pins()
+{
+	SetGPIOwakeUp5ToOutputAndSetTo1();
+	//Configure_DRM_to_assign_TPIU_to_DP0_2();
+	Configure_Spinner_For_TPIU_Pins_EMU0_EMU3();
+	
+}
+
+Configure_DRM_to_assign_TPIU_to_DP0_5()
+{
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x2 << 30);
+
+   *(int*)DPM_CTRL0@data  = 0x8; // TPIU_DATA[0]  (DP0)
+   *(int*)DPM_CTRL1@data  = 0x8; // TPIU_DTA[1]   (DP1)  
+   *(int*)DPM_CTRL2@data  = 0xA; // TPIU_CLK      (DP2)
+   *(int*)DPM_CTRL3@data  = 0x9; // TPIU_CTRL     (DP3)
+   *(int*)DPM_CTRL4@data  = 0x8; // TPIU_DATA[2]  (DP4)
+   *(int*)DPM_CTRL5@data  = 0x8; // TPIU_DATA[3]  (DP5)
+
+   // The output and output enable status bits should reflect the way tpiu is driving
+   // the pins (output enable should go to zero and stay zero)
+
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 4 pin TPIU data \n");
+}
+
+hotmenu Configure_DRM_to_assign_TPIU_to_DP0_2()
+{
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x2 << 30);
+
+   *(int*)DPM_CTRL0@data  = 0x8; // TPIU_DATA[0]  (DP0)
+   *(int*)DPM_CTRL1@data  = 0x8; // TPIU_DTA[1]   (DP1)  
+   *(int*)DPM_CTRL2@data  = 0xA; // TPIU_CLK      (DP2)
+   *(int*)DPM_CTRL3@data  = 0x9; // TPIU_CTRL     (DP3)
+   *(int*)DPM_CTRL4@data  = 0x0; // TPIU_DATA[2]  (DP4)
+   *(int*)DPM_CTRL5@data  = 0x0; // TPIU_DATA[3]  (DP5)
+
+   // The output and output enable status bits should reflect the way tpiu is driving
+   // the pins (output enable should go to zero and stay zero)
+
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 2 pin TPIU data \n");
+}
+
+Configure_Spinner_For_TPIU_Pins_EMU0_EMU5()
+{
+
+    *(int*)PAD0_DRM_EMU0_PAD1_DRM_EMU1 = 0x01180118;    //set bit 18:16 and 2:0 to 0 to enable both emu0 and emu1. Set 0 to other bits
+
+    *(int*)PAD0_RFBI_WE_PAD1_RFBI_CS0  = 0x010D010D;  //Set the lower 3 bit to value 0x5 to enable each emu pin (16 bits per emu channel)5
+
+    *(int*)PAD0_RFBI_DATA1_PAD1_RFBI_DATA0 = 0x010D010D;
+
+    /* Configure EMU0..5 for DBG pin usage */
+    /* All are MUX MODE 0 and for all the input buffer has been disabled */
+    /* Input buffer enabling for output only signals may result in reflections */
+    /* Pull-ups/down have been disabled as well */
+
+    GEL_TextOut("Set pad registers to enble emu pins \n");
+}                                           
+
+Configure_Spinner_For_TPIU_Pins_EMU0_EMU3()
+{
+
+    *(int*)PAD0_DRM_EMU0_PAD1_DRM_EMU1 = 0x01180118;    //set bit 18:16 and 2:0 to 0 to enable both emu0 and emu1. Set 0 to other bits
+
+    *(int*)PAD0_RFBI_WE_PAD1_RFBI_CS0  = 0x010D010D;  //Set the lower 3 bit to value 0x5 to enable each emu pin (16 bits per emu channel)5
+
+    *(int*)PAD0_RFBI_DATA1_PAD1_RFBI_DATA0 |= 0x000F000F;
+
+    /* Configure EMU0..5 for DBG pin usage */
+    /* All are MUX MODE 0 and for all the input buffer has been disabled */
+    /* Input buffer enabling for output only signals may result in reflections */
+    /* Pull-ups/down have been disabled as well */
+
+    GEL_TextOut("Set pad registers to enble emu pins \n");
+}      
+
+/************************************************************************
+ 1)Enable PTM module for cortexA15_0
+ 2)Configure trace funnel and TPIU so that data will be stored in ETB
+************************************************************************/
+hotmenu Enable_CortexA15_0_PTM_To_ETB()
+{
+  *(int*)DEBUG_TRACE_FUNNEL_PORT_REG@data = 0x301;   //Set Debug Trace Funnel to accept data from MPU Trace Funnel
+
+   *(int*)MPU_TRACE_FUNNEL_PORT_REG@data = 0x301;    //enable PTM_0 in MPU Trace funnle to only 
+
+	DisableTPIU();
+	
+}
+
+
+/************************************************************************
+ 1)Enable PTM module for cortexA15_1
+ 2)Configure trace funnel and TPIU so that data will be stored in ETB
+************************************************************************/
+hotmenu Enable_CortexA15_1_PTM_To_ETB()
+{
+  *(int*)DEBUG_TRACE_FUNNEL_PORT_REG@data = 0x301;   //Set Debug Trace Funnel to accept data from MPU Trace Funnel
+
+   *(int*)MPU_TRACE_FUNNEL_PORT_REG@data = 0x302;    //enable PTM_1 in MPU Trace funnle to only 
+	
+	DisableTPIU();
+	
+}  
+
+/************************************************************************
+  Internal function
+  Disable TPIU. By default, TPIU is enabled and trace data will be 
+  routed to TPIU. We have to disable TPIU so that trace data can be
+  routed to ETB.
+************************************************************************/
+DisableTPIU()
+{
+   int temp;
+   
+   temp = *(int*)TPIU_FORMAT_STATUS_REG@data;
+   temp |= 0x1000;
+   temp &= 0xFFFFFFF0;
+
+   *(int*)TPIU_FORMAT_CONTROL_REG@data = temp;  //setting bit12, StopFI bit
+
+   temp |= 0x40;              //setting bit 6 to perform manual flush
+
+   *(int*)TPIU_FORMAT_CONTROL_REG@data = temp;
+
+   temp = *(int*)TPIU_FORMAT_STATUS_REG@data;  //read Formatter and flush status register
+
+   if ((temp & 0x2) == 0x2)
+   {	  
+   }
+   else
+   {
+       GEL_TextOut("Warning, TPIT is not stopped. PTM Trace to ETB will not work.\n");
+   }
+}                                   

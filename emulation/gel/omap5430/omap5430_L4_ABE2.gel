@@ -1,0 +1,55 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* Attila L4 ABE     			     						   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+memorymap_init_L4_ABE()
+{
+    GEL_MapAddStr(0x49000000, 0, 0x00004000, "R|W|AS4", 0);  /* L4 S3220 */
+	GEL_MapAddStr(0x49022000, 0, 0x00001000, "R|W|AS4", 0);  /* McBSPLP1 - module */
+	GEL_MapAddStr(0x49023000, 0, 0x00001000, "R|W|AS4", 0);  /* McBSPLP1 - L4 interconnect */
+	GEL_MapAddStr(0x49024000, 0, 0x00001000, "R|W|AS4", 0);  /* McBSPLP2 - module */
+	GEL_MapAddStr(0x49025000, 0, 0x00001000, "R|W|AS4", 0);  /* McBSPLP2 - L4 interconnect */
+	GEL_MapAddStr(0x49026000, 0, 0x00001000, "R|W|AS4", 0);  /* McBSPLP3 - module */
+	GEL_MapAddStr(0x49027000, 0, 0x00001000, "R|W|AS4", 0);  /* McBSPLP3 - L4 interconnect */
+    GEL_MapAddStr(0x49028000, 0, 0x00001000, "R|W|AS4", 0);  /* McASP1 CFG Port */
+	GEL_MapAddStr(0x49029000, 0, 0x00001000, "R|W|AS4", 0);  /* McASP1 CFG - L4 interconnect */
+    GEL_MapAddStr(0x4902A000, 0, 0x00001000, "R|W|AS4", 0);  /* McASP1 DATA Port  */
+	GEL_MapAddStr(0x4902B000, 0, 0x00001000, "R|W|AS4", 0);  /* McASP1 DATA - L4 interconnect */
+	GEL_MapAddStr(0x4902C000, 0, 0x00001000, "R|W|AS4", 0);  /* SLIMBUS1 - module */
+	GEL_MapAddStr(0x4902D000, 0, 0x00001000, "R|W|AS4", 0);  /* SLIMBUS1 - L4 interconnect */
+	GEL_MapAddStr(0x4902E000, 0, 0x00001000, "R|W|AS4", 0);  /* DMIC - module */
+	GEL_MapAddStr(0x4902F000, 0, 0x00001000, "R|W|AS4", 0);  /* DMIC - L4 interconnect */
+	GEL_MapAddStr(0x49030000, 0, 0x00001000, "R|W|AS4", 0);  /* WDT3 - module */
+	GEL_MapAddStr(0x49031000, 0, 0x00001000, "R|W|AS4", 0);  /* WDT3 - L4 interconnect */
+	GEL_MapAddStr(0x49032000, 0, 0x00001000, "R|W|AS4", 0);  /* McPDM - module */
+	GEL_MapAddStr(0x49033000, 0, 0x00001000, "R|W|AS4", 0);  /* McPDM - L4 interconnect */
+	GEL_MapAddStr(0x49038000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER5 - module */
+	GEL_MapAddStr(0x49039000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER5 - L4 interconnect */
+    GEL_MapAddStr(0x4903A000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER6 - module */
+	GEL_MapAddStr(0x4903B000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER6 - L4 interconnect */
+	GEL_MapAddStr(0x4903C000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER7 - module */
+	GEL_MapAddStr(0x4903D000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER7 - L4 interconnect */
+	GEL_MapAddStr(0x4903E000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER8 - module */
+	GEL_MapAddStr(0x4903F000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER8 - L4 interconnect */
+	GEL_MapAddStr(0x49080000, 0, 0x00010000, "R|W|AS4", 0);  /* DMEM - module */
+	GEL_MapAddStr(0x49090000, 0, 0x00001000, "R|W|AS4", 0);  /* DMEM - L4 interconnect */
+	GEL_MapAddStr(0x490A0000, 0, 0x00010000, "R|W|AS4", 0);  /* CMEM - module */
+	GEL_MapAddStr(0x490B0000, 0, 0x00001000, "R|W|AS4", 0);  /* CMEM - L4 interconnect */
+	GEL_MapAddStr(0x490C0000, 0, 0x00010000, "R|W|AS4", 0);  /* SMEM - module */
+	GEL_MapAddStr(0x490D0000, 0, 0x00001000, "R|W|AS4", 0);  /* SMEM - L4 interconnect */
+	GEL_MapAddStr(0x490E0000, 0, 0x00010000, "R|W|AS4", 0);  /* PMEM - module */
+	GEL_MapAddStr(0x490F0000, 0, 0x00001000, "R|W|AS4", 0);  /* PMEM - L4 interconnect */
+	GEL_MapAddStr(0x490F1000, 0, 0x00001000, "R|W|AS4", 0);  /* AESS - module */
+	GEL_MapAddStr(0x490F2000, 0, 0x00001000, "R|W|AS4", 0);  /* AESS - L4 interconnect */
+}
+    
+ 
+    
+    

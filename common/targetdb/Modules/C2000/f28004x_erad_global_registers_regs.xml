@@ -1,0 +1,46 @@
+<module id="ERAD_GLOBAL_REGISTERS" HW_revision="" description="ERAD GLOBAL REGISTERS Registers">
+	<register id="GLBL_EVENT_STAT" width="16" page="1" offset="0x0" internal="0" description="GLBL_EVENT_STAT">
+		<bitfield id="HWBP_EVENT_STATUS" description="Bus Comparator Module Event Status" begin="7" end="0" width="8" rwaccess="R"/>
+		<bitfield id="COUNTER_EVENT_STATUS" description="Counter Module Event Status" begin="11" end="8" width="4" rwaccess="R"/>
+	</register>
+	<register id="GLBL_HALT_STAT" width="16" page="1" offset="0x2" internal="0" description="GLBL_HALT_STAT">
+		<bitfield id="HWBP_HALT_STATUS" description="Bus Comparator Module Halt Status" begin="7" end="0" width="8" rwaccess="R"/>
+		<bitfield id="COUNTER_HALT_STATUS" description="Counter Module Halt Status" begin="11" end="8" width="4" rwaccess="R"/>
+	</register>
+	<register id="GLBL_ENABLE" width="16" page="1" offset="0x4" internal="0" description="GLBL_MODULE_ENABLE">
+		<bitfield id="HWBP_GLOBAL_ENABLE" description="Bus Comparator Module Global Enable" begin="7" end="0" width="8" rwaccess="R/W"/>
+		<bitfield id="COUNTER_GLOBAL_ENABLE" description="Counter Module Global Enable" begin="11" end="8" width="4" rwaccess="R/W"/>
+	</register>
+	<register id="CTM_GLBL_RESET_1" width="16" page="1" offset="0x6" internal="0" description="CTM_GLBL_RESET">
+		<bitfield id="COUNTER_GLOBAL_RESET" description="Global Reset for the counters" begin="3" end="0" width="4" rwaccess="R=0/W"/>
+	</register>
+	<register id="GLBL_NMI_CTL" width="16" page="1" offset="0x8" internal="0" description="GLBL_NMI_CNTL">
+		<bitfield id="HWBP_NMI_ENABLE" description="Reserved for future use" begin="7" end="0" width="8" rwaccess="R/W"/>
+		<bitfield id="COUNTER_NMI_ENABLE" description="Reserved for future use" begin="11" end="8" width="4" rwaccess="R/W"/>
+	</register>
+	<register id="GLBL_OWNER" width="16" page="1" offset="0xa" internal="0" description="GLBL_OWNER">
+		<bitfield id="OWNER" description="Global Ownership Bits" begin="1" end="0" width="2" rwaccess="R/W"/>
+	</register>
+	<register id="GLBL_BC_EVENT_AND_MASK_LOW" width="16" page="1" offset="0xc" internal="0" description="GLBL_BC_EVENT_AND_MASK_LOW">
+		<bitfield id="GLBL_BC_EVENT_AND_MASK1" description="BusComparator AND Event Mask1" begin="7" end="0" width="8" rwaccess="R/W"/>
+		<bitfield id="GLBL_BC_EVENT_AND_MASK2" description="BusComparator AND Event Mask2" begin="15" end="8" width="8" rwaccess="R/W"/>
+	</register>
+	<register id="GLBL_BC_EVENT_AND_MASK_HIGH" width="16" page="1" offset="0xd" internal="0" description="GLBL_BC_EVENT_AND_MASK_HIGH">
+		<bitfield id="GLBL_BC_EVENT_AND_MASK3" description="BusComparator AND Event Mask3" begin="7" end="0" width="8" rwaccess="R/W"/>
+		<bitfield id="GLBL_BC_EVENT_AND_MASK4" description="BusComparator AND Event Mask4" begin="15" end="8" width="8" rwaccess="R/W"/>
+	</register>
+	<register id="GLBL_BC_EVENT_OR_MASK_LOW" width="16" page="1" offset="0xe" internal="0" description="GLBL_BC_EVENT_OR_MASK_LOW">
+		<bitfield id="GLBL_BC_EVENT_OR_MASK1" description="BusComparator OR Event Mask1" begin="7" end="0" width="8" rwaccess="R/W"/>
+		<bitfield id="GLBL_BC_EVENT_OR_MASK2" description="BusComparator OR Event Mask2" begin="15" end="8" width="8" rwaccess="R/W"/>
+	</register>
+	<register id="GLBL_BC_EVENT_OR_MASK_HIGH" width="16" page="1" offset="0xf" internal="0" description="GLBL_BC_EVENT_OR_MASK_HIGH">
+		<bitfield id="GLBL_BC_EVENT_OR_MASK3" description="BusComparator OR Event Mask3" begin="7" end="0" width="8" rwaccess="R/W"/>
+		<bitfield id="GLBL_BC_EVENT_OR_MASK4" description="BusComparator OR Event Mask4" begin="15" end="8" width="8" rwaccess="R/W"/>
+	</register>
+	<register id="GLBL_AND_EVENT_INT_MASK" width="16" page="1" offset="0x10" internal="0" description="GLBL_AND_EVENT_INT_MASK">
+		<bitfield id="AND_MASK_RTOSINT_GEN" description="RTOSINT generation mask for global AND events" begin="3" end="0" width="4" rwaccess="R/W"/>
+	</register>
+	<register id="GLBL_OR_EVENT_INT_MASK" width="16" page="1" offset="0x12" internal="0" description="GLBL_OR_EVENT_INT_MASK">
+		<bitfield id="OR_MASK_RTOSINT_GEN" description="RTOSINT generation mask for global OR events" begin="3" end="0" width="4" rwaccess="R/W"/>
+	</register>
+</module>

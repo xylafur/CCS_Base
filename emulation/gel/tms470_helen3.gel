@@ -1,0 +1,530 @@
+/* 
+ * This GEL file is loaded on the command line of Code Composer 
+ * The StartUp() function is called every time you start
+ * Code Composer.  You can customize this function to
+ * initialize wait states or to perform other initialization.
+ * 
+ * TMS470 GEL file is used for ARM9 emulation only                                    
+ */
+
+StartUp()
+{}
+
+OnTargetConnect()
+{ 
+  /* User must set this value based on TEB board being used */
+  int sdr_ddr_startup = 0; 	/* (SDR=0 DDR=1) */
+
+  int armboot;
+
+  GEL_MapOff();
+
+  /* Determine value of ARMBOOT */
+  armboot = find_armboot();
+
+  /* Memory mapping */
+  GEL_MapReset();
+  memorymap_init(armboot);
+  GEL_MapOn();
+
+  /* OMAP3.3 Setup */
+  memif_init(armboot);
+  access_width_init();
+  release_UMA_reset();
+
+  if (sdr_ddr_startup == 0) {
+  	SDR_enable();
+  } else {
+	DDR_enable();
+  }
+  
+  /* Helen3 Setup */
+  helen3_setup();
+  watchdog_disable();
+
+}
+
+
+
+MMU_Section(inAddr, inVal, inCount)
+{
+  int lvCounter;
+
+  for (lvCounter = 0;
+       lvCounter < inCount;
+       lvCounter++)
+  {
+    ((int *)inAddr)[lvCounter] = inVal | (0x100000 * lvCounter);
+  }
+}
+
+
+menuitem "Helen3"
+
+hotmenu init_mmu()
+{
+    GEL_TextOut("\nBefore 1st MMU access\n");
+  // VA = 0x000x:xxxx => PA = 0x100x:xxxx
+  MMU_Section(0x10110000, 0x10000C0E, 16);
+
+    GEL_TextOut("\nBefore 2nd MMU access\n");
+  // VA = 0x040x:xxxx => PA = 0x040x:xxxx
+  MMU_Section(0x10110100, 0x04000C02, 32);
+
+  // VA = 0x080x:xxxx => PA = 0x080x:xxxx
+  MMU_Section(0x10110200, 0x08000C02, 32);
+
+  // VA = 0x0C0x:xxxx => PA = 0x0C0x:xxxx
+  MMU_Section(0x10110300, 0x0C000C02, 16);
+
+  // VA = 0x100x:xxxx => PA = 0x100x:xxxx
+  MMU_Section(0x10110400, 0x10000C0E, 64);
+
+  // VA = 0x200x:xxxx => PA = 0x200x:xxxx
+  MMU_Section(0x10110800, 0x20000C02, 16);
+
+  // VA = 0x300x:xxxx => PA = 0x300x:xxxx
+  MMU_Section(0x10110C00, 0x30000C02,  1);
+
+  // VA = 0x700x:xxxx => PA = 0x000x:xxxx
+  MMU_Section(0x10111C00, 0x00000C02, 32);
+
+  // VA = 0xE00x:xxxx => PA = 0xE00x:xxxx
+  MMU_Section(0x10113800, 0xE0000C02, 32);
+
+  // VA = 0xfffx:xxxx => PA = 0xfffx:xxxx
+  MMU_Section(0x10113FFC, 0xFFF00C02,  1);
+
+  GEL_TextOut("\nBefore CP15 accesses\n");
+
+  REG_CP15_TT_BASE = 0x10110000;
+  REG_CP15_DACR = 0xFFFFFFFF;
+  REG_CP15_MMU = 1;
+
+  if(REG_CP15_MMU)
+  {
+    GEL_TextOut("\nMMU is ON\n","result");
+  }
+  else
+  {
+    GEL_TextOut("\n**FAILED**\n","result");
+    GEL_TextOut("\nMMU is OFF\n","result");
+  }
+
+  GEL_MapAddStr(0x00000000, 0, 0x01000000, "R|W|AS4", 0);  /* CS4 - SDRAM mapped at 0x0 - 16MB */
+}
+
+
+find_armboot() {
+
+  if((*(int *)0xFFFECC0C & 0x2) == 0x2) {
+	GEL_TextOut("ARMBOOT = 1 --> CS3 = 0x0\n","result");
+  	return 1;
+  } else {
+	GEL_TextOut("ARMBOOT = 0 --> CS0 = 0x0\n","result");
+  	return 0;
+  }
+}
+
+
+helen3_setup() {
+   *(short *) 0xFFFECE08 |= 0x4;	/* Enable ARM peripheral clock */
+   *(short *) 0xFFFECE14 |= 0x1;	/* Release OMAP CLKM reset to Helen peripherals */
+}
+
+
+access_width_init()
+{
+
+  (*(int*)0xFFFEC900) = 0x0003FF2F;  /* two-cycle access width for apif bus */  
+  (*(int*)0xFFFECA00) = 0x0000FF22;  /* two-cycle access width for armrhea private bus */  
+  (*(int*)0xFFFED300) = 0x0000FF22;  /* two-cycle access width for armrhea public bus */  
+    
+}
+
+
+memif_init(armboot)
+{
+  /* Configure Memory Interface EMIFS */
+
+//  (*(int*)0xFFFECC14) = 0x0000FFFB;   /* EMIFS (nCS1) configuration */
+//  (*(int*)0xFFFECC18) = 0x0000FFFB;  	/* EMIFS (nCS2) configuration */
+//  (*(int*)0xFFFECC1C) = 0x0000FFFB;  	/* EMIFS (nCS3) configuration */
+
+  /* clear to 8-bit */
+
+  (*(int*)0xFFFECC14) &= 0xFFEF3339;    /* EMIFS (nCS1) configuration */
+  (*(int*)0xFFFECC18) &= 0xFFEF3339;  	/* EMIFS (nCS2) configuration */
+  (*(int*)0xFFFECC1C) &= 0xFFEF3339;  	/* EMIFS (nCS3) configuration */
+  GEL_TextOut("EMIFS enable\n","result");
+}
+
+
+hotmenu SDR_enable()
+{
+  int i, temp1, temp2;
+  temp1 = (*(int*)0xFFFECC80);
+  temp2 = (*(int*)0xFFFECC20);
+
+  if ( ((temp1 & 0x6) != 0x6) && ((temp2 & 0x32B4) != 0x32B4) )
+     {
+       GEL_TextOut("Executing necessary writes");
+       (*(int*)0xFFFECC80) = 0x06;			/*Mobile SDRAM */
+       (*(int*)0xFFFECC20) = 0x000032B4;		/* EMIFF (nCS4) configuration */
+       (*(int*)0xFFFECC84) = 0x07;  /* Manual CMD Addr, CKE high */
+       (*(int*)0xFFFECC84) = 0x00; /* Manual CMD Addr NOP command */
+       for (i = 0; i< 5; i++);   /* Delay Loop */
+  		(*(int*)0xFFFECC84) = 0x01; /* Precharge Command */
+  		(*(int*)0xFFFECC84) = 0x02; /* Auto-refresh command */
+  		(*(int*)0xFFFECC84) = 0x02; /* Auto-refresh command */
+  		(*(int*)0xFFFECC70) = 0x00000037;		/* MRS (nCS4) initialization  */
+       GEL_TextOut("SDR interface enable\n","result");
+     }	
+}
+
+
+DDR_enable()
+{
+  int i, temp1, temp2;
+  temp1 = (*(int*)0xFFFECC80);
+  temp2 = (*(int*)0xFFFECC20);
+
+ /* DDR setup */
+   if ( ((temp1 & 0x7) != 0x7) && ((temp2 & 0x1200B4) != 0x1200B4) )
+     {
+ 	(*(int*)0xFFFECC80) = 0x07; /* DDR Operation addr Mobile DDR, HPHB mode */
+ 	(*(int*)0xFFFECC20) = 0x1200B4; /* SDRAM Config */
+ 	(*(int*)0xFFFECC84) = 0x07;  /* Manual CMD Addr, CKE high */
+ 	(*(int*)0xFFFECC84) = 0x00; /* Manual CMD Addr NOP command */
+ 	for (i = 0; i< 5; i++);   /* Delay Loop */
+ 	(*(int*)0xFFFECC84) = 0x01; /* Precharge Command */
+ 	(*(int*)0xFFFECC84) = 0x02; /* Auto-refresh command */
+ 	(*(int*)0xFFFECC70) = 0x33;
+ 	(*(int*)0xFFFECC78) = 0x00; /* EMRS1 self refresh all banks */
+ 	(*(int*)0xFFFECCC0) = 0x06;
+ 	(*(int*)0xFFFECCCC) = 0x06;
+ 	(*(int*)0xFFFECC64) = 0x06;
+ 	GEL_TextOut("DDR interface enable\n","result");
+    }	
+}
+
+
+watchdog_disable()
+{
+  /* Disable ARM9 Watchdog Timer */
+  (*(int*)0xFFFEC808) = 0x00F5;
+  (*(int*)0xFFFEC808) = 0x00A0;
+
+  /* Disable helen3 Watchdog */
+  (*(int*)0xFFFEB048) = 0xAAAA;
+  while ( ((*(int *)0xFFFEB034) & 0x10) == 0x10 );
+  (*(int*)0xFFFEB048) = 0x5555;
+  while ( ((*(int *)0xFFFEB034) & 0x10) == 0x10 );
+
+  GEL_TextOut("watchdog_disable\n","result");
+}
+
+
+release_UMA_reset()
+{
+
+/* try to get the api ram out of host only mode */
+  (*(short*)0xFFFEC91c) = 0x0000; 
+  
+/* Set DSP Boot mode to API */
+  (*(short*)0xFFFEC918) = 0x0005; 
+
+/* default value for ARM_IDLECT2 = 0x0100 */
+/* set bit 6 to turn on the api clock */
+/* must turn on the api clock to take */
+/* api ram out of host only mode */
+  (*(short*)0xFFFECE08) = 0x0140; 
+
+/* release API reset */
+  (*(short*)0xFFFECE10) = 0x0004;
+  
+/* Put while(1) loop at the begining of SARAM */
+/*
+  (*(unsigned long int *)0xE0010000) = 0x6A010000;
+ */
+  
+/* release DSP reset */
+  (*(short*)0xFFFECE10) = 0x0006;
+
+  GEL_TextOut("Megastar3 release from reset\n","result");
+
+}
+
+
+memorymap_init(armboot)
+{
+
+  if (armboot == 0) {  
+	/* Internal Boot - ARMBOOT=0 - CS0 = 0x0 */
+  	GEL_MapAddStr(0x00000000, 0, 0x00020000, "R|AS4", 0);    /* CS0 - Internal Boot ROM - 64KB */
+  	GEL_MapAddStr(0x00200000, 0, 0x00004000, "R|W|AS4", 0);  /* CS0 - Secure RAM - 16KB */
+  	GEL_MapAddStr(0x00210000, 0, 0x00000010, "R|AS4", 0);    /* CS0 - Secure Efuse chain 0 - 128 bits */
+  	GEL_MapAddStr(0x00210010, 0, 0x00000020, "R|AS4", 0);    /* CS0 - Secure Efuse chain 1 - 256 bits */
+  	GEL_MapAddStr(0x04000000, 0, 0x00004000, "R|W|AS4", 0);  /* CS1 - SRAM on Innovator */
+  	GEL_MapAddStr(0x08000000, 0, 0x00000040, "R|W|AS1", 0);  /* CS2 - altera fpga on Innovator */
+  	GEL_MapAddStr(0x0C000000, 0, 0x01000000, "R|AS4", 0);    /* CS3 - User Strata Flash - 16MB */
+  	GEL_MapAddStr(0x10000000, 0, 0x01000000, "R|W|AS4", 0);  /* CS4 - SDRAM - 16MB */
+  } else {	
+	/* External Boot - ARMBOOT=1 - CS3 = 0x0 */
+  	GEL_MapAddStr(0x00000000, 0, 0x01000000, "R|AS4", 0);    /* CS3 - User Strata Flash - 16MB | SRAM on MM2 */
+  	GEL_MapAddStr(0x08000000, 0, 0x00000040, "R|W|AS1", 0);  /* CS2 - altera fpga on Innovator */
+  	GEL_MapAddStr(0x0C000000, 0, 0x00010000, "R|AS4", 0);    /* CS0 - Internal Boot ROM - 64KB */
+  	GEL_MapAddStr(0x0C200000, 0, 0x00004000, "R|W|AS4", 0);  /* CS0 - Secure RAM - 16KB */
+  	GEL_MapAddStr(0x0C210000, 0, 0x00000010, "R|AS4", 0);    /* CS0 - Secure Efuse chain 0 - 128 bits */
+  	GEL_MapAddStr(0x0C210010, 0, 0x00000020, "R|AS4", 0);    /* CS0 - Secure Efuse chain 1 - 256 bits */
+  	GEL_MapAddStr(0x10000000, 0, 0x01000000, "R|W|AS4", 0);  /* CS4 - SDRAM - 16MB */
+  }
+
+  /* Test SRAM on OCPT1 - 16KB */
+  GEL_MapAddStr(0x20000000, 0, 0x00040000, "R|W|AS4", 0);
+
+  /* ARM Public Rhea Strobe 0 */
+  GEL_MapAddStr(0xFFFB0000, 0, 0x00000400, "R|W|AS1", 0);  /* register UART 1 */
+  GEL_MapAddStr(0xFFFB0400, 0, 0x00000400, "R|W|AS4", 0);  /* register USB OTG */
+  GEL_MapAddStr(0xFFFB0800, 0, 0x00000400, "R|W|AS1", 0);  /* register UART 2 */
+  GEL_MapAddStr(0xFFFB0C00, 0, 0x00000400, "R|W|AS4", 0);  /* register SPI */
+  GEL_MapAddStr(0xFFFB1000, 0, 0x00000400, "R|W|AS2", 0);  /* register McBSP Modem */
+  GEL_MapAddStr(0xFFFB1400, 0, 0x00000400, "R|W|AS4", 0);  /* register GPTIMER1 */
+  GEL_MapAddStr(0xFFFB1C00, 0, 0x00000400, "R|W|AS4", 0);  /* register GPTIMER2 */
+  GEL_MapAddStr(0xFFFB2400, 0, 0x00000400, "R|W|AS4", 0);  /* register GPTIMER3 */
+  GEL_MapAddStr(0xFFFB2C00, 0, 0x00000400, "R|W|AS4", 0);  /* register GPTIMER4 */
+  GEL_MapAddStr(0xFFFB3000, 0, 0x00000400, "R|W|AS2", 0);  /* register uWire */
+  GEL_MapAddStr(0xFFFB3400, 0, 0x00000400, "R|W|AS4", 0);  /* register GPTIMER5 */
+  GEL_MapAddStr(0xFFFB3800, 0, 0x00000400, "R|W|AS1", 0);  /* register I2C */
+  GEL_MapAddStr(0xFFFB3C00, 0, 0x00000400, "R|W|AS4", 0);  /* register GPTIMER6 */
+  GEL_MapAddStr(0xFFFB4000, 0, 0x00000400, "R|W|AS2", 0);  /* register USB Client */
+  GEL_MapAddStr(0xFFFB4800, 0, 0x00000800, "R|W|AS2", 0);  /* register RTC */
+  GEL_MapAddStr(0xFFFB5000, 0, 0x00000800, "R|W|AS2", 0);  /* register ARMIO */
+  GEL_MapAddStr(0xFFFB5800, 0, 0x00000800, "R|W|AS2", 0);  /* register PWL */
+  GEL_MapAddStr(0xFFFB6000, 0, 0x00000800, "R|W|AS2", 0);  /* register PWT */
+  GEL_MapAddStr(0xFFFB6800, 0, 0x00000800, "R|W|AS4", 0);  /* register CAMERA */
+  GEL_MapAddStr(0xFFFB7400, 0, 0x00000400, "R|W|AS4", 0);  /* register GPTIMER7 */
+  GEL_MapAddStr(0xFFFB7800, 0, 0x00000400, "R|W|AS2", 0);  /* register MMC1 */
+  GEL_MapAddStr(0xFFFB7C00, 0, 0x00000400, "R|W|AS2", 0);  /* register MMC2 */
+  GEL_MapAddStr(0xFFFB8000, 0, 0x00000400, "R|W|AS4", 0);  /* register Memory Stick */
+  GEL_MapAddStr(0xFFFB8C00, 0, 0x00000400, "R|W|AS4", 0);  /* register CCP */
+  GEL_MapAddStr(0xFFFB9000, 0, 0x00000400, "R|W|AS4", 0);  /* register Timer32k */
+  GEL_MapAddStr(0xFFFB9800, 0, 0x00000400, "R|W|AS1", 0);  /* register UART3 */
+  GEL_MapAddStr(0xFFFBA000, 0, 0x00000400, "R|W|AS4", 0);  /* register USB Host */
+  GEL_MapAddStr(0xFFFBA800, 0, 0x00000400, "R|W|AS2", 0);  /* register FAC */
+  GEL_MapAddStr(0xFFFBAC00, 0, 0x00000400, "R|W|AS4", 0);  /* register SoSSI */
+  GEL_MapAddStr(0xFFFBB400, 0, 0x00000400, "R|W|AS4", 0);  /* register GPIO3 */
+  GEL_MapAddStr(0xFFFBBC00, 0, 0x00000400, "R|W|AS4", 0);  /* register GPIO4 */
+  GEL_MapAddStr(0xFFFBC000, 0, 0x00000400, "R|W|AS4", 0);  /* register 1wire */
+  GEL_MapAddStr(0xFFFBC400, 0, 0x00000400, "R|W|AS4", 0);  /* register 32k sync timer */
+  GEL_MapAddStr(0xFFFBC800, 0, 0x00000400, "R|W|AS4", 0);  /* register rhea switch */
+  GEL_MapAddStr(0xFFFBCC00, 0, 0x00000400, "R|W|AS4", 0);  /* register NAND Flash controller */
+  GEL_MapAddStr(0xFFFBD000, 0, 0x00000400, "R|W|AS4", 0);  /* register LPG1 */
+  GEL_MapAddStr(0xFFFBD400, 0, 0x00000400, "R|W|AS4", 0);  /* register GPTIMER8 */
+  GEL_MapAddStr(0xFFFBD800, 0, 0x00000400, "R|W|AS4", 0);  /* register LPG2 */
+  GEL_MapAddStr(0xFFFBE400, 0, 0x00000400, "R|W|AS4", 0);  /* register GPIO1 */
+  GEL_MapAddStr(0xFFFBEC00, 0, 0x00000400, "R|W|AS4", 0);  /* register GPIO2 */
+
+  /* ARM Public Rhea Strobe 1 */
+  GEL_MapAddStr(0xFFFCF000, 0, 0x00000800, "R|W|AS2", 0);  /* register Mailbox Gigacell */
+
+  /* ARM Private Rhea Strobe 0 */
+  /* ARM Private Rhea Strobe 1 */
+  GEL_MapAddStr(0xFFFE0000, 0, 0x00000800, "R|W|AS4", 0);  /* register Interrupt Handler level 2 */
+  GEL_MapAddStr(0xFFFE0800, 0, 0x00000800, "R|W|AS2", 0);  /* register ULPD */
+  GEL_MapAddStr(0xFFFE1000, 0, 0x00000800, "R|W|AS4", 0);  /* register Helen Configuration */
+  GEL_MapAddStr(0xFFFE1800, 0, 0x00000800, "R|W|AS4", 0);  /* register Die ID */
+  GEL_MapAddStr(0xFFFE2000, 0, 0x00000800, "R|W|AS4", 0);  /* register Production ID */
+  GEL_MapAddStr(0xFFFE2800, 0, 0x00000800, "R|W|AS4", 0);  /* register Compact Flash */
+  GEL_MapAddStr(0xFFFE3000, 0, 0x00000800, "R|W|AS1", 0);  /* register LCD Converter */
+  GEL_MapAddStr(0xFFFE3800, 0, 0x00000800, "R|W|AS1", 0);  /* register BIST Control Module */
+  GEL_MapAddStr(0xFFFE4000, 0, 0x00000800, "R|W|AS4", 0);  /* register DES3DES */
+  GEL_MapAddStr(0xFFFE4800, 0, 0x00000800, "R|W|AS4", 0);  /* register SHA1/MD5 */
+  GEL_MapAddStr(0xFFFE5000, 0, 0x00000800, "R|W|AS4", 0);  /* register RNG */
+  GEL_MapAddStr(0xFFFE5800, 0, 0x00000800, "R|W|AS4", 0);  /* register OMAP1610 JTAG */
+  GEL_MapAddStr(0xFFFEA000, 0, 0x00000800, "R|W|AS4", 0);  /* register STI */
+  GEL_MapAddStr(0xFFFEA800, 0, 0x00000800, "R|W|AS4", 0);  /* register Secure Watchdog */
+  GEL_MapAddStr(0xFFFEB000, 0, 0x00000800, "R|W|AS4", 0);  /* register 32K Watchdog */
+  GEL_MapAddStr(0xFFFEC000, 0, 0x00000100, "R|W|AS4", 0);  /* register LCD */
+  GEL_MapAddStr(0xFFFEC320, 0, 0x00000100, "R|W|AS4", 0);  /* register L3 OCPI */
+  GEL_MapAddStr(0xFFFEC500, 0, 0x00000100, "R|W|AS4", 0);  /* register Timer 1 */
+  GEL_MapAddStr(0xFFFEC600, 0, 0x00000100, "R|W|AS4", 0);  /* register Timer 2 */
+  GEL_MapAddStr(0xFFFEC700, 0, 0x00000100, "R|W|AS4", 0);  /* register Timer 3 */
+  GEL_MapAddStr(0xFFFEC800, 0, 0x00000100, "R|W|AS4", 0);  /* register Watchdog Timer */
+  GEL_MapAddStr(0xFFFEC900, 0, 0x00000100, "R|W|AS4", 0);  /* register API */
+  GEL_MapAddStr(0xFFFECA00, 0, 0x00000100, "R|W|AS4", 0);  /* register Rhea Bridge 1 */
+  GEL_MapAddStr(0xFFFECB00, 0, 0x00000100, "R|W|AS4", 0);  /* register Interrupt Handler level 1 */
+  GEL_MapAddStr(0xFFFECC00, 0, 0x00000100, "R|W|AS4", 0);  /* register Traffic Controller */
+  GEL_MapAddStr(0xFFFECE00, 0, 0x00000100, "R|W|AS2", 0);  /* register CLKM */
+  GEL_MapAddStr(0xFFFECF00, 0, 0x00000100, "R|W|AS2", 0);  /* register DPLL1 */
+  GEL_MapAddStr(0xFFFED200, 0, 0x00000100, "R|W|AS4", 0);  /* register DSP MMU */
+  GEL_MapAddStr(0xFFFED300, 0, 0x00000100, "R|W|AS2", 0);  /* register Rhea Bridge 2 */
+  GEL_MapAddStr(0xFFFED400, 0, 0x00000100, "R|W|AS2", 0);  /* register Test Block (PSA) */
+  GEL_MapAddStr(0xFFFED800, 0, 0x00001000, "R|W|AS2", 0);  /* register System DMA */
+  
+  /* Memory mapping    */
+  GEL_MapAddStr(0xE0000000, 0, 0x01000000, "R|W|AS4", 0);  /* API Memory */
+
+  /* DSP Strobe 0 */
+  GEL_MapAddStr(0xE1000000, 0, 0x00000800, "R|W|AS2", 0);  /* DSP RHEA */
+  GEL_MapAddStr(0xE1008000, 0, 0x00000800, "R|W|AS2", 0);  /* DSP CLKM */
+
+  /* DSP Strobe 1 */
+  GEL_MapAddStr(0xE1010000, 0, 0x00000800, "R|W|AS2", 0);  /* HELEN UART Blue Tooth (UART1) */
+  GEL_MapAddStr(0xE1010800, 0, 0x00000800, "R|W|AS2", 0);  /* HELEN UART Modem (UART2) */
+  GEL_MapAddStr(0xE1010C00, 0, 0x00000800, "R|W|AS2", 0);  /* SPI */
+  GEL_MapAddStr(0xE1011000, 0, 0x00000800, "R|W|AS2", 0);  /* McBSP2 */
+  GEL_MapAddStr(0xE1011400, 0, 0x00000800, "R|W|AS2", 0);  /* GPTIMER1 */
+  GEL_MapAddStr(0xE1011800, 0, 0x00000800, "R|W|AS2", 0);  /* HELEN McBSP Audio (McBSP1) */
+  GEL_MapAddStr(0xE1011C00, 0, 0x00000800, "R|W|AS2", 0);  /* GPTIMER2 */
+  GEL_MapAddStr(0xE1012000, 0, 0x00000800, "R|W|AS2", 0);  /* HELEN MCSI Modem (MCSI2) */
+  GEL_MapAddStr(0xE1012400, 0, 0x00000800, "R|W|AS2", 0);  /* GPTIMER3 */
+  GEL_MapAddStr(0xE1012800, 0, 0x00000800, "R|W|AS2", 0);  /* HELEN MCSI Blue Tooth (MCSI1) */
+  GEL_MapAddStr(0xE1012C00, 0, 0x00000800, "R|W|AS2", 0);  /* GPTIMER4 */
+  GEL_MapAddStr(0xE1013400, 0, 0x00000800, "R|W|AS2", 0);  /* GPTIMER5 */
+  GEL_MapAddStr(0xE1013800, 0, 0x00000800, "R|W|AS2", 0);  /* I2C */
+  GEL_MapAddStr(0xE1013800, 0, 0x00000C00, "R|W|AS2", 0);  /* GPTIMER6 */
+  GEL_MapAddStr(0xE1017000, 0, 0x00000800, "R|W|AS2", 0);  /* McBSP Optical (McBSP3) */
+  GEL_MapAddStr(0xE1017400, 0, 0x00000800, "R|W|AS2", 0);  /* GPTIMER7 */
+  GEL_MapAddStr(0xE1017C00, 0, 0x00000800, "R|W|AS2", 0);  /* MMCSDIO2 */
+  GEL_MapAddStr(0xE1019800, 0, 0x00000800, "R|W|AS2", 0);  /* UART3 */
+  GEL_MapAddStr(0xE101A400, 0, 0x00000800, "R|W|AS2", 0);  /* STI */
+  GEL_MapAddStr(0xE101B400, 0, 0x00000800, "R|W|AS2", 0);  /* GPIO3 */
+  GEL_MapAddStr(0xE101BC00, 0, 0x00000800, "R|W|AS2", 0);  /* GPIO4 */
+  GEL_MapAddStr(0xE101C400, 0, 0x00000800, "R|W|AS2", 0);  /* 32k Sync Timer */
+  GEL_MapAddStr(0xE101C800, 0, 0x00000800, "R|W|AS2", 0);  /* Rhea Switch */
+  GEL_MapAddStr(0xE101CC00, 0, 0x00000800, "R|W|AS2", 0);  /* NAND Flash Controller */
+  GEL_MapAddStr(0xE101D400, 0, 0x00000800, "R|W|AS2", 0);  /* GPTIMER8 */
+  GEL_MapAddStr(0xE101E400, 0, 0x00000800, "R|W|AS2", 0);  /* GPIO1 */
+  GEL_MapAddStr(0xE101EC00, 0, 0x00000800, "R|W|AS2", 0);  /* GPIO2 */
+  GEL_MapAddStr(0xE101F000, 0, 0x00000800, "R|W|AS2", 0);  /* Mailbox Gigacell */
+  GEL_MapAddStr(0xE101F800, 0, 0x00000800, "R|W|AS2", 0);  /* RESERVED */
+  GEL_MapAddStr(0xE1020000, 0, 0x00000004, "R|W|AS2", 0);  /* Megastar3 API Control Register */
+  GEL_TextOut("memorymap_init\n","result");
+}
+
+
+hotmenu configure_nmp_muxes() {
+  /*
+   * Configure muxes
+   */
+  *(int*)0xFFFE1010 = 0x00000000;
+  *(int*)0xFFFE1014 = 0x09200180;
+  *(int*)0xFFFE1018 = 0x09249249;
+  *(int*)0xFFFE101C = 0x00B89241;
+  *(int*)0xFFFE1020 = 0x00D80C76;
+  *(int*)0xFFFE1024 = 0x001B2C76;
+  *(int*)0xFFFE1028 = 0x06C01F0E;
+  *(int*)0xFFFE102C = 0xF6D86C4E;
+  *(int*)0xFFFE1030 = 0xF6DB6276;
+  *(int*)0xFFFE1034 = 0x12279E7F;
+  *(int*)0xFFFE1038 = 0xFFFF6C36;
+  *(int*)0xFFFE1090 = 0xF6DB7DFF;
+  *(int*)0xFFFE1094 = 0x000071B6;
+  *(int*)0xFFFE1098 = 0x000701F8;
+  *(int*)0xFFFE109C = 0x06DB6DB0;
+  *(int*)0xFFFE10A0 = 0x06DB6DB0;
+
+  /*
+   * Switch to the new config
+   */
+  *(int*)0xFFFE100C = 0x0000EAEF;
+}
+
+
+hotmenu configure_observation_mode() {
+
+  /* Enable observability multiplexing (no need to write EAEF for this */
+  *(int*)0xFFFE1000 |= 0x10000000;
+
+  GEL_TextOut("Camera Interface setup for observability\n","result");
+  GEL_TextOut("Set bits 24:27 of register 0xFFFE1008 to choose observation multiplexing mode\n","result");
+}
+
+
+hotmenu dpll_5x() {
+  *(short*)0xFFFECF00=0x2290;
+  GEL_TextOut("DPLL set to 5X\n","result");
+}
+
+
+hotmenu device_info() {
+  int tmp1, tmp2, tmp3;
+  
+  GEL_TextOut("\n\n----- Device info -----\n", "info");
+
+  GEL_TextOut("\nReading OMAP User ID\n", "info");
+  GEL_TextOut("--------------------\n", "info");
+  tmp1 = *(int *)0xFFFED404;
+  GEL_TextOut("User ID register    : %x\n","info",,,,tmp1);
+  tmp3 = (tmp1 & 0xFFE) >> 1;
+  GEL_TextOut("Vendor ID           : %x ","info",,,,tmp3);
+  if (tmp3 != 0x17)
+    GEL_TextOut("(unknown !)\n","info");
+  else
+    GEL_TextOut("(TI)\n","info");
+          
+  GEL_TextOut("\nReading device ID\n", "info");
+  GEL_TextOut("-----------------\n", "info");
+  
+  tmp1 = *(int *)0xFFFE2000;
+  tmp2 = *(int *)0xFFFE2004;
+    
+  GEL_TextOut("Device ID register 1: %x\n","info",,,,tmp1);
+  GEL_TextOut("Device ID register 2: %x\n","info",,,,tmp2);
+
+  tmp3 = tmp1 & 0xF;
+  if (tmp3 == 0) {
+      GEL_TextOut("Device not programmed\n", "info");
+  }
+  else {
+    if ((tmp3 == 0x1) || (tmp3 == 0x2) || (tmp3 == 0x3)) {
+      GEL_TextOut("Device type         : Emulation device\n", "info");
+    }
+    else {
+      if ((tmp3 == 0x4) || (tmp3 == 0x8) || (tmp3 == 0xC)) {
+        GEL_TextOut("Device type         : Normal device\n", "info");
+      }
+      else {
+        GEL_TextOut("Device type         : Bad device\n", "info");
+      }
+    }
+  }
+  
+  tmp3 = (tmp2 & 0x1FFFE) >> 1;
+  GEL_TextOut("Device ID           : %x ","info",,,,tmp3);
+  if (tmp3 != 0xB576)
+    GEL_TextOut("(unknown !)\n","info");
+  else
+    GEL_TextOut("(OMAP1610)\n","info");
+    
+  GEL_TextOut("\nReading Die ID\n", "info");
+  GEL_TextOut("--------------\n", "info");
+  
+  tmp1 = *(int *)0xFFFE1800;
+  tmp2 = *(int *)0xFFFE1804;
+    
+  GEL_TextOut("Die ID register 1   : %x\n","info",,,,tmp1);
+  GEL_TextOut("Die ID register 2   : %x\n","info",,,,tmp2);
+    
+  tmp3 = tmp1 & 0xFF;
+  GEL_TextOut("Chip X coordinate   :%d\n","info",,,,tmp3);
+  tmp3 = (tmp1 & 0xFF00) >> 8;
+  GEL_TextOut("Chip Y coordinate   :%d\n","info",,,,tmp3);
+  tmp3 = (tmp1 & 0x3F0000) >> 16;
+  GEL_TextOut("Chip wafer number   :%d\n","info",,,,tmp3);
+  tmp3 = ((tmp1 & 0xFFC00000) >> 22) + ((tmp2 & 0x3FFF) << 10);
+  GEL_TextOut("Chip lot number     : %x\n","info",,,,tmp3);
+  tmp3 = (tmp2 & 0x1C000) >> 14;
+  GEL_TextOut("Fab ID              :%d\n","info",,,,tmp3);
+  tmp3 = (tmp2 & 0xE0000) >> 17;
+  GEL_TextOut("Device Revision     :%d\n","info",,,,tmp3);
+  tmp3 = (tmp2 & 0x100000) >> 21;
+  GEL_TextOut("Test code           :%d\n","info",,,,tmp3);
+  tmp3 = (tmp2 & 0x200000) >> 22;
+  GEL_TextOut("Memory repair bit   :%d\n","info",,,,tmp3);
+  tmp3 = ((tmp2 & 0xFF000000) >> 24) & 0xFF;
+  GEL_TextOut("Die ID checksum     : %x\n","info",,,,tmp3);
+  
+}
+

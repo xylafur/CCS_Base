@@ -1,0 +1,41 @@
+/* gel file to handle MMC to DDR application */
+dialog GEL_MMC2DDRConfig( xfer_mode "Target card:1:MMC,2:eMMC,3:SD",
+                          card_size "Card size (in MB)",
+                          file_size "Size of the file to transfer (in MB)",
+						  dest_addr "Card dest adress index",
+						  mb_xfers "Number of transfers "
+						  )
+{
+	flag_write_mmc = xfer_mode;
+	if (xfer_mode == 2)  // force eMMC size to 32 GB
+		mmc_size = 32768;
+	else
+		mmc_size = card_size;
+	
+	if (mmc_size < 2048)
+	{ // for card less than 2GB address can not exceed size - stream size
+	   if ((dest_addr +file_size) > mmc_size)
+	   {
+		 GEL_TextOut("Error. Input parameters mismatch.. reset size\n");
+		 file_size = 0;
+	   }
+		else {
+			MMC_stream_address = dest_addr;
+		}
+	}
+	else
+	{
+	   if ((dest_addr + file_size*2048) > mmc_size*2048)
+	   {
+		 GEL_TextOut("Error. Input parameters mismatch.. reset size\n");
+		 file_size = 0;
+	   }
+		else {
+			MMC_stream_address = dest_addr;
+		}
+	}
+	MMC_stream_size = file_size*1024*1024;
+	if (mb_xfers <= 0 ) mb_xfers = 1;
+	nb_transfers = mb_xfers;
+
+}

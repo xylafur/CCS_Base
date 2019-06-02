@@ -1,0 +1,1596 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* OMAP4430 prcm clock config   		     					   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+
+/**********************************************************************
+ *
+ *  DEFINITIONS
+ *
+ **********************************************************************/
+// OPP definitions
+#define	OPP25		1
+#define	OPP50		2
+#define	OPP80		3
+#define	OPP100		4
+#define	OPP100_SDC	5
+#define OPP100_ES20 55
+#define OPP119      6
+
+#define	OPP25_SDC	7
+#define	OPP50_SDC	8
+#define	OPP80_SDC	9
+#define OPP119_SDC  10
+
+#define	OPPBOOT		11
+#define	OPP100_HDMI	12
+
+#define SAMSUNG		1
+#define ELPIDA2X2GBIT	2
+#define ELPIDA4X2GBIT	3
+#define HYNIX		4
+#define MICRON		5
+#define ZEBU		11
+
+// DPLL definitions
+
+#define PRM_BASE        0x4A306000
+#define CAM_CM2_BASE    0x4A009000
+#define	FREF			38400	// DPLL reference frequency in KHZ
+//#define	DPLL_TIMEOUT	5000	// DPLL lock/unlock timeout
+#define	DPLL_TIMEOUT	5		// DPLL lock/unlock timeout
+
+// Register definitions
+#define CKGEN_CM1_BASE_ADDRESS		0x4A004100
+
+#define CM_CORE_BASE        		(CKGEN_CM1_BASE_ADDRESS + 0x20)
+#define CM_MPU_BASE         		(CKGEN_CM1_BASE_ADDRESS + 0x60)
+#define CM_IVA_BASE         		(CKGEN_CM1_BASE_ADDRESS + 0xA0)
+#define CM_ABE_BASE         		(CKGEN_CM1_BASE_ADDRESS + 0xE0)
+
+#define CM_CLKSEL_CORE				*(unsigned int *)(CKGEN_CM1_BASE_ADDRESS)
+#define CM_CLKSEL_ABE                       *(unsigned int *)(CM_ABE_BASE + 0x08)
+
+#define CM_CLKMODE_DPLL(DPLL_BASE_ADDRESS)  *(unsigned int *)(DPLL_BASE_ADDRESS)
+#define CM_IDLEST_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x04)
+//#define CM_AUTOIDLE_DPLL(DPLL_BASE_ADDRESS) *(unsigned int *)(DPLL_BASE_ADDRESS + 0x08)
+
+#define CM_CLKSEL_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x0C)
+#define CM_DIV_M2_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x10)
+#define CM_DIV_M3_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x14)
+#define CM_DIV_M4_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x18)
+#define CM_DIV_M5_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x1C)
+#define CM_DIV_M6_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x20)
+#define CM_DIV_M7_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x24)
+
+#define CM_SYS_CLKSEL       				*(unsigned int *)(PRM_BASE + 0x110)
+
+#define CKGEN_CM2_BASE_ADDRESS				0x4A008000
+#define CM_PER_BASE         		CKGEN_CM2_BASE_ADDRESS + 0x140
+
+
+#define CM_L4PER_CLKSTCTRL 				*(unsigned int *)(CAM_CM2_BASE + 0x400)
+
+#define	dpll_freq(M,N)						(2*FREF*M/(N+1))
+//#define	dpll_freq_div(base_address, M, N)	(dpll_freq(M,N)/(CM_DIV_M2_DPLL(base_address)& 0x1F)/1000)
+
+
+/**********************************************************************
+ *
+ *  FUNCTIONS
+ *
+ **********************************************************************/
+hotmenu SelectSysClock_38_4MHz()
+{
+    GEL_TextOut("Set system clock to 38.4MHz \n");
+    CM_SYS_CLKSEL = 0x07;
+}
+
+non_overide()
+{
+    GEL_TextOut(">> START non_overide \n");
+
+    /* DLL_CTRL  */
+	*(int*)0x4A004110 = 0x0;  // set DLL in non-override mode
+    
+    GEL_TextOut(">> END non_overide \n");
+}
+
+software_code_449FF418()
+{
+
+    GEL_TextOut(">> START software_code_449FF418 \n");
+        
+    /* DDR PHY CTRL1 */
+	*(int*)0x4C0000E4 = 0x449FF418;
+
+    /* DDR PHY CTRL1  */
+	*(int*)0x4D0000E4 = 0x449FF418;
+    
+    GEL_TextOut(">> STOP software_code_449FF418 \n");
+}
+
+software_code_448C0418()
+{
+
+    GEL_TextOut(">> START software_code_448C0418 \n");
+        
+    /* DDR PHY CTRL1 */
+	*(int*)0x4C0000E4 = 0x448C0418;
+
+    /* DDR PHY CTRL1  */
+	*(int*)0x4D0000E4 = 0x448C0418;
+    
+    GEL_TextOut(">> STOP software_code_448C0418 \n");
+}
+
+software_code_448FF418()
+{
+
+    GEL_TextOut(">> START software_code_448FF418 \n");
+        
+    /* DDR PHY CTRL1 */
+	*(int*)0x4C0000E4 = 0x448FF418;
+
+    /* DDR PHY CTRL1  */
+	*(int*)0x4D0000E4 = 0x448FF418;
+    
+    GEL_TextOut(">> STOP software_code_448FF418 \n");
+}
+    
+         
+freq_update(int OPP)
+{
+    int test = 0;
+    
+    GEL_TextOut(">> START freq_update \n");
+       
+    // configure MEMIF domain in SW_WKUP
+    *(int*)0x4a008b00 = 0x2;
+    
+    // EMIF1
+    while (((*(int*)0x4a008b30)&0x30000)!=0x0);
+    
+    // EMIF2
+    while (((*(int*)0x4a008b38)&0x30000)!=0x0);
+    
+    // start freq_update in CM_SHADOW_FREQ_CONFIG1 and CM_SHADOW_FREQ_CONFIG2
+    if ((OPP == OPP100)||(OPP == OPP100_SDC))
+    {
+	*(int*)0x4a004264 = 0x25;
+	*(int*)0x4a004260 = 0xF09;
+	//*(int*)0x4a004260 = 0xF0D;
+    }
+    if ((OPP == OPP100_ES20))
+    {
+	*(int*)0x4a004264 = 0x25;
+	*(int*)0x4a004260 = 0x1709;	// M2=2 in case of OPP100_ES20 because to keep L3 @ 200MHz but DDR @ 200MHz instead of 400MHz 
+	//*(int*)0x4a004260 = 0xF0D;
+    }    if ((OPP == OPP50)||(OPP == OPP50_SDC))
+    {
+	*(int*)0x4a004264 = 0x45;
+	*(int*)0x4a004260 = 0x1709;
+	//*(int*)0x4a004260 = 0x170D;
+    }
+    if ((OPP == OPP25)||(OPP == OPP25_SDC))
+    {
+	*(int*)0x4a004264 = 0x85;
+	*(int*)0x4a004260 = 0x2709;
+	//*(int*)0x4a004260 = 0x270D;
+    }
+    
+    // wait for CM_SHADOW_FREQ_CONFIG1.FREQ_UPDATE to be cleared by PRCM
+    while ((*(int*)0x4a004260&0x1)==0x1);
+    
+    // configure MEMIF domain back in HW_AUTO
+    *(int*)0x4a008b00 = 0x3;
+    
+    if ((OPP == OPP100)||(OPP == OPP100_SDC)||(OPP == OPP100_ES20))
+    {
+	*(int*)0x4a004264 = 0x24;
+    }
+    if ((OPP == OPP50)||(OPP == OPP50_SDC))
+    {
+	*(int*)0x4a004264 = 0x44;
+    }
+    if ((OPP == OPP25)||(OPP == OPP25_SDC))
+    {
+	*(int*)0x4a004264 = 0x84;
+    }
+
+    while (test<10000)
+    {
+        test=test+1;
+    }
+        
+    
+    /* DDR PHY CTRL1 */
+//    if ((OPP == OPP100)||(OPP == OPP100_SDC))
+//   {
+//	*(int*)0x4C0000E4 = 0x449ff418;
+//	*(int*)0x4D0000E4 = 0x449ff418;
+//    }
+//    if ((OPP == OPP50)||(OPP == OPP50_SDC))
+//    {
+//	*(int*)0x4C0000E4 = 0x449ff818;
+//	*(int*)0x4D0000E4 = 0x449ff818;
+//    }
+//    if ((OPP == OPP25)||(OPP == OPP25_SDC))
+//    {
+//	*(int*)0x4C0000E4 = 0x449ffff8;
+//	*(int*)0x4D0000E4 = 0x449ffff8;
+//    }
+
+    // set override to 0
+//    *(int*)0x4A004110 = 0x0;
+               
+    GEL_TextOut(">> END freq_update \n");    
+    
+}         
+
+
+hotmenu opp_default_config_board_OPP119()
+{
+	GEL_TextOut("\n-----------------------------------------\n");
+		GEL_TextOut("\n------------ Applying OPP119 ------------\n\n");
+		GEL_TextOut("\n-----------------------------------------\n");
+	opp_config_board(OPP119,OPP119);
+}
+
+hotmenu opp_default_config_board_OPP100()
+{
+	GEL_TextOut("\n-----------------------------------------\n");
+		GEL_TextOut("\n------------ Applying OPP100 ------------\n\n");
+		GEL_TextOut("\n-----------------------------------------\n");
+	opp_config_board(OPP100,OPP100);
+}
+
+hotmenu opp_default_config_board_OPP80()
+{
+	GEL_TextOut("\n-----------------------------------------\n");
+		GEL_TextOut("\n------------ Applying OPP80 ------------\n\n");
+		GEL_TextOut("\n-----------------------------------------\n");
+	opp_config_board(OPP80,OPP80);
+}
+
+hotmenu opp_default_config_board_OPP50()
+{
+	GEL_TextOut("\n-----------------------------------------\n");
+		GEL_TextOut("\n------------ Applying OPP50 ------------\n\n");
+		GEL_TextOut("\n-----------------------------------------\n");
+	opp_config_board(OPP50,OPP50);
+}
+
+hotmenu opp_default_config_board_OPP25()
+{
+	GEL_TextOut("\n-----------------------------------------\n");
+		GEL_TextOut("\n------------ Applying OPP25 ------------\n\n");
+		GEL_TextOut("\n-----------------------------------------\n");
+	opp_config_board(OPP25,OPP25);
+}
+
+
+hotmenu opp_default_config_board(int OPP)
+{
+	if (OPP == OPP25)
+	{
+		GEL_TextOut("\n-----------------------------------------\n");
+		GEL_TextOut("\n-- Applying MPU OPP100   & CORE OPP25--\n\n");
+		GEL_TextOut("\n-----------------------------------------\n");
+	}
+	else if (OPP == OPP50)
+	{
+		GEL_TextOut("\n------------------------------------------\n");
+		GEL_TextOut("\n-- Applying MPU OPP100  & CORE OPP50 --\n\n");
+		GEL_TextOut("\n------------------------------------------\n");
+		
+	}
+	else if (OPP == OPP80)
+	{
+		GEL_TextOut("\n------------------------------------------\n");
+		GEL_TextOut("\n-- Applying MPU OPP100   & CORE OPP80 --\n\n");
+		GEL_TextOut("\n------------------------------------------\n");
+		
+	}
+	else if (OPP == OPP100)
+	{
+		GEL_TextOut("\n-------------------------------------------\n");
+		GEL_TextOut("\n-- Applying MPU OPP100   & CORE OPP100 --\n\n");
+		GEL_TextOut("\n-------------------------------------------\n");
+		
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		GEL_TextOut("\n-----------------------------------------------\n");
+		GEL_TextOut("\n-- Applying MPU OPP100   & CORE OPP100_SDC --\n\n");
+		GEL_TextOut("\n-----------------------------------------------\n");
+		
+	}
+	else if (OPP == OPP100_ES20)
+	{
+		GEL_TextOut("\n------------------------------------------------\n");
+		GEL_TextOut("\n-- Applying MPU OPP100   & CORE OPP100_ES20 --\n\n");
+		GEL_TextOut("\n------------------------------------------------\n");
+
+		
+	}
+	else if (OPP == OPP119)
+	{
+		GEL_TextOut("\n-------------------------------------------\n");
+		GEL_TextOut("\n-- Applying MPU OPP100   & CORE OPP119 --\n\n");
+		GEL_TextOut("\n-------------------------------------------\n");
+		
+	}
+	
+	opp_config_board(OPP100,OPP);       
+}
+
+
+hotmenu opp_change_elpida_2x2gbit_4x2gbit_opp100()
+{
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPPBOOT);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPPBOOT);
+	core_dpll_unlock();
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPP100);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPP100);
+	core_dpll_set_dividers(OPP100);
+	core_dpll_lock(OPP100);
+}
+hotmenu opp_change_elpida_2x2gbit_4x2gbit_opp50()
+{
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPPBOOT);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPPBOOT);
+	core_dpll_unlock();
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPP50);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPP50);
+	core_dpll_set_dividers(OPP50);
+	core_dpll_lock(OPP50);
+}
+hotmenu opp_change_elpida_2x2gbit_4x2gbit_opp25()
+{
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPPBOOT);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPPBOOT);
+	core_dpll_unlock();
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPP25);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPP25);
+	core_dpll_set_dividers(OPP25);
+	core_dpll_lock(OPP25);
+}
+hotmenu opp_change_elpida_2x2gbit_4x2gbit_opp100_sdc()
+{
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPPBOOT);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPPBOOT);
+	core_dpll_unlock();
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPP100_SDC);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPP100_SDC);
+	core_dpll_set_dividers(OPP100_SDC);
+	core_dpll_lock(OPP100_SDC);
+}
+hotmenu opp_change_elpida_2x2gbit_4x2gbit_opp50_sdc()
+{
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPPBOOT);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPPBOOT);
+	core_dpll_unlock();
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPP50_SDC);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPP50_SDC);
+	core_dpll_set_dividers(OPP50_SDC);
+	core_dpll_lock(OPP50_SDC);
+}
+hotmenu opp_change_elpida_2x2gbit_4x2gbit_opp25_sdc()
+{
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPPBOOT);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPPBOOT);
+	core_dpll_unlock();
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPP25_SDC);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPP25_SDC);
+	core_dpll_set_dividers(OPP25_SDC);
+	core_dpll_lock(OPP25_SDC);
+}
+hotmenu opp_change_elpida_2x2gbit_4x2gbit_opp100_hdmi()
+{
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPPBOOT);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPPBOOT);
+	core_dpll_unlock();
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPP100_HDMI);
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPP100_HDMI);
+	core_dpll_set_dividers(OPP100_HDMI);
+	core_dpll_lock(OPP100_HDMI);
+}
+
+/******************************************************************************
+ * core_dpll_unlock() : CORE DPLL unlock sequence
+ *****************************************************************************/
+core_dpll_unlock()
+{
+
+    int test = 0;
+    
+    GEL_TextOut(">> START setting CORE DPLL in bypass mode \n");
+    
+    // configure MEMIF domain in SW_WKUP
+    *(int*)0x4a008b00 = 0x2;
+    
+    // EMIF1
+    while (((*(int*)0x4a008b30)&0x30000)!=0x0);
+    
+    // EMIF2
+    while (((*(int*)0x4a008b38)&0x30000)!=0x0);
+
+    // CM_SHADOW_FREQ_CONFIG_2 (GPMC FREQ_UPDATE = 1)
+    *(int*)0x4a004264 = 0x1;
+
+    // CM_SHADOW_FREQ_CONFIG_1 (start freq update to go to bypass mode)
+    *(int*)0x4a004260 = 0x40D;
+    
+    // wait for CM_SHADOW_FREQ_CONFIG1.FREQ_UPDATE to be cleared by PRCM
+    while ((*(int*)0x4a004260&0x1)==0x1);
+    
+    // configure MEMIF domain back in HW_AUTO
+    *(int*)0x4a008b00 = 0x3;
+
+    // CM_SHADOW_FREQ_CONFIG_2 (GPMC FREQ_UPDATE back to 0)
+    *(int*)0x4a004264 = 0;
+
+
+    while (test<10000)
+    {
+        test=test+1;
+    }
+        
+    
+    GEL_TextOut(">> END setting CORE DPLL in bypass mode \n");    
+
+}
+
+/******************************************************************************
+ * core_dpll_lock() : CORE DPLL lock from bypass sequence
+ *****************************************************************************/
+core_dpll_lock(int OPP)
+{
+
+    int test = 0;
+    
+
+    GEL_TextOut(">> START setting CORE DPLL in lock mode \n");
+    
+    // configure MEMIF domain in SW_WKUP
+    *(int*)0x4a008b00 = 0x2;
+    
+    // EMIF1
+    while (((*(int*)0x4a008b30)&0x30000)!=0x0);
+    
+    // EMIF2
+    while (((*(int*)0x4a008b38)&0x30000)!=0x0);
+
+    // start freq_update in CM_SHADOW_FREQ_CONFIG1 and CM_SHADOW_FREQ_CONFIG2
+    if ((OPP == OPP100)||(OPP == OPP100_SDC)||(OPP == OPP100_HDMI)||(OPP == OPP100_ES20))
+    {
+	*(int*)0x4a004264 = 0x25;
+	*(int*)0x4a004260 = 0xF09;
+	//*(int*)0x4a004260 = 0xF0D;
+    }
+    if ((OPP == OPP50)||(OPP == OPP50_SDC))
+    {
+	*(int*)0x4a004264 = 0x45;
+	*(int*)0x4a004260 = 0x1709;
+	//*(int*)0x4a004260 = 0x170D;
+    }
+    if ((OPP == OPP25)||(OPP == OPP25_SDC))
+    {
+	*(int*)0x4a004264 = 0x85;
+	*(int*)0x4a004260 = 0x2709;
+	//*(int*)0x4a004260 = 0x270D;
+    }
+    
+    // wait for CM_SHADOW_FREQ_CONFIG1.FREQ_UPDATE to be cleared by PRCM
+    GEL_TextOut(">> waiting for FREQ_UPDATE bit to be cleared \n");
+    while ((*(int*)0x4a004260&0x1)==0x1);
+    GEL_TextOut(">> FREQ_UPDATE bit cleared \n");
+    
+    // configure MEMIF domain back in HW_AUTO
+    *(int*)0x4a008b00 = 0x3;
+    
+    // CM_SHADOW_FREQ_CONFIG_2 (GPMC FREQ_UPDATE back to 0)
+    if ((OPP == OPP100)||(OPP == OPP100_SDC)||(OPP == OPP100_HDMI)||(OPP == OPP100_ES20))
+    {
+	*(int*)0x4a004264 = 0x24;
+    }
+    if ((OPP == OPP50)||(OPP == OPP50_SDC))
+    {
+	*(int*)0x4a004264 = 0x44;
+    }
+    if ((OPP == OPP25)||(OPP == OPP25_SDC))
+    {
+	*(int*)0x4a004264 = 0x84;
+    }
+
+    while (test<10000)
+    {
+        test=test+1;
+    }
+
+    GEL_TextOut(">> END setting CORE DPLL in lock mode \n");
+
+}
+
+
+/******************************************************************************
+ * core_dpll_set_dividers() : set CORE DPLL dividers
+ *****************************************************************************/
+core_dpll_set_dividers(int OPP)
+{
+
+    int test = 0;
+    
+
+    GEL_TextOut(">> START setting CORE DPLL dividers \n");
+    
+    // Program L3 & L4 dividers from CORE DPLL
+    // L3 clock = CORE CLK /2; L4 clock = L3 clock /2; CORE_CLK=CORE_X2_CLK/1
+    CM_CLKSEL_CORE = 0x110;
+
+    // set HS DIVIDERS
+    if ((OPP == OPP100)||(OPP == OPP100_SDC)||(OPP == OPP100_HDMI)||(OPP == OPP100_ES20))
+    {
+
+	if (OPP != OPP100_ES20) 
+    { 
+    	// CM_DIV_M2_DPLL_CORE.DPLL_CLKOUT_DIV = 1
+        CM_DIV_M2_DPLL(CM_CORE_BASE) = 0x1;
+	} else {
+	   // In case of OMAP4430 ES2.0, we need to program the EMIF @ 200MHz 
+	   // and keep CORE @ 400MHz (i.e. L3 @ 200MHz) 
+	   // i.e. CM_DIV_M2_DPLL_CORE.DPLL_CLKOUT_DIV = 2
+	CM_DIV_M2_DPLL(CM_CORE_BASE) = 0x2; 
+	}										
+
+        
+	// CM_DIV_M3_DPLL_CORE.DPLL_CLKOUT_DIV = 5
+	CM_DIV_M3_DPLL(CM_CORE_BASE) = 0x5;
+    
+	// CM_DIV_M4_DPLL_CORE.HSDIVIDER_CLKOUT1_DIV = 8
+	CM_DIV_M4_DPLL(CM_CORE_BASE) = 0x8;
+    
+	// CM_DIV_M5_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 4
+	CM_DIV_M5_DPLL(CM_CORE_BASE) = 0x4;
+    
+	// CM_DIV_M6_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 8
+	// M6 clock is used for debugSS and EMU Clock
+	// Should be equals to CORE_DPLL / 0x8 (1322/0x8 -> 166MHzs on SDC)
+	CM_DIV_M6_DPLL(CM_CORE_BASE) = 0x8;
+    
+	// CM_DIV_M7_DPLL_CORE.HSDIVIDER_CLKOUT3_DIV = 8
+	CM_DIV_M7_DPLL(CM_CORE_BASE) = 0x8;
+    }
+    
+    if ((OPP == OPP50)||(OPP == OPP50_SDC))
+    {
+	// CM_DIV_M2_DPLL_CORE.DPLL_CLKOUT_DIV = 2
+	CM_DIV_M2_DPLL(CM_CORE_BASE) = 0x2;
+        
+	// CM_DIV_M3_DPLL_CORE.DPLL_CLKOUT_DIV = 5
+	CM_DIV_M3_DPLL(CM_CORE_BASE) = 0x5;
+    
+	// CM_DIV_M4_DPLL_CORE.HSDIVIDER_CLKOUT1_DIV = 8
+	CM_DIV_M4_DPLL(CM_CORE_BASE) = 0x8;
+    
+	// CM_DIV_M5_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 8
+	CM_DIV_M5_DPLL(CM_CORE_BASE) = 0x8;
+    
+	// CM_DIV_M6_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 8
+	// M6 clock is oused for debugSS and EMU Clock
+	// Should be equals to CORE_DPLL / 0x8 (1322/0x8 -> 166MHzs on SDC)
+	CM_DIV_M6_DPLL(CM_CORE_BASE) = 0x8;
+    
+	// CM_DIV_M7_DPLL_CORE.HSDIVIDER_CLKOUT3_DIV = 8
+	CM_DIV_M7_DPLL(CM_CORE_BASE) = 0x8;
+    }
+    if ((OPP == OPP25)||(OPP == OPP25_SDC))
+    {
+	// CM_DIV_M2_DPLL_CORE.DPLL_CLKOUT_DIV = 4
+	CM_DIV_M2_DPLL(CM_CORE_BASE) = 0x4;
+        
+	// CM_DIV_M3_DPLL_CORE.DPLL_CLKOUT_DIV = 5
+	CM_DIV_M3_DPLL(CM_CORE_BASE) = 0x5;
+    
+	// CM_DIV_M4_DPLL_CORE.HSDIVIDER_CLKOUT1_DIV = 8
+	CM_DIV_M4_DPLL(CM_CORE_BASE) = 0x8;
+    
+	// CM_DIV_M5_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 16
+	CM_DIV_M5_DPLL(CM_CORE_BASE) = 0x10;
+    
+	// CM_DIV_M6_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 8
+	// M6 clock is oused for debugSS and EMU Clock */
+	// Should be equals to CORE_DPLL / 0x8 (1322/0x8 -> 166MHzs on SDC)
+	CM_DIV_M6_DPLL(CM_CORE_BASE) = 0x8;
+    
+	// CM_DIV_M7_DPLL_CORE.HSDIVIDER_CLKOUT3_DIV = 8
+	CM_DIV_M7_DPLL(CM_CORE_BASE) = 0x8;
+    }
+
+    // set CORE DPLL MUL & DIV parameters
+    if((OPP == OPP100)||(OPP == OPP50)||(OPP == OPP25))
+    {
+//	CM_CLKSEL_DPLL(CM_CORE_BASE) = 0x5 | (0x7D << 8);
+	CM_CLKSEL_DPLL(CM_CORE_BASE) = 0x7D05;
+//	*(int*)0x4A00412C = 0x7D05;
+    }
+    if((OPP == OPP100_SDC)||(OPP == OPP50_SDC)||(OPP == OPP25_SDC))
+    {
+//	CM_CLKSEL_DPLL(CM_CORE_BASE) = 0x18 | (0x1B0 << 8);
+	CM_CLKSEL_DPLL(CM_CORE_BASE) = 0x1B018;
+    }
+    if(OPP == OPP100_HDMI)
+    {
+//	CM_CLKSEL_DPLL(CM_CORE_BASE) = 0x18 | (0x1F0 << 8);
+	CM_CLKSEL_DPLL(CM_CORE_BASE) = 0x1F018;
+    }
+          
+    GEL_TextOut(">> END setting CORE DPLL dividers \n");
+
+}
+
+
+/******************************************************************************
+ * opp_config_board() : 
+ *****************************************************************************/
+opp_config_board(int OPP,int OPP_LPDDR2)		
+{
+	
+	GEL_TextOut("opp_config OPP %d\n",,,,, OPP);
+
+	// Chiron DPLL programming
+	dpll_a9_opp_config_board(OPP);
+	
+	// elpida_E1471E10_ddr_config_EMIF4D1_AND_EMIF4D2_shadow();
+
+	// Core DPLL programming
+	dpll_core_opp_config_board(OPP_LPDDR2);
+
+	// IVA & TESLA clock programming
+ 	dpll_iva_tesla_opp_config_board(OPP);
+    
+      // PER DPLL programming
+      dpll_per_opp_config_board(OPP);
+    
+    
+    
+    // ABE DPLL programming
+	dpll_abe_opp_config_board(OPP);
+    
+    // Ducati clock programming (using CORE clock)
+    //	dpll_ducati_coreclk_opp_config_board(OPP);
+    
+    
+   
+	GEL_TextOut("opp_config OPP FINISHED %d\n",,,,, OPP);
+}
+
+/******************************************************************************
+ * dpll_lock_board() : DPLL lock_sequence
+ *****************************************************************************/
+ dpll_lock_board(int base_address, int OPP)
+{
+	unsigned int timer;
+
+	int clksel_dpll_value;
+
+	// Put DPLL into bypass mode
+   	clksel_dpll_value = CM_CLKMODE_DPLL(base_address);
+   	clksel_dpll_value &= ~(0x7 << 0);
+   	clksel_dpll_value |= (0x4 << 0);
+   	CM_CLKMODE_DPLL(base_address) = clksel_dpll_value;
+	
+    if (base_address == CM_IVA_BASE)
+	{
+        if(OPP==OPP119)
+        {
+		    // Program DPLL frequency (M = 263)
+	        clksel_dpll_value = CM_CLKSEL_DPLL(CM_IVA_BASE);
+	        clksel_dpll_value |= (0x107 << 8);
+ 
+	        CM_CLKSEL_DPLL(CM_IVA_BASE) = clksel_dpll_value;
+        }
+        if((OPP==OPP100_SDC)||(OPP==OPP100))
+        {
+		    // Program DPLL frequency (M = 97)
+	        clksel_dpll_value = CM_CLKSEL_DPLL(CM_IVA_BASE);
+	        clksel_dpll_value |= (0x61 << 8);
+ 
+	        CM_CLKSEL_DPLL(CM_IVA_BASE) = clksel_dpll_value;
+        }
+        if(OPP==OPP50)
+        {
+		    // Program DPLL frequency (M = 97)
+	        clksel_dpll_value = CM_CLKSEL_DPLL(CM_IVA_BASE);
+	        clksel_dpll_value |= (0x61 << 8);
+ 
+	        CM_CLKSEL_DPLL(CM_IVA_BASE) = clksel_dpll_value;
+        }
+        if(OPP==OPP25)
+        {
+		    // Program DPLL frequency (M = 97)
+	        clksel_dpll_value = CM_CLKSEL_DPLL(CM_IVA_BASE);
+	        clksel_dpll_value |= (0x61 << 8);
+            
+            CM_CLKSEL_DPLL(CM_IVA_BASE) = clksel_dpll_value;
+        }
+	}
+	
+     if (base_address == CM_ABE_BASE)
+	{
+        if((OPP==OPP100_SDC)||(OPP==OPP100)||(OPP==OPP119)||(OPP==OPP50)||(OPP==OPP25))
+        {
+		    // Program DPLL frequency (M = 64)
+	        clksel_dpll_value = CM_CLKSEL_DPLL(CM_ABE_BASE);
+	        clksel_dpll_value |= (0x40 << 8);
+ 
+	        CM_CLKSEL_DPLL(CM_ABE_BASE) = clksel_dpll_value;
+        }
+	}
+    
+	if (base_address == CM_MPU_BASE)
+	{
+        if(OPP==OPP119)
+        {
+		// Program DPLL frequency (M = 75)
+	    clksel_dpll_value = CM_CLKSEL_DPLL(CM_MPU_BASE);
+	    clksel_dpll_value |= (0x4B << 8);
+        }
+        
+        if(OPP==OPP100_SDC)
+        {
+		// Program DPLL frequency (M = 26)
+	    clksel_dpll_value = CM_CLKSEL_DPLL(CM_MPU_BASE);
+	    clksel_dpll_value |= (0x1A << 8);
+        }
+        
+        if(OPP==OPP100)
+        {
+		// Program DPLL frequency (M = 125)
+	    clksel_dpll_value = CM_CLKSEL_DPLL(CM_MPU_BASE);
+	    clksel_dpll_value |= (0x7D << 8);
+        }
+        
+        if(OPP==OPP50)
+        {
+		// Program DPLL frequency (M = 125)
+	    clksel_dpll_value = CM_CLKSEL_DPLL(CM_MPU_BASE);
+	    clksel_dpll_value |= (0x7D << 8);
+        }
+        
+        if(OPP==OPP25)
+        {
+		// Program DPLL frequency (M = 125)
+	    clksel_dpll_value = CM_CLKSEL_DPLL(CM_MPU_BASE);
+	    clksel_dpll_value |= (0x7D << 8);
+        }
+        
+ 
+	    CM_CLKSEL_DPLL(CM_MPU_BASE) = clksel_dpll_value;
+	}
+
+      if (base_address == CM_CORE_BASE)
+	{
+	    clksel_dpll_value = CM_CLKSEL_DPLL(CM_CORE_BASE);
+            if ((OPP==OPP100_SDC)||(OPP==OPP50_SDC)||(OPP==OPP25_SDC))
+            {
+		// Program DPLL frequency (M = 432)
+		clksel_dpll_value |= (0x1b0 << 8);
+ 
+            }
+            else if ((OPP==OPP100)||(OPP==OPP50)||(OPP==OPP25)||(OPP==OPP100_ES20))
+            {
+		// Program DPLL frequency (M = 125)
+		clksel_dpll_value |= (0x7D << 8);
+ 
+            }
+	    CM_CLKSEL_DPLL(CM_CORE_BASE) = clksel_dpll_value;
+	}
+
+	if (base_address == CM_PER_BASE)
+	{
+        if((OPP==OPP100_SDC)||(OPP==OPP100)||(OPP==OPP50)||(OPP==OPP25))
+        {
+		    clksel_dpll_value = CM_CLKSEL_DPLL(CM_PER_BASE);
+		    clksel_dpll_value |= ( 0xa << 8);
+
+		    CM_CLKSEL_DPLL(CM_PER_BASE) = clksel_dpll_value;
+        }
+	}  
+
+    // Put DPLL into lock mode
+    
+    if (base_address != CM_CORE_BASE)
+	{
+	    CM_CLKMODE_DPLL(base_address) = 7;
+	}
+    else
+    {
+         freq_update(OPP);
+    }
+    	
+      //if ((base_address!=CM_PER_BASE)&&(base_address!=CM_IVA_BASE)&&(base_address!=CM_CORE_BASE))
+      // if (base_address!=CM_IVA_BASE)
+	  //{
+   
+		// Wait for DPLL to be locked
+  		timer = 0;
+  		while( ((CM_IDLEST_DPLL(base_address) & 0x1) != 0x1) && (timer++<DPLL_TIMEOUT) );
+
+  		if( timer >= DPLL_TIMEOUT )
+  		{
+        		GEL_TextOut("ERROR: timeout while locking DPLL \n");
+  			return -1;
+  		}
+  		else
+  		{
+        		GEL_TextOut("Locked board DPLL successfully \n");
+  	    		return 0;
+  		}
+	//}
+}
+
+
+/******************************************************************************
+* dpll_a9_opp_config_board() : Cortex A9 DPLL OPP configurations (OPP100 for SDC)
+*****************************************************************************/
+dpll_a9_opp_config_board(int OPP)
+{
+	GEL_TextOut("> Cortex A9 DPLL BOARD OPP %d\n",,,,, OPP);
+    
+	// M & N parameters are fixed
+	if( OPP == OPP25 )
+    {
+        // Program DPLL frequency (M = 7)
+	    CM_CLKSEL_DPLL(CM_MPU_BASE) = 0x7;
+        
+        // Program DPLL_CLKOUT divider (M2 = 4)
+	    CM_DIV_M2_DPLL(CM_MPU_BASE) = 0x4;
+        
+        dpll_lock_board(CM_MPU_BASE, OPP);
+    }
+	else if( OPP == OPP50 )
+    {
+      // Program DPLL frequency (M = 7)
+	    CM_CLKSEL_DPLL(CM_MPU_BASE) = 0x7;
+        
+        // Program DPLL_CLKOUT divider (M2 = 2)
+	    CM_DIV_M2_DPLL(CM_MPU_BASE) = 0x2;
+        
+        dpll_lock_board(CM_MPU_BASE, OPP);
+    }
+	else if( OPP == OPP100_SDC )
+    {
+		// Program DPLL frequency (M = 2)
+	    CM_CLKSEL_DPLL(CM_MPU_BASE) = 0x2;
+
+        // Program DPLL_CLKOUT divider (M2 = 1)
+	    CM_DIV_M2_DPLL(CM_MPU_BASE) = 0x1;
+    
+        dpll_lock_board(CM_MPU_BASE, OPP);
+    }
+    else if( OPP == OPP100)
+    {
+		// Program DPLL frequency (M = 7)
+	    CM_CLKSEL_DPLL(CM_MPU_BASE) = 0x7;
+
+        // Program DPLL_CLKOUT divider (M2 = 1)
+	    CM_DIV_M2_DPLL(CM_MPU_BASE) = 0x1;
+    
+        dpll_lock_board(CM_MPU_BASE, OPP);
+    }
+	else if( OPP == OPP119 )
+    {
+        // Program DPLL frequency (M = 3)
+	    CM_CLKSEL_DPLL(CM_MPU_BASE) = 0x3;
+
+        // Program DPLL_CLKOUT divider (M2 = 1)
+	    CM_DIV_M2_DPLL(CM_MPU_BASE) = 0x1;
+    
+        
+        dpll_lock_board(CM_MPU_BASE, OPP);
+    }
+    
+    GEL_TextOut("< Cortex A9 DPLL BOARD OPP %d\n",,,,, OPP);
+}
+
+
+/******************************************************************************
+* dpll_core_opp_config_board() : CORE DPLL OPP configurations (OPP100) for SDC
+*****************************************************************************/
+dpll_core_opp_config_board(int OPP)
+{
+	GEL_TextOut("> CORE DPLL BOARD OPP %d\n",,,,, OPP);
+	
+	// Program L3 & L4 dividers from CORE DPLL
+    /* L3 clock = CORE CLK /2; L4 clock = L3 clock /2; CORE_CLK=CORE_X2_CLK/1 */
+    CM_CLKSEL_CORE = 0x110;
+    	
+	   // M & N parameters are fixed
+//		if( OPP == OPP25 )
+//        {
+//            GEL_TextOut("> Core DPLL BOARD OPP25 NOT TESTED \n");
+            //dpll_lock_board(CM_CORE_BASE, OPP);
+//        }
+//		else if( OPP == OPP50 )
+//        {
+//            GEL_TextOut("> Core DPLL BOARD OPP50 NOT TESTED \n");
+            //dpll_lock_board(CM_CORE_BASE, OPP);
+//        }
+//         if(( OPP == OPP100 )||( OPP == OPP100_SDC ))
+//        {
+	    if((OPP == OPP100_SDC)||(OPP == OPP50_SDC)||(OPP == OPP25_SDC))
+	    {
+            /* CM_CLKSEL_DPLL_CORE.PLL_DIV = 0x18 */
+            CM_CLKSEL_DPLL(CM_CORE_BASE) = 0x18;
+	    }
+	    if ((OPP == OPP100)||(OPP == OPP50)||(OPP == OPP25)||(OPP == OPP100_ES20))
+	    {
+            /* CM_CLKSEL_DPLL_CORE.PLL_DIV = 0x05 */
+            CM_CLKSEL_DPLL(CM_CORE_BASE) = 0x05;
+	    }
+            if ((OPP == OPP100)||(OPP == OPP100_SDC)||(OPP == OPP100_ES20))
+            {
+
+				
+				
+				if (OPP != OPP100_ES20) 
+            	{ 
+            		// CM_DIV_M2_DPLL_CORE.DPLL_CLKOUT_DIV = 1
+            		CM_DIV_M2_DPLL(CM_CORE_BASE) = 0x1;
+				} else {
+			    	// In case of OMAP4430 ES2.0, we need to program the EMIF @ 200MHz 
+			    	// and keep CORE @ 400MHz (i.e. L3 @ 200MHz) 
+			    	// i.e. CM_DIV_M2_DPLL_CORE.DPLL_CLKOUT_DIV = 2
+					CM_DIV_M2_DPLL(CM_CORE_BASE) = 0x2; 
+				}										
+													
+        
+            /* CM_DIV_M3_DPLL_CORE.DPLL_CLKOUT_DIV = 5 */
+            CM_DIV_M3_DPLL(CM_CORE_BASE) = 0x5;
+    
+            /* CM_DIV_M4_DPLL_CORE.HSDIVIDER_CLKOUT1_DIV = 8 */
+            CM_DIV_M4_DPLL(CM_CORE_BASE) = 0x8;
+    
+            /* CM_DIV_M5_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 4 */
+            CM_DIV_M5_DPLL(CM_CORE_BASE) = 0x4;
+    
+            /* CM_DIV_M6_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 8 */
+            /* M6 clock is oused for debugSS and EMU Clock */
+            /* Should be equals to CORE_DPLL / 0x8 (1322/0x8 -> 166MHzs on SDC) */
+            CM_DIV_M6_DPLL(CM_CORE_BASE) = 0x8;
+    
+            /* CM_DIV_M7_DPLL_CORE.HSDIVIDER_CLKOUT3_DIV = 8 */
+            CM_DIV_M7_DPLL(CM_CORE_BASE) = 0x8;
+             }
+            if ((OPP == OPP50)||(OPP == OPP50_SDC))
+            {
+            /* CM_DIV_M2_DPLL_CORE.DPLL_CLKOUT_DIV = 2 */
+            CM_DIV_M2_DPLL(CM_CORE_BASE) = 0x2;
+        
+            /* CM_DIV_M3_DPLL_CORE.DPLL_CLKOUT_DIV = 5 */
+            CM_DIV_M3_DPLL(CM_CORE_BASE) = 0x5;
+    
+            /* CM_DIV_M4_DPLL_CORE.HSDIVIDER_CLKOUT1_DIV = 8 */
+            CM_DIV_M4_DPLL(CM_CORE_BASE) = 0x8;
+    
+            /* CM_DIV_M5_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 8 */
+            CM_DIV_M5_DPLL(CM_CORE_BASE) = 0x8;
+    
+            /* CM_DIV_M6_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 8 */
+            /* M6 clock is oused for debugSS and EMU Clock */
+            /* Should be equals to CORE_DPLL / 0x8 (1322/0x8 -> 166MHzs on SDC) */
+            CM_DIV_M6_DPLL(CM_CORE_BASE) = 0x8;
+    
+            /* CM_DIV_M7_DPLL_CORE.HSDIVIDER_CLKOUT3_DIV = 8 */
+            CM_DIV_M7_DPLL(CM_CORE_BASE) = 0x8;
+             }
+            if ((OPP == OPP25)||(OPP == OPP25_SDC))
+            {
+            /* CM_DIV_M2_DPLL_CORE.DPLL_CLKOUT_DIV = 4 */
+            CM_DIV_M2_DPLL(CM_CORE_BASE) = 0x4;
+        
+            /* CM_DIV_M3_DPLL_CORE.DPLL_CLKOUT_DIV = 5 */
+            CM_DIV_M3_DPLL(CM_CORE_BASE) = 0x5;
+    
+            /* CM_DIV_M4_DPLL_CORE.HSDIVIDER_CLKOUT1_DIV = 8 */
+            CM_DIV_M4_DPLL(CM_CORE_BASE) = 0x8;
+    
+            /* CM_DIV_M5_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 16 */
+            CM_DIV_M5_DPLL(CM_CORE_BASE) = 0x10;
+    
+            /* CM_DIV_M6_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 8 */
+            /* M6 clock is oused for debugSS and EMU Clock */
+            /* Should be equals to CORE_DPLL / 0x8 (1322/0x8 -> 166MHzs on SDC) */
+            CM_DIV_M6_DPLL(CM_CORE_BASE) = 0x8;
+    
+            /* CM_DIV_M7_DPLL_CORE.HSDIVIDER_CLKOUT3_DIV = 8 */
+            CM_DIV_M7_DPLL(CM_CORE_BASE) = 0x8;
+             }
+           
+            dpll_lock_board(CM_CORE_BASE, OPP);
+ //       }
+         if( OPP == OPP119)
+        {
+			GEL_TextOut("CORE DPLL OPP119 is not supported !\n");
+        }
+        
+         GEL_TextOut(" < CORE DPLL BOARD OPP %d\n",,,,, OPP);
+	
+}
+
+
+dpll_iva_tesla_opp_config_board(int OPP)
+{
+    GEL_TextOut("> TESLA IVA BOARD %d\n",,,,, OPP);
+    
+
+     // DPLL AUTO control  disabled
+    // *(int*)0x4A0041DC = 0x00000001; 
+     
+    // DPLL AUTO control  disabled
+    //*(int*)0x4A0041AC = 0x00006103;
+    
+    if( OPP == OPP119)
+    {
+     
+        // CKGEN_CM1.CM_CLKSEL_DPLL_IVA D =10
+        *(int*)0x4A0041AC = 0x0000000A;
+        
+        // CKGEN_CM1.CM_DIV_M4_DPLL_IVA.HSDIVIDER_CLKOUT1_DIV = 4
+        *(int*)0x4A0041B8 = 0x00000004;
+        
+        // CKGEN_CM1.CM_DIV_M5_DPLL_IVA.HSDIVIDER_CLKOUT2_DIV = 6
+        *(int*)0x4A0041BC = 0x00000006;
+     }   
+     
+    if( OPP == OPP100)
+    {
+     
+        // CKGEN_CM1.CM_CLKSEL_DPLL_IVA D =3
+        *(int*)0x4A0041AC = 0x00000003;
+        
+        // CKGEN_CM1.CM_DIV_M4_DPLL_IVA.HSDIVIDER_CLKOUT1_DIV = 4
+        *(int*)0x4A0041B8 = 0x00000004;
+        
+        // CKGEN_CM1.CM_DIV_M5_DPLL_IVA.HSDIVIDER_CLKOUT2_DIV = 7
+        *(int*)0x4A0041BC = 0x00000007;
+     }  
+     
+     if( OPP == OPP50)
+    {
+     
+        // CKGEN_CM1.CM_CLKSEL_DPLL_IVA D =3
+        *(int*)0x4A0041AC = 0x00000003;
+        
+        // CKGEN_CM1.CM_DIV_M4_DPLL_IVA.HSDIVIDER_CLKOUT1_DIV = 8
+        *(int*)0x4A0041B8 = 0x00000008;
+        
+        // CKGEN_CM1.CM_DIV_M5_DPLL_IVA.HSDIVIDER_CLKOUT2_DIV = 14
+        *(int*)0x4A0041BC = 0x0000000E;
+     }   
+    
+    if( OPP == OPP25)
+    {
+     
+        // CKGEN_CM1.CM_CLKSEL_DPLL_IVA D =3
+        *(int*)0x4A0041AC = 0x00000003;
+        
+        // CKGEN_CM1.CM_DIV_M4_DPLL_IVA.HSDIVIDER_CLKOUT1_DIV = 16
+        *(int*)0x4A0041B8 = 0x00000010;
+        
+        // CKGEN_CM1.CM_DIV_M5_DPLL_IVA.HSDIVIDER_CLKOUT2_DIV = 28
+        *(int*)0x4A0041BC = 0x0000001C;
+     }   
+
+    
+    // LOCK_DPLL
+    // Need to lock it
+    dpll_lock_board(CM_IVA_BASE, OPP); 
+    
+    *(int*)0x4A0041A0 = 0x00000007;
+
+    // IVAHD WAKEUP (after IVAHD dpll)
+    // Configure IVAHD and SL2 modules into "Auto" mode
+    // IVAHD_CM2:CM_IVAHD_IVAHD_CLKCTRL
+    //*(int*)0x4A008F20 = 0x00000001; // TO KEEP NEED TO TEST
+    // IVAHD_CM2:CM_IVAHD_SL2_CLKCTRL
+    //*(int*)0x4A008F28 = 0x00000001; // TO KEEP NEED TO TEST
+    
+    // Set Force wakeUp domain transition
+    // IVAHD_CM2:CM_IVAHD_CLKSTCTRL = SW_WKUP
+    //*(int*)0x4A008F00 = 0x00000002; // TO KEEP NEED TO TEST
+    
+    // Read1 IVAHD_ROOT_CLK is running or gatng/ungating transition is on-going
+    // while (((*(int*)0x4A008F00) & 0x100)& ~0x100);
+        
+    // Configure Tesla mode into Auto mode
+    // TESLA_CM1:CM_TESLA_TESLA_CLKCTRL
+    //*(int*)0x4A004420 = 0x00000001;    
+    
+    // Set force-wakeup domain transition
+    // TESLA_CM1:CM_TESLA_CLKSTCTRL = SW_WKUP
+    //*(int*)0x4A004400 = 0x00000002;
+    
+    // Reading 1 : clock is running ir gating/ungating transition is on-going.
+    //while (((*(int*)0x4A004400) & 0x100)& ~0x100);
+    
+    GEL_TextOut("< TESLA IVA BOARD OPP %d\n",,,,, OPP);
+}
+
+
+/******************************************************************************
+ * dpll_abe_opp_config_board() : ABE DPLL OPP configurations
+ *****************************************************************************/
+dpll_abe_opp_config_board(int OPP)
+{
+    GEL_TextOut("> ABE DPLL BOARD OPP %d\n",,,,, OPP);
+        
+    *(int*)0x4A0041ec = 0x18;
+    
+    *(int*)0x4A30610c = 0x0;
+    
+    dpll_lock_board(CM_ABE_BASE, OPP);
+    
+    //*(int*)0x4A0041e0 = 0x4;
+    
+    //*(int*)0x4A0041ec = 0x00004018;
+    
+    //*(int*)0x4A0041e0 = 0x7;
+
+    //while (*(int*)0x4A0041e4 != 0x1);
+    
+    // CM_CLKSEL_ABE = 0x4018;
+
+    GEL_TextOut("< ABE DPLL BOARD OPP %d\n",,,,, OPP);
+
+}
+
+/******************************************************************************
+* dpll_per_opp_config_board() : PER DPLL OPP configurations
+*****************************************************************************/
+dpll_per_opp_config_board(int OPP)
+{
+	GEL_TextOut(" > PER BOARD DPLL OPP %d\n",,,,, OPP);
+    
+	// M & N parameters are fixed
+    if( OPP == OPP25 )
+    {
+        /* CM_CLKSEL_DPLL_PER.PLL_MULT = 2 */
+        //CM_CLKSEL_DPLL(CM_PER_BASE) = 0x200;
+
+		CM_CLKSEL_DPLL(CM_PER_BASE) = 0x0;
+     
+        /* CM_DIV_M2_DPLL_PER.DPLL_CLKOUT_DIV = 4, UnForce DPLL CLKOUTX2 and CLKOUT to stay enabled */
+        CM_DIV_M2_DPLL(CM_PER_BASE) = 0x004;
+        
+        /* CM_DIV_M3_DPLL_PER.DPLL_CLKOUT_DIV = 8, UnForce DPLL CLKOUTHIF to stay enabled */
+        CM_DIV_M3_DPLL(CM_PER_BASE) = 0x008;
+    
+        /* CM_DIV_M4_DPLL_PER.HSDIVIDER_CLKOUT1_DIV = 6, UnForce HSDIVIDER_CLKOUT1 to stay enabled */
+        CM_DIV_M4_DPLL(CM_PER_BASE) = 0x006;
+    
+        /* CM_DIV_M5_DPLL_PER.HSDIVIDER_CLKOUT2_DIV = 9, UnForce HSDIVIDER_CLKOUT2 to stay enabled */
+        CM_DIV_M5_DPLL(CM_PER_BASE) = 0x009;
+    
+        /* CM_DIV_M6_DPLL_PER.HSDIVIDER_CLKOUT2_DIV = 8, UnForce HSDIVIDER_CLKOUT3 to stay enabled */
+        CM_DIV_M6_DPLL(CM_PER_BASE) = 0x008;
+    
+        /* CM_DIV_M7_DPLL_PER.HSDIVIDER_CLKOUT3_DIV = 10, UnForce HSDIVIDER_CLKOUT4 to stay enabled */
+        CM_DIV_M7_DPLL(CM_PER_BASE) = 0x00A;
+    }
+	else if( OPP == OPP50 )
+    {
+        /* CM_CLKSEL_DPLL_PER.PLL_MULT = 2 */
+        //CM_CLKSEL_DPLL(CM_PER_BASE) = 0x200;
+
+		CM_CLKSEL_DPLL(CM_PER_BASE) = 0x0;
+     
+        /* CM_DIV_M2_DPLL_PER.DPLL_CLKOUT_DIV = 4, UnForce DPLL CLKOUTX2 and CLKOUT to stay enabled */
+        CM_DIV_M2_DPLL(CM_PER_BASE) = 0x004;
+        
+        /* CM_DIV_M3_DPLL_PER.DPLL_CLKOUT_DIV = 4, UnForce DPLL CLKOUTHIF to stay enabled */
+        CM_DIV_M3_DPLL(CM_PER_BASE) = 0x004;
+    
+        /* CM_DIV_M4_DPLL_PER.HSDIVIDER_CLKOUT1_DIV = 6, UnForce HSDIVIDER_CLKOUT1 to stay enabled */
+        CM_DIV_M4_DPLL(CM_PER_BASE) = 0x006;
+    
+        /* CM_DIV_M5_DPLL_PER.HSDIVIDER_CLKOUT2_DIV = 4, UnForce HSDIVIDER_CLKOUT2 to stay enabled */
+        CM_DIV_M5_DPLL(CM_PER_BASE) = 0x004;
+    
+        /* CM_DIV_M6_DPLL_PER.HSDIVIDER_CLKOUT2_DIV = 9, UnForce HSDIVIDER_CLKOUT3 to stay enabled */
+        CM_DIV_M6_DPLL(CM_PER_BASE) = 0x009;
+    
+        /* CM_DIV_M7_DPLL_PER.HSDIVIDER_CLKOUT3_DIV = 5, UnForce HSDIVIDER_CLKOUT4 to stay enabled */
+        CM_DIV_M7_DPLL(CM_PER_BASE) = 0x005;
+    }
+	else if(( OPP == OPP100 )||( OPP == OPP100_SDC))
+    {
+        /* CM_CLKSEL_DPLL_PER.PLL_MULT = 2 */
+        //CM_CLKSEL_DPLL(CM_PER_BASE) = 0x200;
+
+		CM_CLKSEL_DPLL(CM_PER_BASE) = 0x0;
+     
+        /* CM_DIV_M2_DPLL_PER.DPLL_CLKOUT_DIV = 4, UnForce DPLL CLKOUTX2 and CLKOUT to stay enabled */
+        CM_DIV_M2_DPLL(CM_PER_BASE) = 0x004;
+        
+        /* CM_DIV_M3_DPLL_PER.DPLL_CLKOUT_DIV = 3, UnForce DPLL CLKOUTHIF to stay enabled */
+        CM_DIV_M3_DPLL(CM_PER_BASE) = 0x003;
+    
+        /* CM_DIV_M4_DPLL_PER.HSDIVIDER_CLKOUT1_DIV = 6, UnForce HSDIVIDER_CLKOUT1 to stay enabled */
+        CM_DIV_M4_DPLL(CM_PER_BASE) = 0x006;
+    
+        /* CM_DIV_M5_DPLL_PER.HSDIVIDER_CLKOUT2_DIV = 4, UnForce HSDIVIDER_CLKOUT2 to stay enabled */
+        CM_DIV_M5_DPLL(CM_PER_BASE) = 0x004;
+    
+        /* CM_DIV_M6_DPLL_PER.HSDIVIDER_CLKOUT2_DIV = 2, UnForce HSDIVIDER_CLKOUT3 to stay enabled */
+        CM_DIV_M6_DPLL(CM_PER_BASE) = 0x002;
+    
+        /* CM_DIV_M7_DPLL_PER.HSDIVIDER_CLKOUT3_DIV = 3, UnForce HSDIVIDER_CLKOUT4 to stay enabled */
+        CM_DIV_M7_DPLL(CM_PER_BASE) = 0x003;
+        
+        
+    }
+	else if( OPP == OPP119)
+    {
+        //dpll_lock_board(CM_PER_BASE, OPP);
+        GEL_TextOut("> PER DPLL BOARD OPP119 NOT AVAILABLE \n");
+    }
+    
+    // GEL_TextOut(" >>> PER DPLL BOARD OPP %d\n",,,,, OPP);
+        
+    dpll_lock_board(CM_PER_BASE, OPP);
+        
+   //GEL_TextOut(" >>>>>> PER BOARD DPLL OPP %d\n",,,,, OPP);
+        
+   /* Set force wakeUp domain transition */
+  // CM_L4PER_CLKSTCTRL = 0x2;
+        
+   // GEL_TextOut(" >>>>>>>>>>>>> PER DPLL BOARD OPP %d\n",,,,, OPP);
+    
+    GEL_TextOut(" < PER DPLL BOARD OPP %d\n",,,,, OPP);
+	
+}
+
+opp_default_config_zebu()
+{
+	GEL_TextOut("opp_default_config_zebu_OPP100 \n");
+	opp_config_zebu(OPP100);
+}
+
+
+
+opp_config_zebu(int OPP)
+{
+	
+	GEL_TextOut("opp_config OPP Zebu %d\n",,,,, OPP);
+
+	// Chiron DPLL programming
+	dpll_a9_opp_config_zebu(OPP);
+    
+    // PER DPLL programming
+    dpll_per_opp_config_zebu(OPP);
+    
+    // Core DPLL programming
+	dpll_core_opp_config_zebu(OPP);
+    
+    // ABE DPLL programming
+	dpll_abe_opp_config_zebu(OPP);
+    
+    // Ducati clock programming (using CORE clock)
+	dpll_ducati_coreclk_opp_config_zebu(OPP);
+    
+    // IVA & TESLA clock programming
+	dpll_iva_tesla_opp_config_zebu(OPP);
+   
+	GEL_TextOut("opp_config OPP Zebu FINISHED %d\n",,,,, OPP);
+}
+
+/******************************************************************************
+* dpll_a9_opp_config_zebu() : Cortex A9 DPLL OPP configurations
+*****************************************************************************/
+dpll_a9_opp_config_zebu(int OPP)
+{
+	GEL_TextOut("> Cortex A9 DPLL Zebu OPP %d\n",,,,, OPP);
+    
+	// M & N parameters are fixed
+	if( OPP == OPP25 )
+    {
+        dpll_lock_zebu(CM_MPU_BASE);
+    }
+	else if( OPP == OPP50 )
+    {
+        dpll_lock_zebu(CM_MPU_BASE);
+    }
+	else if( OPP == OPP100 )
+    {
+        // Program DPLL_CLKOUT divider (M2 = 2)
+	    CM_DIV_M2_DPLL(CM_MPU_BASE) = 0x2;
+    
+        // Program DPLL frequency (M = 2)
+	    CM_CLKSEL_DPLL(CM_MPU_BASE) = 0x200;
+                dpll_lock_zebu(CM_MPU_BASE);
+    }
+	else if( OPP == OPP125 )
+    {
+        dpll_lock_zebu(CM_MPU_BASE);
+    }
+    
+    GEL_TextOut("< Cortex A9 DPLL Zebu OPP %d\n",,,,, OPP);
+}
+
+/******************************************************************************
+* dpll_per_opp_config_zebu() : PER DPLL OPP configurations
+*****************************************************************************/
+dpll_per_opp_config_zebu(int OPP)
+{
+	GEL_TextOut(" > PER DPLL ZEBU OPP %d\n",,,,, OPP);
+    
+	// M & N parameters are fixed
+    if( OPP == OPP25 )
+    {
+        dpll_lock_zebu(CM_PER_BASE);
+    }
+	else if( OPP == OPP50 )
+    {
+        dpll_lock_zebu(CM_PER_BASE);
+    }
+	else if( OPP == OPP100 )
+    {
+        /* CM_CLKSEL_DPLL_PER.PLL_MULT = 2 */
+        CM_CLKSEL_DPLL(CM_PER_BASE) = 0x200;
+        
+        /* CM_DIV_M2_DPLL_PER.DPLL_CLKOUT_DIV = 4, Force DPLL CLKOUTX2 and CLKOUT to stay enabled */
+        CM_DIV_M2_DPLL(CM_PER_BASE) = 0x504;
+        
+        /* CM_DIV_M3_DPLL_PER.DPLL_CLKOUT_DIV = 3, Force DPLL CLKOUTHIF to stay enabled */
+        CM_DIV_M3_DPLL(CM_PER_BASE) = 0x103;
+    
+        /* CM_DIV_M4_DPLL_PER.HSDIVIDER_CLKOUT1_DIV = 6, Force HSDIVIDER_CLKOUT1 to stay enabled */
+        CM_DIV_M4_DPLL(CM_PER_BASE) = 0x106;
+    
+        /* CM_DIV_M5_DPLL_PER.HSDIVIDER_CLKOUT2_DIV = 4, Force HSDIVIDER_CLKOUT2 to stay enabled */
+        CM_DIV_M5_DPLL(CM_PER_BASE) = 0x104;
+    
+        /* CM_DIV_M6_DPLL_PER.HSDIVIDER_CLKOUT2_DIV = 2, Force HSDIVIDER_CLKOUT3 to stay enabled */
+        CM_DIV_M6_DPLL(CM_PER_BASE) = 0x102;
+    
+        /* CM_DIV_M7_DPLL_PER.HSDIVIDER_CLKOUT3_DIV = 3, Force HSDIVIDER_CLKOUT4 to stay enabled */
+        CM_DIV_M7_DPLL(CM_PER_BASE) = 0x103;
+        
+        GEL_TextOut(" >>> PER DPLL ZEBU OPP %d\n",,,,, OPP);
+        
+        dpll_lock_zebu(CM_PER_BASE);
+        
+        GEL_TextOut(" >>>>>> PER DPLL ZEBU OPP %d\n",,,,, OPP);
+        
+        /* Set force wakeUp domain transition */
+        CM_L4PER_CLKSTCTRL = 0x2;
+        
+        GEL_TextOut(" >>>>>>>>>>>>> PER DPLL OPP %d\n",,,,, OPP);
+    }
+	else if( OPP == OPP119)
+    {
+        dpll_lock_zebu(CM_PER_BASE);
+    }
+    
+    GEL_TextOut(" < PER DPLL ZEBU OPP %d\n",,,,, OPP);
+	
+}
+
+/******************************************************************************
+* dpll_core_opp_config_zebu() : CORE DPLL OPP configurations
+*****************************************************************************/
+dpll_core_opp_config_zebu(int OPP)
+{
+	GEL_TextOut("> CORE DPLL ZEBU OPP %d\n",,,,, OPP);
+	
+	// Program L3 & L4 dividers from CORE DPLL
+    /* L3 clock = CORE CLK /2; L4 clock = L3 clock /2; CORE_CLK=CORE_X2_CLK/2 */
+    CM_CLKSEL_CORE = 0x11;
+    	
+	   // M & N parameters are fixed
+		if( OPP == OPP25 )
+        {
+            dpll_lock(CM_CORE_BASE);
+        }
+		else if( OPP == OPP50 )
+        {
+            dpll_lock(CM_CORE_BASE);
+        }
+		else if( OPP == OPP100 )
+        {
+            /* CM_CLKSEL_DPLL_CORE.PLL_MULT = 2 */
+            CM_CLKSEL_DPLL(CM_CORE_BASE) = 0x200;
+        
+            /* CM_DIV_M2_DPLL_CORE.DPLL_CLKOUT_DIV = 1 */
+            CM_DIV_M2_DPLL(CM_CORE_BASE) = 0x1;
+        
+            /* CM_DIV_M3_DPLL_CORE.DPLL_CLKOUT_DIV = 5 */
+            CM_DIV_M3_DPLL(CM_CORE_BASE) = 0x5;
+    
+            /* CM_DIV_M4_DPLL_CORE.HSDIVIDER_CLKOUT1_DIV = 8 */
+            CM_DIV_M4_DPLL(CM_CORE_BASE) = 0x8;
+    
+            /* CM_DIV_M5_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 2 */
+            CM_DIV_M5_DPLL(CM_CORE_BASE) = 0x2;
+    
+            /* CM_DIV_M6_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV = 6 */
+            CM_DIV_M6_DPLL(CM_CORE_BASE) = 0x6;
+    
+            /* CM_DIV_M7_DPLL_CORE.HSDIVIDER_CLKOUT3_DIV = 8 */
+            CM_DIV_M7_DPLL(CM_CORE_BASE) = 0x8;
+      
+            dpll_lock_zebu(CM_CORE_BASE);
+        }
+		else if( OPP == OPP119)
+        {
+			GEL_TextOut("CORE DPLL ZEBU OPP119 is not supported !\n");
+        }
+        
+         GEL_TextOut(" < CORE DPLL ZEBU OPP %d\n",,,,, OPP);
+	
+}
+
+
+/******************************************************************************
+ * dpll_abe_opp_config() : ABE DPLL OPP configurations
+ *****************************************************************************/
+dpll_abe_opp_config_zebu(int OPP)
+{
+    GEL_TextOut("> ABE DPLL ZEBU OPP %d\n",,,,, OPP);
+    
+
+    
+    // CM_CLKSEL_ABE = 0x501;
+
+    GEL_TextOut("< ABE DPLL ZEBU OPP %d\n",,,,, OPP);
+
+}
+
+/******************************************************************************
+ * dpll_ducati_coreclk_opp_config_zebu() : DUCATI CORE DPLL OPP configurations
+ *****************************************************************************/
+dpll_ducati_coreclk_opp_config_zebu(int OPP)
+{
+    GEL_TextOut("> DUCATI ZEBU OPP %d\n",,,,, OPP);
+    
+    // Configure Ducati mode into Auto mode
+    // CORE_CM2:CM_DUCATI_DUCATI_CLKCTRL
+    *(int*)0x4A008920 = 0x00000001;
+    
+    // Set force-wakeup domain transition
+    // CORE_CM2:CM_DUCATI_CLKSTCTRL = SW_WKUP
+    *(int*)0x4A008900 = 0x00000002;
+    
+    // Reading 1 : clock is running ir gating/ungating transition is on-going.
+    while (((*(int*)0x4A008900) & 0x100)& ~0x100);
+   
+    GEL_TextOut("< DUCATI ZEBU OPP %d\n",,,,, OPP);
+}
+
+
+dpll_iva_tesla_opp_config_zebu(int OPP)
+{
+    GEL_TextOut("> TESLA IVA ZEBU OPP %d\n",,,,, OPP);
+    
+
+     // DPLL AUTO control  disabled
+    *(int*)0x4A0041DC = 0x00000001;
+     
+    // DPLL AUTO control  disabled
+    *(int*)0x4A0041A8 = 0x00000000;
+     
+    // CKGEN_CM1.CM_CLKSEL_DPLL_IVA M = 100 & N= 2
+    *(int*)0x4A0041AC = 0x00086402;
+    
+    // CKGEN_CM1.CM_DIV_M4_DPLL_IVA.HSDIVIDER_CLKOUT1_DIV = 4
+    *(int*)0x4A0041B8 = 0x00000004;
+    
+    // CKGEN_CM1.CM_DIV_M5_DPLL_IVA.HSDIVIDER_CLKOUT2_DIV = 7
+    *(int*)0x4A0041BC = 0x00000007;
+    
+    // LOCK_DPLL
+    // Need to lock it (status bit doesn't work in OMAP4430 v2Beta3 Zebu distrib)
+    //dpll_lock_zebu(CM_IVA_BASE); 
+    *(int*)0x4A0041A0 = 0x00000007;
+    
+    // IVAHD WAKEUP (after IVAHD dpll)
+    // Configure IVAHD and SL2 modules into "Auto" mode
+    // IVAHD_CM2:CM_IVAHD_IVAHD_CLKCTRL
+    *(int*)0x4A008F20 = 0x00000001;
+    // IVAHD_CM2:CM_IVAHD_SL2_CLKCTRL
+    *(int*)0x4A008F28 = 0x00000001;
+    
+    // Set Force wakeUp domain transition
+    // IVAHD_CM2:CM_IVAHD_CLKSTCTRL = SW_WKUP
+    *(int*)0x4A008F00 = 0x00000002;
+    
+    // Read1 IVAHD_ROOT_CLK is running or gatng/ungating transition is on-going
+    // while (((*(int*)0x4A008F00) & 0x100)& ~0x100);
+        
+    // Configure Tesla mode into Auto mode
+    // TESLA_CM1:CM_TESLA_TESLA_CLKCTRL
+    *(int*)0x4A004420 = 0x00000001;    
+    
+    // Set force-wakeup domain transition
+    // TESLA_CM1:CM_TESLA_CLKSTCTRL = SW_WKUP
+    *(int*)0x4A004400 = 0x00000002;
+    
+    // Reading 1 : clock is running ir gating/ungating transition is on-going.
+    while (((*(int*)0x4A004400) & 0x100)& ~0x100);
+    
+    GEL_TextOut("< TESLA IVA ZEBU OPP %d\n",,,,, OPP);
+}
+
+/******************************************************************************
+ * dpll_bypass_zebu() : Put DPLL in bypass mode
+ *****************************************************************************/
+dpll_bypass_zebu(int base_address)
+{
+	unsigned int timer;
+	int clken_pll_value;
+
+	// Put DPLL into bypass mode
+   	clken_pll_value = CM_CLKMODE_DPLL(base_address);
+   	clken_pll_value &= ~(7 << 0);
+   	clken_pll_value |= (4 << 0);
+   	CM_CLKMODE_DPLL(base_address) = clken_pll_value;
+
+   	// Wait for DPLL to be unlocked
+   	timer = 0;
+   	while ( (CM_IDLEST_DPLL(base_address) & 0x1) == 0x1 && timer++<DPLL_TIMEOUT);
+
+   	if( timer >= DPLL_TIMEOUT)
+   		return -1;
+   	else
+   		return 0;
+}
+
+/******************************************************************************
+ * dpll_lock_zebu() : lock DPLL at specified frequency 
+ *****************************************************************************/
+dpll_lock_zebu(int base_address)
+{
+
+	// Put DPLL into bypass mode
+	// dpll_bypass(base_address);
+
+	// Lock DPLL
+    dpll_lock_sequence_zebu(base_address);
+}
+
+
+/******************************************************************************
+ * dpll_lock_sequence_zebu() : DPLL lock_sequence
+ *****************************************************************************/
+ dpll_lock_sequence_zebu(int base_address)
+{
+	unsigned int timer;
+	
+    // Put DPLL into lock mode
+	CM_CLKMODE_DPLL(base_address) = 7;
+
+	// Wait for DPLL to be locked
+  	timer = 0;
+  	while( ((CM_IDLEST_DPLL(base_address) & 0x1) != 0x1) && (timer++<DPLL_TIMEOUT) );
+
+  	if( timer >= DPLL_TIMEOUT )
+  	{
+        GEL_TextOut("ERROR: timeout while locking ZEBU DPLL \n");
+  		return -1;
+  	}
+  	else
+  	{
+        GEL_TextOut("Locked ZEBU DPLL successfully \n");
+  	    return 0;
+  	}
+}

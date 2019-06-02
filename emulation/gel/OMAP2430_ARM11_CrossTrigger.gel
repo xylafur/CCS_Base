@@ -1,0 +1,184 @@
+/*--------------------------------------------------------------*/
+/* ARM11_CrossTrigger.gel                                       */
+/* version 0.03                                                 */
+/*                                                              */
+/* SUMMARY:                                                     */
+/*                                                              */
+/* This gel file is to be used to configure the cross           */
+/* triggering on a ICECrusher based device.                     */
+/*                                                              */
+/* LIMITATIONS:                                                 */
+/*                                                              */
+/*                                                              */
+/*--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------*/
+/* FUNCTION SUMMARY                                             */
+/*                                                              */
+/* EnableEPM            -- Enable EPM for Trigger               */
+/* EnableSpinner        -- Enable Spinner                       */
+/* EnableCrossTrigger   -- Enable Cross Trigger                 */
+/* DisableCrossTrigger  -- Disable Cross Trigger                */
+/* EnableEMU0Output     -- Enable output on EMU0                */
+/* EnableEMU0Input      -- Enable input on EMU0                 */
+/* EnableEMU1Output     -- Enable output on EMU1                */
+/* EnableEMU1Input      -- Enable input on EMU1                 */
+/*                                                              */
+/*--------------------------------------------------------------*/
+
+menuitem "Cross Triggering";
+
+//-----------------------------------------------------------------------------
+
+ // claim control & status register (CCSR) bits - note: the "claim control &
+ // status register" is the upper 4-bits (31-28) of each resources control register
+#define CRUSH_CCSR_MASK    (0xF << 28)    // extracts all 4 of the CCSR bits
+#define CRUSH_CMD_CLAIM    (0x1 << 30)    // command bits to claim resource
+#define CRUSH_CMD_ENABLE   (0x1 << 31)    // command bits to enable claimed resource
+
+ // masks and values for the trigger control register
+#define CRUSH_TRIG_TRIG0MASK     (unsigned int)(0xF <<  0)
+#define CRUSH_TRIG_NEMU0I        (unsigned int)(0x1 <<  5)
+#define CRUSH_TRIG_NEMU0OE       (unsigned int)(0x1 <<  6)
+#define CRUSH_TRIG_NEMU0O        (unsigned int)(0x1 <<  7)
+
+#define CRUSH_TRIG_TRIG1MASK     (unsigned int)(0xF << 12)
+#define CRUSH_TRIG_NEMU1I        (unsigned int)(0x1 << 17)
+#define CRUSH_TRIG_NEMU1OE       (unsigned int)(0x1 << 18)
+#define CRUSH_TRIG_NEMU1O        (unsigned int)(0x1 << 19)
+
+ // trigger 0/1 control modes (bits 0-3 & bits 12-15)
+#define CRUSH_TRIGX_OFF          0x0
+#define CRUSH_TRIGX_CROSSHALT    0x1
+#define CRUSH_TRIGX_CROSSOUT     0x2
+#define CRUSH_TRIGX_CROSSTRIG    0x3
+#define CRUSH_TRIGX_INTERCONN    0x4
+#define CRUSH_TRIGX_CROSSINT     0x5
+#define CRUSH_TRIGX_LOCNTOVER    0x6
+#define CRUSH_TRIGX_HICNTOVER    0x7
+#define CRUSH_TRIGX_ARMWPMATCH   0x8
+#define CRUSH_TRIGX_LOHWBPMATCH  0xA
+#define CRUSH_TRIGX_HIHWBPMATCH  0xB
+#define CRUSH_TRIGX_ETMTRIG      0xC
+#define CRUSH_TRIGX_EXTERN       0xD
+#define CRUSH_TRIGX_THREADID     0xE
+#define CRUSH_TRIGX_BITIO        0xF
+
+#define CRUSH_TRIGX_MAXMODE      0xF
+#define CRUSH_TRIG0_DISABLE      (0x0 <<  0)
+#define CRUSH_TRIG1_DISABLE      (0x0 << 12)
+
+ // masks and values for the DCON register
+#define CRUSH_DCON_CRS_SET       (0x1 << 20)
+
+#define DAPCTL_BASE              0x54016000
+#define EPM_CNTL0                *(unsigned int)(DAPCTL_BASE + 0x50)   // EPM CONTROL REGISTER 0
+#define EPM_CNTL1                *(unsigned int)(DAPCTL_BASE + 0x54)   // EPM CONTROL REGISTER 1
+#define EPM_CNTL2                *(unsigned int)(DAPCTL_BASE + 0x58)   // EPM CONTROL REGISTER 2
+
+#define CONTROL_BASE             0x49002000
+#define SPINNER_EMU0             *(unsigned char)(CONTROL_BASE + 0xCD)
+#define SPINNER_EMU1             *(unsigned char)(CONTROL_BASE + 0xCC)
+   
+
+hotmenu EnableSpinner()
+{
+  SPINNER_EMU0 = 0x18;
+  SPINNER_EMU1 = 0x18;
+}
+
+hotmenu EnablEPM()
+{
+  // EPM control mode
+  #define EPM_MODE_BOOT            0x0
+  #define EPM_MODE_TRIG            0x1
+  #define EPM_MODE_RTDX            0x2
+  #define EPM_MODE_ETM             0x4
+  #define EPM_MODE_ADTF            0x5
+  #define EPM_MODE_CTOOLS          0x6
+
+  #define EPM_EMU0_MASK            (unsigned int)(0xF << 0)
+  #define EPM_EMU1_MASK            (unsigned int)(0xF << 4)
+
+  EPM_CNTL2 &= ~CRUSH_CCSR_MASK;        /* Release*/
+  EPM_CNTL2 = CRUSH_CMD_CLAIM;          /* Claim*/
+  EPM_CNTL2 = CRUSH_CMD_ENABLE;         /* Enable*/
+  EPM_CNTL0 &= ~EPM_EMU0_MASK;          /* Clear EMU0 */
+  EPM_CNTL0 &= ~EPM_EMU1_MASK;          /* Clear EMU1 */
+  EPM_CNTL0 |= (EPM_MODE_TRIG << 0);    /* Set EMU0 */
+  EPM_CNTL0 |= (EPM_MODE_TRIG << 4);    /* Set EMU1 */
+  GEL_TextOut("EPM Configured for Emulation\n","result" );
+}  
+
+hotmenu EnableCrossTrigger()
+{
+  ICEC_DCON |= CRUSH_DCON_CRS_SET;            /* Clear ContextRestoreStatus bit*/
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_CCSR_MASK;   /* Release*/
+  ICEC_TRIGGER_CONTROL = CRUSH_CMD_CLAIM;     /* Claim*/
+  ICEC_TRIGGER_CONTROL = CRUSH_CMD_ENABLE;    /* Enable*/
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_TRIG_TRIG0MASK;           /* Clear EMU0 */
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_TRIG_TRIG1MASK;           /* Clear EMU1 */
+  ICEC_TRIGGER_CONTROL |= (CRUSH_TRIGX_CROSSTRIG <<  0);   /* Enable EMU0 CrossTrig*/
+  ICEC_TRIGGER_CONTROL |= (CRUSH_TRIGX_CROSSTRIG << 12);   /* Enable EMU1 CrossTrig*/
+
+  GEL_TextOut("Cross triggering is enabled\n","result");
+}
+
+hotmenu DisableCrossTrigger()
+{
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_TRIG_TRIG0MASK;   /* Disable EMU0 CrossTrig*/
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_TRIG_TRIG1MASK;   /* Disable EMU1 CrossTrig*/
+  ICEC_TRIGGER_CONTROL |= CRUSH_TRIG_NEMU0OE;       
+  ICEC_TRIGGER_CONTROL |= CRUSH_TRIG_NEMU1OE;      
+  ICEC_TRIGGER_CONTROL |= CRUSH_TRIG_NEMU0O;       
+  ICEC_TRIGGER_CONTROL |= CRUSH_TRIG_NEMU1O;      
+  
+  GEL_TextOut("Cross-triggering is disabled\n","result");
+}
+
+hotmenu EnableEmu0Output() 
+{
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_CCSR_MASK;   /* Release*/
+  ICEC_TRIGGER_CONTROL = CRUSH_CMD_CLAIM;     /* Claim*/
+  ICEC_TRIGGER_CONTROL = CRUSH_CMD_ENABLE;    /* Enable*/
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_TRIG_TRIG0MASK;           /* Clear EMU0 */
+  ICEC_TRIGGER_CONTROL |= (CRUSH_TRIGX_CROSSOUT <<  0);   /* Enable EMU0 Output*/
+  
+  GEL_TextOut("EMU0 Output is Enabled.\n","result");
+}
+
+
+hotmenu EnableEmu0Input() 
+{
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_CCSR_MASK;   /* Release*/
+  ICEC_TRIGGER_CONTROL = CRUSH_CMD_CLAIM;     /* Claim*/
+  ICEC_TRIGGER_CONTROL = CRUSH_CMD_ENABLE;    /* Enable*/
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_TRIG_TRIG0MASK;           /* Clear EMU0 */
+  ICEC_TRIGGER_CONTROL |= (CRUSH_TRIGX_CROSSHALT <<  0);   /* Enable EMU0 Input*/
+  
+  GEL_TextOut("EMU0 Input is Enabled.\n","result");
+}
+
+
+hotmenu EnableEmu1Output() 
+{
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_CCSR_MASK;   /* Release*/
+  ICEC_TRIGGER_CONTROL = CRUSH_CMD_CLAIM;     /* Claim*/
+  ICEC_TRIGGER_CONTROL = CRUSH_CMD_ENABLE;    /* Enable*/
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_TRIG_TRIG1MASK;           /* Clear EMU1 */
+  ICEC_TRIGGER_CONTROL |= (CRUSH_TRIGX_CROSSOUT << 12);   /* Enable EMU1 Output*/
+  
+  GEL_TextOut("EMU1 Output is Enabled.\n","result");
+}
+
+
+hotmenu EnableEmu1Input() 
+{
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_CCSR_MASK;   /* Release*/
+  ICEC_TRIGGER_CONTROL = CRUSH_CMD_CLAIM;     /* Claim*/
+  ICEC_TRIGGER_CONTROL = CRUSH_CMD_ENABLE;    /* Enable*/
+  ICEC_TRIGGER_CONTROL &= ~CRUSH_TRIG_TRIG1MASK;           /* Clear EMU1 */
+  ICEC_TRIGGER_CONTROL |= (CRUSH_TRIGX_CROSSHALT << 12);   /* Enable EMU1 Input*/
+  
+  GEL_TextOut("EMU1 Input is enabled.\n","result");
+}

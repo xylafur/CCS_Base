@@ -1,0 +1,707 @@
+/* 
+ * Neptune_CCS31_a9.gel
+ * 
+ * This GEL file is loaded on the command line of Code Composer 
+ * The OnTargetConnect() function is called every time you start
+ * Code Composer.  You can customize this function to
+ * initialize wait states or to perform other initialization.
+ * 
+ * THALASSA or GSAMPLE // RAM or FLASH : select choice possible
+ *
+ * select configuration
+ *     menu        GEL->board->THALASSA RAM
+ *                             THALASSA FLASH
+ *                             GSAMPLE  RAM
+ *                             GSAMPLE  FLASH
+ * the config default is THALASSA RAM
+*/
+
+#define DEBUG_CONF 0
+#define THALASSA_RAM 0
+#define THALASSA_FLASH 1
+#define GSAMPLE_RAM 2
+#define GSAMPLE_FLASH 3
+
+int CONFIG_H_S = THALASSA_RAM; // configuration Hard Soft (see affich_config)
+
+affich_config()
+{
+   GEL_TextOut("\n +--------------------------------------+ \n");
+   GEL_TextOut(" |      config ");
+    
+  if(CONFIG_H_S == THALASSA_RAM || CONFIG_H_S == THALASSA_FLASH)
+    GEL_TextOut("THALASSA ",,1);
+  else if(CONFIG_H_S == GSAMPLE_RAM ||CONFIG_H_S == GSAMPLE_FLASH )
+    GEL_TextOut("G-SAMPLE ",,1);
+    
+  if(CONFIG_H_S == THALASSA_RAM || CONFIG_H_S == GSAMPLE_RAM)
+    GEL_TextOut("RAM     ",,2);
+  else if (CONFIG_H_S == THALASSA_FLASH || CONFIG_H_S == GSAMPLE_FLASH )
+    GEL_TextOut("FLASH   ",,2);
+    
+ if (DEBUG_CONF)
+    GEL_TextOut(" (%d)    |\n",,,,,CONFIG_H_S);
+ else
+    GEL_TextOut("        |\n");
+
+       GEL_TextOut(" +--------------------------------------+ \n\n");
+}
+/************************************************************************************/
+
+
+
+OnTargetConnect()
+{ 
+  affich_config();
+
+  GEL_MapOff();
+
+  /* Memory mapping */
+  GEL_MapReset();
+  memorymap_init();
+  GEL_MapOn();
+
+  GEL_TextOut("---->>>  End of StartUp() procedure!  <<<----\n");
+
+   /* Device Setup */
+  device_setup();
+ 
+  /* Neptune Setup */
+  watchdog_disable();
+
+  
+  // EMIFF Configuration
+ EMIFF_Setup_DDRAM();
+
+  /* Load User Gel Files & execute its startup procedure that will configure the EMIFs */
+  //user_startup();
+  
+  // Select emifs_nfcs_1 instead of gpio19 & emifs_ncs_2 instead of GPIO 43
+
+ Select_EMIFS_nCS1_nCS2();
+  
+ if ( CONFIG_H_S == THALASSA_RAM || CONFIG_H_S == THALASSA_FLASH ) // Thalassa
+ { 
+      // Nor EMIFS Conf
+      nCS1_NOR_Setup();
+      // FPGA EMIFS Conf
+      nCS2_FPGA_Setup();
+    
+      // SRAM I/F init
+      nCS3_SRAM_Setup();
+  }
+  
+  else if ( CONFIG_H_S == GSAMPLE_RAM || CONFIG_H_S == GSAMPLE_FLASH  ) // G-Sample
+  {
+      // NAND Flash EMIFS Conf
+      nCS1_NAND_Flash_Setup();
+      
+      // CPLD EMIFS Conf
+      nCS2_CPLD_Setup();
+      
+      // NOR Flash EMIFS Conf  
+     nCS3_NOR_Flash_Setup();
+  }
+  
+  
+  // Init MMU to download code into SDRAM
+  //init_MMU();
+  
+  if(CONFIG_H_S == GSAMPLE_RAM ) // G_SAMPLE download code into DDRAM
+    init_MMU_EMIconso_GSample();
+
+   /* DSP reset release */
+  release_UMA26_reset();
+
+   GEL_TextOut("---->>>  End of OnTargetConnect() procedure!  <<<----\n");
+}
+
+
+menuitem "EMIFS"
+
+
+menuitem "EMIFS"
+
+// Select emifs_nfcs_1 instead of gpio19 & emifs_ncs_2 instead of EMIFS ADD(25)
+hotmenu Select_EMIFS_nCS1_nCS2()
+{
+
+  (*(int*)0xFFFE11E8) = 0x00000001; // IO_CONFIG_GPIO_19 (0x18 at reset)
+  (*(int*)0xFFFE14B8) = 0x00000002; // IO_CONFIG_GPIO_43 (0x18 at reset)
+  (*(int*)0xFFFE100C) = 0x0000EAEF; // IO_COMP_MODE (0x0 at reset)  
+
+  GEL_TextOut("EMIFS nCS1 & nCS2 available at Top Level\n");
+
+}
+
+hotmenu ________THALASSA__________(){}
+
+hotmenu nCS3_SRAM_Setup()
+{
+  // Note wait state computed for TC freq = 130 Mhz and mem access time 250 ns
+  // SRAM I/F configuration on CS3
+  (*(int*)0xFFFECC1C) = 0x0040404A;     /* EMIFS CS3 Configuration Register : A/D Multiplexed, 8 RWS, 0 WWS, WELEN = 4, 1 BT WST, Asynchronous Read mode & Ref_Clk = TC_Clock */
+  (*(int*)0xFFFECC5C) = 0x00000103;     /* EMIFS CS3 Advanced Configuration Register : ADV hold = 2 Ref_Clk cycles, OE SETUP = 3 */
+
+  GEL_TextOut("SRAM interface configured on CS3\n");
+
+  return;
+}
+
+hotmenu nCS2_FPGA_Setup()
+{
+  // Note wait state computed for TC freq = 130 Mhz and mem access time 250 ns
+  // FPGA I/F configuration on CS2
+  (*(int*)0xFFFECC18) = 0x0040404A;     /* EMIFS CS2 Configuration Register : A/D Multiplexed, 8 RWS, 0 WWS, WELEN = 4, 1 BT WST, Asynchronous Read mode & Ref_Clk = TC_Clock */
+  (*(int*)0xFFFECC58) = 0x00000103;     /* EMIFS CS2 Advanced Configuration Register : ADV hold = 2 Ref_Clk cycles, OE SETUP = 3 */
+
+  GEL_TextOut("FPGA interface configured on CS2\n");
+
+  return;
+}
+
+hotmenu nCS1_NOR_Setup()
+{
+  // Note wait state computed for TC freq = 130 Mhz and mem access time 250 ns
+  // SRAM I/F configuration on CS3
+  (*(int*)0xFFFECC14) = 0x0040404A;     /* EMIFS CS1 Configuration Register : A/D Multiplexed, 8 RWS, 0 WWS, WELEN = 4, 1 BT WST, Asynchronous Read mode & Ref_Clk = TC_Clock */
+  (*(int*)0xFFFECC54) = 0x00000103;     /* EMIFS CS1 Advanced Configuration Register : ADV hold = 2 Ref_Clk cycles, OE SETUP = 3 */
+
+  GEL_TextOut("NOR interface configured on CS1\n");
+
+  return;
+}
+
+hotmenu ________GSAMPLE___________(){}
+
+
+hotmenu nCS3_NOR_Flash_Setup()
+{
+
+  // NOR Flash I/F configuration on CS3
+  (*(int*)0xFFFECC1C) = 0x0040488B;     /* EMIFS CS3 Configuration Register : A/D Multiplexed, 8 RWS, 8 WWS, WELEN = 4, 1 BT WST, Asynchronous Read mode & Ref_Clk = TC_Clock */
+ // (*(int*)0xFFFECC1C) = 0x0040404A;     /* EMIFS CS3 Configuration Register : A/D Multiplexed, 8 RWS, 0 WWS, WELEN = 4, 1 BT WST, Asynchronous Read mode & Ref_Clk = TC_Clock */
+  (*(int*)0xFFFECC5C) = 0x00000103;     /* EMIFS CS3 Advanced Configuration Register : ADV hold = 2 Ref_Clk cycles, OE SETUP = 3 */
+
+  GEL_TextOut("NOR Flash interface configured on CS3\n");
+
+  return;
+}
+
+
+
+hotmenu nCS2_CPLD_Setup()
+{
+
+  // CPLD I/F configuration on CS2
+  (*(int*)0xFFFECC18) = 0x0040488B;     /* EMIFS CS2 Configuration Register : A/D Multiplexed, 8 RWS, 8 WWS, WELEN = 4, 1 BT WST, Asynchronous Read mode & Ref_Clk = TC_Clock */
+  (*(int*)0xFFFECC58) = 0x00000103;     /* EMIFS CS2 Advanced Configuration Register : ADV hold = 2 Ref_Clk cycles, OE SETUP = 3 */
+
+  GEL_TextOut("CPLD interface configured on CS2\n");
+
+  return;
+}
+
+
+hotmenu nCS1_NAND_Flash_Setup()
+{
+
+  // NAND Flash I/F configuration on CS3
+  (*(int*)0xFFFECC14) = 0x0040488B;     /* EMIFS CS1 Configuration Register : A/D Multiplexed, 8 RWS, 8 WWS, WELEN = 4, 1 BT WST, Asynchronous Read mode & Ref_Clk = TC_Clock */
+  (*(int*)0xFFFECC54) = 0x00000103;     /* EMIFS CS1 Advanced Configuration Register : ADV hold = 2 Ref_Clk cycles, OE SETUP = 3 */
+
+  GEL_TextOut("NAND Flash interface configured on CS1\n");
+
+  return;
+}
+
+menuitem "Tools"
+
+
+find_armboot() {
+
+  if((*(int *)0xFFFECC0C & 0x2) == 0x2) {
+    GEL_TextOut("ARMBOOT = 1 --> CS3 = 0x0\n");
+    return 1;
+  } else {
+    GEL_TextOut("ARMBOOT = 0 --> CS0 = 0x0\n");
+    return 0;
+  }
+}
+
+
+access_width_init()
+{
+  (*(int*)0xFFFEC900) = 0x0003FF2F;  /* two-cycle access width for apif bus */  
+}
+
+device_setup() {
+  *(short *) 0xFFFECE08 |= 0x4;     /* Enable ARM peripheral clock */
+  *(short *) 0xFFFECE14 |= 0x1;     /* Release OMAP CLKM reset to Helen peripherals */
+}
+
+
+hotmenu watchdog_disable()
+{
+  /* Disable OMAP MPU Watchdog Timer */
+  (*(int*)0xFFFEC808) = 0x00F5;
+  (*(int*)0xFFFEC808) = 0x00A0;
+
+  /* Disable Neptune 32K Watchdog */
+  (*(int*)0xFFFEB048) = 0xAAAA;
+  while ( ((*(int *)0xFFFEB034) & 0x10) == 0x10 );
+  (*(int*)0xFFFEB048) = 0x5555;
+  while ( ((*(int *)0xFFFEB034) & 0x10) == 0x10 );
+
+  GEL_TextOut("MPU & 32K Watchdogs disabled\n");
+}
+
+
+hotmenu release_UMA26_reset()
+{
+
+/* try to get the api ram out of host only mode */
+if (CONFIG_H_S != GSAMPLE_FLASH && CONFIG_H_S != THALASSA_FLASH )
+  (*(short*)0xFFFEC91c) = 0x0000; 
+  
+/* Set DSP Boot mode to API */
+  (*(short*)0xFFFEC918) = 0x0005; 
+
+/* default value for ARM_IDLECT2 = 0x0100 */
+/* set bit 6 to turn on the api clock */
+/* must turn on the api clock to take */
+/* api ram out of host only mode */
+ if (CONFIG_H_S != GSAMPLE_FLASH && CONFIG_H_S != THALASSA_FLASH)
+ (*(short*)0xFFFECE08) = 0x0140; 
+
+/* release API reset */
+if (CONFIG_H_S != GSAMPLE_FLASH && CONFIG_H_S != THALASSA_FLASH)
+  (*(short*)0xFFFECE10) = 0x0004;
+  
+/* release DSP reset */
+  (*(short*)0xFFFECE10) = 0x0006;
+
+  GEL_TextOut("UMA2.6 released from reset\n");
+
+}
+
+
+// ARM boot  => ROM  on CS0 & SRAM on CS3
+
+memorymap_init()
+{
+ 
+    /* Internal Boot - ARMBOOT=0 - CS0 = 0x0 */
+    GEL_MapAddStr(0x00000000, 0, 0x00006000, "ROM|AS4", 0);  /* CS0 - Internal Boot ROM - 24KB Public ROM */
+ 
+    if(CONFIG_H_S == THALASSA_RAM || CONFIG_H_S == THALASSA_FLASH ) // THALASSA
+    {
+        GEL_MapAddStr(0x04000000, 0, 0x04000000, "R|W|AS2", 0);  /* CS1 - NOR Flash - 64MBytes - Thalassa Config 7 */
+        GEL_MapAddStr(0x08000000, 0, 0x00400000, "R|W|AS2", 0);  /* CS2 - SRAM - 4MBytes */
+        if( CONFIG_H_S == THALASSA_RAM ) // RAM
+            GEL_MapAddStr(0x0C000000, 0, 0x00400000, "R|W|AS4", 0);  // CS3 - SRAM - 4MBytes 
+        else if (CONFIG_H_S == THALASSA_FLASH ) // Flash
+            GEL_MapAddStr(0x0C000000, 0, 0x00400000, "R|AS4", 0);  // CS3 - SRAM - 4MBytes 
+            
+        GEL_MapAddStr(0x10000000, 0, 0x02000000, "R|W|AS4", 0);  /* EMIFF - DDRAM - 32MBytes */
+    
+        GEL_MapAddStr(0x08400000, 0, 0x00000040, "R|W|AS2", 0);  /* CS2 - ETHERNET */
+        GEL_MapAddStr(0x08420000, 0, 0x00000040, "R|W|AS1", 0);  /* CS2 - FPGA */
+    
+        GEL_MapAddStr(0x0E000000, 0, 0x00400000, "R|W|AS2", 0);  /* CS3 - FLASH - 4MBytes */
+        GEL_MapAddStr(0x70000000, 0, 0x00100000, "R|W|AS4", 0);  /* Flash remap when mmu is set by ccs   */
+ 
+    }
+    else if (CONFIG_H_S == GSAMPLE_RAM || CONFIG_H_S == GSAMPLE_FLASH  ) // GSAMPLE
+    {
+        GEL_MapAddStr(0x04000000, 0, 0x04000000, "R|W|AS1", 0);  /* CS1 - NAND Flash - 64MBytes */
+        GEL_MapAddStr(0x08400000, 0, 0x00000040, "R|W|AS2", 0);  /* CS2 - ETHERNET */
+        GEL_MapAddStr(0x09000000, 0, 0x00000040, "R|W|AS1", 0);  /* CS2 - CPLD */
+        if( CONFIG_H_S == GSAMPLE_RAM) // RAM
+        	GEL_MapAddStr(0x0C000000, 0, 0x02000000, "R|W|AS4", 0);  /* CS3 - NOR Flash - 32MBytes */
+        else if( CONFIG_H_S == GSAMPLE_FLASH ) // FLASH
+         	GEL_MapAddStr(0x0C000000, 0, 0x02000000, "R|AS4", 0);  /* CS3 - NOR Flash - 32MBytes */
+      GEL_MapAddStr(0x10000000, 0, 0x02000000, "R|W|AS4", 0);  /* EMIFF - DDRAM - 32MBytes */
+    }
+    
+    
+    
+    
+  /* Internal SRAM on OCPT1 - 32KBytes */
+  GEL_MapAddStr(0x20000000, 0, 0x00008000, "R|W|AS4", 0);
+
+  /* Camera Core & ELCD on OCPT2 - 2KBytes each */
+  GEL_MapAddStr(0x35000000, 0, 0x00000800, "R|W|AS4", 0);  /* Camera Core */
+  GEL_MapAddStr(0x35000800, 0, 0x00000800, "R|W|AS4", 0);  /* ELCD */
+ 
+  /* ARM Public Rhea Strobe 0 */
+  GEL_MapAddStr(0xFFFB0000, 0, 0x00000400, "R|W|AS1", 0);  /* register UART 1 */
+  GEL_MapAddStr(0xFFFB0400, 0, 0x00000400, "R|W|AS4", 0);  /* register USB OTG */
+  GEL_MapAddStr(0xFFFB0800, 0, 0x00000400, "R|W|AS1", 0);  /* register UART 2 */
+  GEL_MapAddStr(0xFFFB0C00, 0, 0x00000400, "R|W|AS4", 0);  /* register SPI */
+  GEL_MapAddStr(0xFFFB1000, 0, 0x00000400, "R|W|AS2", 0);  /* register ULPDR */
+  GEL_MapAddStr(0xFFFB1400, 0, 0x00000400, "R|W|AS4", 0);  /* register GPTIMER1 */
+  GEL_MapAddStr(0xFFFB1800, 0, 0x00000400, "R|W|AS2", 0);  /* register McBSP1 */
+  GEL_MapAddStr(0xFFFB1C00, 0, 0x00000400, "R|W|AS4", 0);  /* register GPTIMER2 */
+  GEL_MapAddStr(0xFFFB2000, 0, 0x00000400, "R|W|AS2", 0);  /* register MCSI2 */
+  GEL_MapAddStr(0xFFFB2800, 0, 0x00000400, "R|W|AS2", 0);  /* register MCSI1 */
+  GEL_MapAddStr(0xFFFB3000, 0, 0x00000400, "R|W|AS2", 0);  /* register uWire */
+  GEL_MapAddStr(0xFFFB3800, 0, 0x00000400, "R|W|AS2", 0);  /* register I2C1 Multi-master */
+  GEL_MapAddStr(0xFFFB3C00, 0, 0x00000400, "R|W|AS2", 0);  /* register I2C2 Multi-master */
+  GEL_MapAddStr(0xFFFB4000, 0, 0x00000400, "R|W|AS4", 0);  /* register USB Client */
+  GEL_MapAddStr(0xFFFB4800, 0, 0x00000800, "R|W|AS2", 0);  /* register Cipher A51/52/53 */
+  GEL_MapAddStr(0xFFFB5000, 0, 0x00000800, "R|W|AS2", 0);  /* register TPU */
+  GEL_MapAddStr(0xFFFB5800, 0, 0x00000800, "R|W|AS2", 0);  /* TPU RAM */
+  GEL_MapAddStr(0xFFFB6000, 0, 0x00000800, "R|W|AS1", 0);  /* register PWT */
+  GEL_MapAddStr(0xFFFB6800, 0, 0x00000800, "R|W|AS2", 0);  /* register GEA 1/2/3 */
+  GEL_MapAddStr(0xFFFB7000, 0, 0x00000400, "R|W|AS4", 0);  /* register Serial Radio I/F */
+  GEL_MapAddStr(0xFFFB7400, 0, 0x00000400, "R|W|AS2", 0);  /* register McBSP Digital RF */
+  GEL_MapAddStr(0xFFFB7800, 0, 0x00000400, "R|W|AS2", 0);  /* register MMC1 */
+  GEL_MapAddStr(0xFFFB7C00, 0, 0x00000400, "R|W|AS2", 0);  /* register MMC2 */
+  GEL_MapAddStr(0xFFFB8000, 0, 0x00000400, "R|W|AS4", 0);  /* register Memory Stick */
+  GEL_MapAddStr(0xFFFB8400, 0, 0x00000400, "R|W|AS4", 0);  /* register Memory Stick */
+  GEL_MapAddStr(0xFFFB8800, 0, 0x00000400, "R|W|AS2", 0);  /* register USIM */
+  GEL_MapAddStr(0xFFFB9000, 0, 0x00000400, "R|W|AS4", 0);  /* register Timer32k or OS Timer */
+  GEL_MapAddStr(0xFFFB9800, 0, 0x00000400, "R|W|AS1", 0);  /* register UART3 */
+  GEL_MapAddStr(0xFFFBA000, 0, 0x00000400, "R|W|AS4", 0);  /* register USB Host */
+  GEL_MapAddStr(0xFFFBA800, 0, 0x00000400, "R|W|AS4", 0);  /* register Frame Counter */
+  GEL_MapAddStr(0xFFFBB000, 0, 0x00000400, "R|W|AS2", 0);  /* register TSP */
+  GEL_MapAddStr(0xFFFBB800, 0, 0x00000400, "R|W|AS4", 0);  /* register Rhea Switch */
+  GEL_MapAddStr(0xFFFBC000, 0, 0x00000400, "R|W|AS4", 0);  /* register 1wire */
+  GEL_MapAddStr(0xFFFBC400, 0, 0x00000400, "R|W|AS4", 0);  /* register 32k sync timer */
+  GEL_MapAddStr(0xFFFBC800, 0, 0x00000400, "R|W|AS4", 0);  /* register L4 Rhea Static switch */
+  GEL_MapAddStr(0xFFFBCC00, 0, 0x00000400, "R|W|AS4", 0);  /* register NAND Flash controller */
+  GEL_MapAddStr(0xFFFBD000, 0, 0x00000400, "R|W|AS1", 0);  /* register LPG1 */
+  GEL_MapAddStr(0xFFFBD800, 0, 0x00000400, "R|W|AS1", 0);  /* register LPG2 */
+  GEL_MapAddStr(0xFFFBE000, 0, 0x00000400, "R|W|AS2", 0);  /* register keyboard */
+  GEL_MapAddStr(0xFFFBE400, 0, 0x00000400, "R|W|AS4", 0);  /* register GPIO1 */
+  GEL_MapAddStr(0xFFFBEC00, 0, 0x00000400, "R|W|AS4", 0);  /* register GPIO2 */
+  GEL_MapAddStr(0xFFFBF000, 0, 0x00000800, "R|W|AS2", 0);  /* register Gigacell Mailbox */
+
+
+  /* ARM Public Rhea Strobe 1 */
+  GEL_MapAddStr(0xFFFCF000, 0, 0x00000800, "R|W|AS2", 0);  /* register Mailbox Gigacell */
+
+  /* ARM Private Rhea Strobe 0 */
+  /* ARM Private Rhea Strobe 1 */
+  GEL_MapAddStr(0xFFFE0000, 0, 0x00000800, "R|W|AS4", 0);  /* register Interrupt Handler level 2 */
+  GEL_MapAddStr(0xFFFE1000, 0, 0x00000800, "R|W|AS4", 0);  /* register Neptune Configuration */
+  GEL_MapAddStr(0xFFFE1800, 0, 0x00000800, "R|W|AS4", 0);  /* register Die ID */
+  GEL_MapAddStr(0xFFFE2000, 0, 0x00000800, "R|W|AS4", 0);  /* register Production ID */
+  GEL_MapAddStr(0xFFFE2800, 0, 0x00000800, "R|W|AS4", 0);  /* register Neptune Debug */
+  GEL_MapAddStr(0xFFFE3000, 0, 0x00000800, "R|W|AS4", 0);  /* register LCD Converter */
+  GEL_MapAddStr(0xFFFE3800, 0, 0x00000800, "R|W|AS4", 0);  /* register BIST Control Module */
+  GEL_MapAddStr(0xFFFE4000, 0, 0x00000800, "R|W|AS4", 0);  /* register DES3DES */
+  GEL_MapAddStr(0xFFFE4800, 0, 0x00000800, "R|W|AS4", 0);  /* register SHA1/MD5 */
+  GEL_MapAddStr(0xFFFE5000, 0, 0x00000800, "R|W|AS4", 0);  /* register RNG */
+  GEL_MapAddStr(0xFFFE5800, 0, 0x00000800, "R|W|AS4", 0);  /* register NEPTUNE JTAG */
+  GEL_MapAddStr(0xFFFE6800, 0, 0x00000800, "R|W|AS4", 0);  /* register AES */
+  GEL_MapAddStr(0xFFFE8000, 0, 0x00001000, "R|W|AS4", 0);  /* register PKA */
+  GEL_MapAddStr(0xFFFE9000, 0, 0x00001000, "R|W|AS4", 0);  /* PKA RAM */
+  GEL_MapAddStr(0xFFFEA800, 0, 0x00000800, "R|W|AS4", 0);  /* register Secure Watchdog */
+  GEL_MapAddStr(0xFFFEB000, 0, 0x00000800, "R|W|AS4", 0);  /* register 32K Watchdog */
+  GEL_MapAddStr(0xFFFEC000, 0, 0x00000100, "R|W|AS4", 0);  /* register LCD */
+  GEL_MapAddStr(0xFFFEC300, 0, 0x00000100, "R|W|AS4", 0);  /* register L3 OCPI */
+  GEL_MapAddStr(0xFFFEC500, 0, 0x00000100, "R|W|AS4", 0);  /* register OMAP MCU Timer 1 */
+  GEL_MapAddStr(0xFFFEC600, 0, 0x00000100, "R|W|AS4", 0);  /* register OMAP MCU Timer 2 */
+  GEL_MapAddStr(0xFFFEC700, 0, 0x00000100, "R|W|AS4", 0);  /* register OMAP MCU Timer 3 */
+  GEL_MapAddStr(0xFFFEC800, 0, 0x00000100, "R|W|AS4", 0);  /* register OMAP Watchdog Timer */
+  GEL_MapAddStr(0xFFFEC900, 0, 0x00000100, "R|W|AS4", 0);  /* register MPUI Interface */
+  GEL_MapAddStr(0xFFFECA00, 0, 0x00000100, "R|W|AS4", 0);  /* register Rhea Bridge Internal */
+  GEL_MapAddStr(0xFFFECB00, 0, 0x00000100, "R|W|AS4", 0);  /* register Interrupt Handler level 1 */
+  GEL_MapAddStr(0xFFFECC00, 0, 0x00000100, "R|W|AS4", 0);  /* register Traffic Controller */
+  GEL_MapAddStr(0xFFFECE00, 0, 0x00000100, "R|W|AS2", 0);  /* register CLKM */
+  GEL_MapAddStr(0xFFFECF00, 0, 0x00000100, "R|W|AS2", 0);  /* register ADPLL1 */
+  GEL_MapAddStr(0xFFFED200, 0, 0x00000100, "R|W|AS4", 0);  /* register DSP MMU */
+  GEL_MapAddStr(0xFFFED300, 0, 0x00000100, "R|W|AS4", 0);  /* register Rhea Bridge 2 External */
+  GEL_MapAddStr(0xFFFED400, 0, 0x00000100, "R|W|AS2", 0);  /* register Test Block (PSA) */
+  GEL_MapAddStr(0xFFFED800, 0, 0x00001000, "R|W|AS2", 0);  /* register System DMA */
+  
+  
+  /* DSP MPUI Interface */
+
+  /* Memory mapping    */
+  GEL_MapAddStr(0xE0000000, 0, 0x01000000, "R|W|AS4", 0);  /* MPUI Memory */
+
+  /* DSP Strobe 0 */
+  GEL_MapAddStr(0xE1000000, 0, 0x00000800, "R|W|AS2", 0);  /* DSP RHEA Shared*/
+  GEL_MapAddStr(0xE1004000, 0, 0x00000800, "R|W|AS2", 0);  /* DSP TRACE Private*/
+  GEL_MapAddStr(0xE1008000, 0, 0x00000800, "R|W|AS2", 0);  /* DSP CLKM */
+
+  
+  /* DSP Strobe 1 */
+  GEL_MapAddStr(0xE1010000, 0, 0x00000800, "R|W|AS2", 0);  /* UART1 */
+  GEL_MapAddStr(0xE1010800, 0, 0x00000400, "R|W|AS2", 0);  /* UART2 */
+  GEL_MapAddStr(0xE1010C00, 0, 0x00000400, "R|W|AS2", 0);  /* SPI */
+  GEL_MapAddStr(0xE1011000, 0, 0x00000400, "R|W|AS2", 0);  /* ULPDR */
+  GEL_MapAddStr(0xE1011400, 0, 0x00000400, "R|W|AS2", 0);  /* GPTIMER1 */
+  GEL_MapAddStr(0xE1011800, 0, 0x00000400, "R|W|AS2", 0);  /* McBSP Audio (McBSP1) */
+  GEL_MapAddStr(0xE1011C00, 0, 0x00000400, "R|W|AS2", 0);  /* GPTIMER2 */
+  GEL_MapAddStr(0xE1012000, 0, 0x00000400, "R|W|AS2", 0);  /* MCSI Modem (MCSI2) */
+  GEL_MapAddStr(0xE1012800, 0, 0x00000400, "R|W|AS2", 0);  /* MCSI Blue Tooth (MCSI1) */
+  GEL_MapAddStr(0xE1013800, 0, 0x00000800, "R|W|AS2", 0);  /* I2C1 & I2C2 multi-master */
+  GEL_MapAddStr(0xE1014800, 0, 0x00000800, "R|W|AS2", 0);  /* Cipher A51/52/53 */
+  GEL_MapAddStr(0xE1015000, 0, 0x00000800, "R|W|AS2", 0);  /* TPU Reg */
+  GEL_MapAddStr(0xE1015800, 0, 0x00000800, "R|W|AS2", 0);  /* TPU RAM */
+  GEL_MapAddStr(0xE1016800, 0, 0x00000800, "R|W|AS2", 0);  /* GEA 1/2/3 */
+  GEL_MapAddStr(0xE1017000, 0, 0x00000400, "R|W|AS2", 0);  /* Serial Radio I/F */
+  GEL_MapAddStr(0xE1017400, 0, 0x00000400, "R|W|AS2", 0);  /* McBSP Digital RF */
+  GEL_MapAddStr(0xE1017C00, 0, 0x00000400, "R|W|AS2", 0);  /* MMCSDIO2 */
+  GEL_MapAddStr(0xE1018800, 0, 0x00000400, "R|W|AS2", 0);  /* USIM */
+  GEL_MapAddStr(0xE1019800, 0, 0x00000400, "R|W|AS2", 0);  /* UART3 */
+  GEL_MapAddStr(0xE101A800, 0, 0x00000400, "R|W|AS2", 0);  /* Frame Counter */
+  GEL_MapAddStr(0xE101B000, 0, 0x00000400, "R|W|AS2", 0);  /* TSP */
+  GEL_MapAddStr(0xE101B800, 0, 0x00000400, "R|W|AS2", 0);  /* Rhea Switch */
+  GEL_MapAddStr(0xE101C400, 0, 0x00000400, "R|W|AS2", 0);  /* 32k Sync Timer */
+  GEL_MapAddStr(0xE101C800, 0, 0x00000400, "R|W|AS2", 0);  /* L4 Static Rhea Switch */
+  GEL_MapAddStr(0xE101CC00, 0, 0x00000400, "R|W|AS2", 0);  /* NAND Flash Controller */
+  GEL_MapAddStr(0xE101E400, 0, 0x00000400, "R|W|AS2", 0);  /* GPIO1 */
+  GEL_MapAddStr(0xE101EC00, 0, 0x00000400, "R|W|AS2", 0);  /* GPIO2 */
+  GEL_MapAddStr(0xE101F000, 0, 0x00000800, "R|W|AS2", 0);  /* Mailbox Gigacell */
+  GEL_MapAddStr(0xE1020000, 0, 0x00000004, "R|W|AS2", 0);  /* UMA MPUI Control Register */
+  GEL_TextOut("Memory mapping terminated\n");
+}
+
+
+hotmenu HW_Break_0x0C000()
+{
+    GEL_HWBreakPtReset();
+    GEL_HWBreakPtAdd(0x0C000000);
+}
+
+hotmenu Remove_Break()
+{
+    GEL_HWBreakPtReset();
+}
+
+dialog Flash_write( unsigned short *address,
+                    unsigned short data )
+{
+  *address = data;
+  GEL_TextOut("Wrote %x to %x\n",,,,, address, data );
+}
+
+dialog ______________________________(){}
+
+
+dialog Flash_id_Mode_1_2()
+{
+  unsigned short manufacturId;
+  unsigned short deviceId;
+  
+  *0x0C000000 = 0x90;
+  manufacturId = *((unsigned short *)0x0C000000);
+  deviceId = *((unsigned short *)0x0C000002);
+  *0x0C000000 = 0xFF;
+  
+  GEL_TextOut("Manufactur Id %x:%d\n",,,,, manufacturId, manufacturId );
+  GEL_TextOut("Device Id %x:%d\n",,,,, deviceId, deviceId );
+}
+
+dialog Flash_id_Mode_3()
+{
+  unsigned short manufacturId;
+  unsigned short deviceId;
+  
+  *0x0E000000 = 0x90;
+  manufacturId = *((unsigned short *)0x0E000000);
+  deviceId = *((unsigned short *)0x0E000002);
+  *0x0E000000 = 0xFF;
+  
+  GEL_TextOut("Manufactur Id %x:%d\n",,,,, manufacturId, manufacturId );
+  GEL_TextOut("Device Id %x:%d\n",,,,, deviceId, deviceId );
+}
+
+dialog Flash_id_Mode_5_6_7()
+{
+  unsigned short manufacturId;
+  unsigned short deviceId;
+  
+  *0x04000000 = 0x90;
+  manufacturId = *((unsigned short *)0x04000000);
+  deviceId = *((unsigned short *)0x04000002);
+  *0x04000000 = 0xFF;
+  
+  GEL_TextOut("Manufactur Id %x:%d\n",,,,, manufacturId, manufacturId );
+  GEL_TextOut("Device Id %x:%d\n",,,,, deviceId, deviceId );
+}
+
+dialog _______________________________(){}
+
+/*------------------------------- MMU -------------------------------*/
+
+hotmenu init_MMU_EMIconso_GSample()
+{
+  int ttb_base_address;
+// ttb_base_address=0x20014000;
+   ttb_base_address=0x20000000;  // Table address
+   
+// CS0 : VA = 0x000x:xxxx => PA = 0x000x:xxxx; Keep RomCode Booting
+  ARM_Section(ttb_base_address,0x00000000, 0x0000000 ,0,1);   
+// CS3 : VA = 0x0C0x:xxxx => PA = 0x100x:xxxx; cachable; Remapping Program 8 MBytes (.text)
+  ARM_Section(ttb_base_address,0x0C000000, 0x10200000,2,8);
+// CS3 : VA = 0x0C0x:xxxx => PA = 0x100x:xxxx; no cache able; Remapping Program 8 MBytes (.text)
+  ARM_Section(ttb_base_address,0x0E000000, 0x0c000000,0,32);
+// ISRAM : VA = 0x200x:xxxx => PA = 0x200x:xxxx
+  ARM_Section(ttb_base_address,0x20000000, 0x20000000,0,1);
+// CS1 : VA = 0x040x:xxxx => PA = 0x040x:xxxx; no cache able
+  ARM_Section(ttb_base_address,0x04000000, 0x04000000,0,64);
+// CS2 : VA = 0x080x:xxxx => PA = 0x080x:xxxx; no cache able
+  ARM_Section(ttb_base_address,0x08000000, 0x08000000,0,64);
+// DDRAM : VA = 0x100x:xxxx => PA = 0x100x:xxxx 
+  ARM_Section(ttb_base_address,0x10000000, 0x10000000,0,8);
+// L3 OCP T2 : VA = 0x350x:xxxx => PA = 0x350x:xxxx; no cache able
+  ARM_Section(ttb_base_address,0x35000000, 0x35000000,0,1);
+// DSP MPUI  : VA = 0xExxx:xxxx => PA = 0xExxx:xxxx; no cache able
+  ARM_Section(ttb_base_address,0xE0000000, 0xE0000000,0,32);
+// ARM RHEA Register : VA = 0xFFFx:xxxx => PA = 0xFFFx:xxxx; no cache able
+  ARM_Section(ttb_base_address,0xFFFB0000, 0xFFFB0000,0,1);
+
+  REG_CP15_TT_BASE = ttb_base_address;
+  REG_CP15_DACR = 0xFFFFFFFF;
+  REG_CP15_MMU = 1;
+
+  if(REG_CP15_MMU)
+  {
+    GEL_TextOut("ARM MMU is ON\n");
+  }
+  else
+  {
+    GEL_TextOut("ARM MMU is OFF\n");
+  }
+  //init_dsp_mmu(); 
+  //GEL_MapAddStr(0x00000000, 0, 0x01000000, "R|W|AS4", 0);  /* CS4 - SDRAM mapped at 0x0 - 16MB */
+  //return;
+}
+
+
+
+ARM_Section(TTB, VirtualAddress,PhysicalAddress, CB,nb_section) 
+{   /*  TTB : base address of TTB
+        CB definition 
+        -------------
+    #define NOCACHEABLE 0
+    #define CACHEABLE  2
+    #define BUFFERABLE 1
+    #define BUFFERABLE & CACHEABLE   3   */
+int add_D1, val_D1,PA,VA; 
+int domain,ap  ;
+int lvCounter;
+    /* Access Permissions 
+    #define NO_ACCESS  0 
+    #define SVC_R      0
+    #define SVC_RW     1
+    #define NO_USR_W   2
+    #define ALL_ACCESS 3
+    */  
+
+ ap = 3; 
+ domain = 0;
+
+  for (lvCounter = 0;
+       lvCounter < nb_section;
+       lvCounter++)
+  {
+    PA = (0x100000 * lvCounter) +PhysicalAddress;
+    VA = (0x100000 * lvCounter) +VirtualAddress;
+    add_D1 = ((TTB & 0xFFFFC000) | (((VA >> 20) << 2) & 0x00003FFF)); 
+    val_D1 = ((PA & 0xFFFF0000) | (ap << 10) | (domain << 5) |(CB << 2) | 0x2); 
+    *(int*)add_D1= val_D1;
+    //GEL_TextOut("addr : %x, value %x \n",,,,,add_D1, val_D1);
+  }
+}
+
+menuitem "Board"
+
+hotmenu Current_config()
+{
+    affich_config();
+}
+hotmenu ________THALASSA_________(){}
+
+hotmenu Thalassa_Ram()
+{
+    CONFIG_H_S = THALASSA_RAM;
+    affich_config();
+}
+
+hotmenu Thalassa_Flash()
+{
+    CONFIG_H_S = THALASSA_FLASH;
+    affich_config();
+}
+hotmenu ________GSAMPLE__________(){}
+
+hotmenu Gsample_RAM()
+{
+    CONFIG_H_S = GSAMPLE_RAM;
+    affich_config();
+}
+
+hotmenu Gsample_Flash()
+{
+    CONFIG_H_S = GSAMPLE_FLASH;
+    affich_config();
+}
+
+
+menuitem "EMIFF"
+
+/* 
+   EMIF Fast Registers configuration
+   For Elpida 256M bits DDR mobile RAM 
+   16M words, 16 bits data bus, 4 banks, 9 columns, 13 row
+*/
+hotmenu EMIFF_Setup_DDRAM()
+{
+
+  int i, SDRAM_Op_Reg, SDRAM_Config_Reg;
+
+  SDRAM_Op_Reg = (*(int*)0xFFFECC80);
+  SDRAM_Config_Reg = (*(int*)0xFFFECC20);
+  
+  
+  // SPARE Register setting at NEPTUNE Configuration level
+  (*(int*)0xFFFE102C) = 1;
+
+  // DDR Set Up if not yet done
+  if ( ((SDRAM_Op_Reg & 0x7) != 0x7) && ((SDRAM_Config_Reg & 0x000081F6) != 0x000081F6) ){
+
+    (*(int*)0xFFFECC80) = 0x07; 		/* DDR Operation addr Mobile DDR, HPHB mode */
+    (*(int*)0xFFFECC20) = 0x000064F6;   /* SDRAM Config refresh counter set for (13MHz worst case)*/        
+    (*(int*)0xFFFECC84) = 0x07;  		/* Manual CMD Addr, CKE high */
+    (*(int*)0xFFFECC84) = 0x00; 		/* Manual CMD Addr NOP command */
+    for (i = 0; i< 5; i++)   		    /* Delay Loop */
+    (*(int*)0xFFFECC84) = 0x01; 		/* Precharge Command */
+    (*(int*)0xFFFECC84) = 0x02; 		/* Auto-refresh command */
+    (*(int*)0xFFFECC84) = 0x02; 		/* Auto-refresh command */
+    (*(int*)0xFFFECC70) = 0x33;         /* Sdram MRS Register (new)  */
+    (*(int*)0xFFFECC78) = 0x00; 		/* EMRS1 self refresh all banks */
+    (*(int*)0xFFFECCC0) = 0x00;         /* disable read DLL  */    
+    (*(int*)0xFFFECC64) = 0x00;         /* disable write DLL  */    
+
+
+    GEL_TextOut("DDR interface configured\n");
+
+  } else GEL_TextOut("DDR interface already configured\n");
+  
+  return;
+}
+
+
+
+hotmenu EMIFF_Setup_SDRAM()
+{
+
+  (*(int*)0xFFFECC20) = 0x0003F7F6; // Auto Refresh, SDRAM, 4bank * 16bits * 4MG, Power Management disabled
+  (*(int*)0xFFFECC24) = 0x00000027; // CAS Latency = 2
+  
+
+
+  GEL_TextOut("SDRAM interface configured\n");
+
+  return;
+}
+
+
+/* EOF */

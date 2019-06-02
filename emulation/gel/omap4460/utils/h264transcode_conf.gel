@@ -1,0 +1,174 @@
+menuitem "h264_transcode"
+
+hotmenu h264Trans_LoadProg_CortexA9()
+{
+    GEL_Load ("S:/cdb/tcomap4440/tc_ivahd/ivahd_ducati_trans_frwk_board/cortexa9_cpu0_ape/cortexa9_cpu0_ape_silicon_image.axf");
+
+}
+
+
+
+hotmenu Transcodeh264_GoTestEntry()
+{
+   GEL_Go(M3DECFRWK_TestFunction);
+}
+
+hotmenu Transcoderh264_config_belhuka()
+{
+   //GEL_Go(M3DECFRWK_TestFunction);
+
+   stream_id = 2;  // belukha trailer D1
+   
+   flag_data_loaded = 4;  // load from eMMC
+   tiler_mode =1;
+   chroma_tiled_mode=0;
+	TranscodeFrameStart = 500;
+	TranscodeFrameStop = 1500;
+
+	nb_run_to_launch =1;
+	//use_sw_uart = 1;
+
+}
+
+hotmenu Transcoderh264_config_basket()
+{
+   //GEL_Go(M3DECFRWK_TestFunction);
+
+   stream_id = 3;  // basket trailer D1
+   
+   flag_data_loaded = 4;  // load from eMMC
+   tiler_mode =1;
+   chroma_tiled_mode=0;
+	TranscodeFrameStart = 300;
+	TranscodeFrameStop = 1200;
+
+	nb_run_to_launch =1;
+	//use_sw_uart = 1;
+
+}
+
+hotmenu Transcoderh264_config_Pana02()
+{
+   //GEL_Go(M3DECFRWK_TestFunction);
+
+   stream_id = 4;  // panasonic trailer 720p
+   
+   flag_data_loaded = 4;  // load from eMMC
+   tiler_mode =1;
+   chroma_tiled_mode=0;
+	TranscodeFrameStart = 0;
+	TranscodeFrameStop = 200;
+	nb_run_to_launch =1;
+	//use_sw_uart = 1;
+
+}
+
+hotmenu Transcoderh264_config_Pana03()
+{
+   //GEL_Go(M3DECFRWK_TestFunction);
+
+   stream_id = 5;  // panasonic trailer 720p
+   
+   flag_data_loaded = 4;  // load from eMMC
+   tiler_mode =1;
+     chroma_tiled_mode=0;
+ 
+	TranscodeFrameStart = 0;
+	TranscodeFrameStop = 150;
+	nb_run_to_launch =1;
+	//use_sw_uart = 1;
+
+}
+
+hotmenu Transcoderh264_config_amelia()
+{
+   //GEL_Go(M3DECFRWK_TestFunction);
+
+   stream_id = 6;  // amelia trailer 720p
+   
+   flag_data_loaded = 4;  // load from eMMC
+   tiler_mode =1;
+     chroma_tiled_mode=0;
+ 
+	TranscodeFrameStart = 500;
+	TranscodeFrameStop = 1500;
+	nb_run_to_launch =1;
+	//use_sw_uart = 1;
+
+}
+
+hotmenu Transcoderh264_config_serenity()
+{
+   //GEL_Go(M3DECFRWK_TestFunction);
+
+   stream_id = 7;  // serenity trailer 720p
+   
+   flag_data_loaded = 4;  // load from eMMC
+   tiler_mode =1;
+    chroma_tiled_mode=0;
+  
+	TranscodeFrameStart = 300;
+	TranscodeFrameStop = 1300;
+	nb_run_to_launch =1;
+	//use_sw_uart = 1;
+
+}
+
+
+dialog Transcoderh264_config_ddr(image_width "image width",
+					     image_height "image height",	
+						 Stream_size "Stream size",					 
+                          disp_delay "Display Delay",
+						  frame_min "start transcode frame index",
+ 						  frame_max "stop transcode frame index",
+						  bit_rate "Target bit rate (in kbyte)",
+						  sw_uart "Use SW uart:0 NO / 1: YES)"
+                          )
+{
+    // go to the test function to have symbol loaded
+    // GEL_Go(M3DECFRWK_TestFunction);
+
+     DisplayDelay =  disp_delay;
+	   InputWidth = image_width;
+	   InputHeight = image_height;	
+	   StreamSize = Stream_size;
+
+	   flag_data_loaded = 1; // load from ddr
+	
+	tiler_mode  = 1    ;
+	chroma_tiled_mode = 0    ;
+	
+	DisplayDelay =  disp_delay;
+
+ 
+	ScreenWidth = 1280; 
+	ScreenHeight = 720; 
+ 
+ 
+ 	TranscodeFrameStart = frame_min;
+	TranscodeFrameStop = frame_max;
+	TargetBitRate = bit_rate*1024;
+    
+    flag_paced_30fps = 1  ;
+   nb_run_to_launch =1;
+   //	use_sw_uart = sw_uart;
+}
+
+
+hotmenu Transcoderh264_config_demo(nb_runs)
+{
+   //GEL_Go(M3DECFRWK_TestFunction);
+
+   if (nb_runs == 0)
+	nb_runs = 2;
+   stream_id = 2;  // start by belukha trailer D1
+   
+   flag_data_loaded = 4;  // load from eMMC
+   tiler_mode =1;
+   nb_run_to_launch =nb_runs;
+   demo_loop = 2;
+  // 	use_sw_uart = 0;
+
+}
+
+

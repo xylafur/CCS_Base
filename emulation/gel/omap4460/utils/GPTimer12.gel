@@ -1,0 +1,71 @@
+//menuitem "GPTimer 12";
+menuitem "Advanced Emulation feature"
+
+hotmenu GPT12_Enable()
+{	
+    int toto = 0;
+    toto = *(int*)0x4A002114;
+    toto&=0xffffffdf;
+    toto|=0x200000;
+    *(int*)0x4A002114=toto;
+    
+    toto = *(int*)0x4A002118;
+    toto|=0x4;
+    *(int*)0x4A002118=toto;
+    
+    GPT12_disableMsuspend();
+
+	*(int*)0x4a320054 = 0x4; // posted mode active
+    *(int*)0x4a320040 = 0xFFF00000; // set LOAD_VALUE
+    *(int*)0x4a320038 = 0x2; // Autoreload Timer
+    *(int*)0x4a320044 = 0xA5A5AABB; // Value of timer count
+    
+    GPT12_enableMsuspend();
+    *(int*)0x4a320044 = 0xA5A5AABB;
+}
+
+hotmenu GPT12_Stop()
+{	
+	int titi = 0;
+    titi = *(int*)0x4a320038;
+    titi &= 0xFFFFFFFE;
+	// Start Timer
+    *(int*)0x4a320038 = titi;
+}
+
+hotmenu GPT12_Start()
+{
+    int toto = 0;
+    toto = *(int*)0x4a320038;
+    toto |= 1;
+	// Start Timer
+    *(int*)0x4a320038 = toto;
+    
+}
+
+//hotmenu ModifyLoadValue_WLDR()
+//{
+//	*(int*) 0x4a32202C = 0xFFF00000; 
+//}
+
+hotmenu GPT12_myTestOK()
+{
+	GPT12_Stop();
+	// ModifyLoadValue_WLDR();
+	GPT12_Enable();
+	GPT12_Start();
+}
+
+hotmenu GPT12_enableMsuspend()
+{
+    *(int*) 0x54160050 = 0x40000000;
+    *(int*) 0x54160050 = 0x80000000;
+    *(int*) 0x5416025C = 0x69;
+}
+
+hotmenu GPT12_disableMsuspend()
+{
+    *(int*) 0x54160050 = 0x40000000;
+    *(int*) 0x54160050 = 0x80000000;
+    *(int*) 0x5416025C = 0x60;
+}

@@ -1,0 +1,110 @@
+/* The Startup() function is executed when the GEL file is loaded. */
+
+StartUp()
+{   
+	
+	GEL_MapOn();
+	GEL_MapReset();
+	
+	/* Program Space */
+	GEL_MapAdd(0x010000U,0,0x010000U,1,1);	                  /* SARAM */
+    
+    /* Map some IO to configure memory map. */
+	GEL_MapAdd(0x3800U,2,0x0400U,1,1);						  /* ID 1KW      */
+	
+
+    /* Data Space */
+	GEL_MapAdd(0x000000U,1,0x000050U,1,1);	/* MMRs */
+	GEL_MapAdd(0x000060U,1,0x007FA0U,1,1);	/* DARAM */
+	GEL_MapAdd(0x008000U,1,0x008000U,1,1);	/* SARAM */
+	GEL_MapAdd(0x010000U,1,0x020000U,1,1);	/* SARAM */	
+	
+	
+        /* IO Space */
+	GEL_MapAdd(0x0000U,2,0x0400U,1,1);	/* RHEA 1KW    */	
+	GEL_MapAdd(0x1000U,2,0x0400U,1,1);	/* TIMER#0 1KW */
+	GEL_MapAdd(0x1400U,2,0x0400U,1,1);	/* ICACHE 1KW  */
+	GEL_MapAdd(0x2000U,2,0x0400U,1,1);	/* TRACE FIFO 1KW */
+	GEL_MapAdd(0x2400U,2,0x0400U,1,1);	/* TIMER#1 1KW */	
+	GEL_MapAdd(0x8000U,2,0x0400U,1,1);	/* PDMA        */
+
+	GEL_TextOut("Gel StartUp Complete.\n");
+}
+
+OnTargetConnect()
+{
+	C5561_Init(); 
+
+	/* Shared memory */
+	if (((*(0x3806@io)) & 0x000F) == 0) 
+	/* Subsystem A has RW access to shared memory */
+	{
+	  GEL_TextOut("This is CPU - A.\n");
+	  if (ST3 & 0x0040) {  
+	    GEL_TextOut("This is MPNMC = 1.\n");	    
+		/* For MP/MC=1 (BOOTM[2:0] != 0)  */
+	    GEL_MapAddStr(0xFA0000U,0,0x060000U,"RAM|AS4|SH1C|CACHE",0);  /* External CE3 */
+	  } else {
+	  	GEL_TextOut("This is MPNMC = 0.\n");	    
+	    /* For MP/MC=0 (BOOTM[2:0] = 0) */
+	    GEL_MapAddStr(0xF80000U,0,0x07F000U,"RAM|AS4|SH1C|CACHE",0);  /* External CE3 */
+	    GEL_MapAdd(0xFFF000U,0,0x001000U,1,0);	                  	  /* PDROM        */
+	  }
+        } else {    
+          /* Subsystems B-F have RO access to shared memory */
+		  GEL_TextOut("This is CPU - B-F.\n");
+	  /* For MP/MC=1 (BOOTM[2:0] != 0)  */
+	  if (ST3 & 0x0040) { 
+	    GEL_MapAddStr(0xF80000U,0,0x080000U,"ROM|AS4|SH1C|CACHE",0);  /* External CE3 */
+	  } else {
+	    /* For MP/MC=0 (BOOTM[2:0] = 0) */
+	    GEL_MapAddStr(0xF80000U,0,0x07F000U,"ROM|AS4|SH1C|CACHE",0);  /* External CE3 */
+	    GEL_MapAdd(0xFFF000U,0,0x001000U,1,0);	                  	  /* PDROM        */
+	  }
+	}
+
+	if ((*(0x3806@io) & 0x000F) == 0)   /* Subsystem A */
+    	  GEL_MapAdd(0x1C00U,2,0x0400U,1,1);    /* CLKGEN 1KW */
+
+	if ((*(0x3806@io) & 0x000F) == 0)   /* Subsystem A */
+    	  GEL_MapAdd(0x3400U,2,0x0400U,1,1);    /* GPIO 1KW    */
+	
+}
+
+menuitem "C5561_Configuration";
+hotmenu CPU_Reset()
+{
+	GEL_Reset();
+
+	GEL_TextOut("CPU Reset Complete.\n");
+}
+
+hotmenu Janus_Reset()
+{
+	GEL_Reset();
+	PC=0xf89765 ;
+	GEL_Animate();
+	GEL_Halt();
+	GEL_Reset();
+}
+
+hotmenu C5561_Init()
+{
+	GEL_Reset();
+
+	GEL_TextOut("C5561_Init Complete.\n");
+}
+
+hotmenu cacheOn()
+{
+
+
+    *(0x1400@io) = 0x0E2B; /* GCR */
+    *(0x1403@io) = 0x0000; /* NWCR */ 
+    *(0x1405@io) = 0x0000; /* RCR1 */
+     
+     ST3 |= 0x2000;  /* Cache clear */
+     ST3 &= 0xdfff;  
+     ST3 |= 0x4000;  /* Cache Enable */
+
+}

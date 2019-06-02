@@ -1,0 +1,456 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */ 
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* OMAP5430 ES2 firewall startup           						   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*  Modified by Ning Kang  (2013/06/25)                            */
+/*******************************************************************/
+
+#define INFO_PRINT								1
+
+#define CONTROL_L3_HW_FW_EXPORTED_VALUES_CONF_DBG       0x4A002114
+#define CONTROL_L3_HW_FW_EXPORTED_VALUES_CONF_LOCK      0x4A002118
+
+#define fw_lli_ocp_regupdate                    		0x4A202040
+#define fw_modem_regupdate_control              		0x4A204040
+#define fw_modem_ocp_regupdate_control              	0x4A206040
+#define fw_lli_regupdate                    			0x4A208040
+#define fw_mpuma_regupdate_control              		0x4A20A040
+#define fw_emif_regupdate_control                 		0x4A20C040
+#define fw_gpmc_regupdate_control                		0x4A210040
+#define fw_sgx_regupdate_control              			0x4A214040
+#define fw_iss_regupdate_control                 		0x4A216040
+#define fw_ipu_regupdate_control              			0x4A218040
+#define fw_dss_regupdate_control               			0x4A21C040
+#define fw_sl2_regupdate_control                 		0x4A21E040
+#define fw_ivahd_regupdate_control                		0x4A220040
+
+#define fw_cal_regupdate_control                		0x4A222040
+#define fw_ct_tbr_regupdate_control                		0x4A224040
+#define fw_ct_tbr_mrm_permission_region_low        		0x4A224088
+#define fw_ct_tbr_mrm_permission_region_high        	0x4A22408C
+
+#define fw_l3_inst_regupdate_control                	0x4A226040
+
+#define fw_abe_regupdate_control               			0x4A228040
+#define fw_crypto_regupdate_control               		0x4A22A040
+#define fw_debug_regupdate_control               		0x4A226088
+
+#define fw_l3ram_regupdate_control              		0x4A212040
+#define fw_l3ram_start_region_1_val              		0x40300000
+#define fw_l3ram_end_region_1_val                		0x4031FFFF
+
+#define FW_L3RAM_START_REGION_1_VALUE     				0x4A212090  
+#define FW_L3RAM_END_REGION_1_VALUE 					0x4A212094 
+
+#define CONTROL_L4_HW_FW_EXPORTED_VALUES_CONF        	0x4A00211C
+#define CONTROL_SEC_LOAD_FW_EXPORTED_VALUES          	0x4A002120
+
+#define control_l4_hw_fw_exported_values_conf   		0x4A00211C
+#define control_sec_load_fw_exported_values     		0x4A002120
+
+#define CM_L3INSTR_L3_3_CLKCTRL     					0x4A008E20
+#define CM_L3INSTR_L3_INSTR_CLKCTRL 					0x4A008E28
+
+#define PAD0_DRM_EMU0_PAD1_DRM_EMU1  0x4AE0C844  
+
+#define DRM_CLAIM                    0xD4160050
+#define DPM_CTRL0                    0xD4160080
+#define DPM_CTRL1                    0xD4160084
+#define DPM_CTRL2                    0xD4160088
+#define DPM_CTRL3                    0xD416008C
+#define DPM_CTRL4                    0xD4160090
+#define DPM_CTRL5                    0xD4160094
+#define STM_SWMCTRL0                 0x54161024
+#define STM_PTI_CONFIG               0x5416103C
+#define STM_LOCK_ACCESS              0x54161FB0
+#define STM_TESTCTRL                 0x54161050
+#define UNLOCK_VALUE                 0xC5ACCE55
+
+
+StartUp()
+{
+  // STM traces
+  GEL_LoadGel("$(GEL_file_dir)//omap5430_es2_stm.gel"); 
+}
+
+
+hotmenu configure_tbr_start_stm_enable()
+{
+    GEL_TextOut("--->>> Configure TBR start<<<---\n"); 
+	
+	Configure_CM2_provide_instrumentation_clocks();
+    
+    //For the TBR
+	*(int*)0x54167FB0 = 0xC5ACCE55;
+    *(int*)0x54167018 = 0x0;
+	
+	*(int*)0x54167304 = 0x1000;
+     
+	*(int*)0x54167020 = 0x1;
+	
+	// For trace funnel
+	*(int*)0x54164FB0 = 0xC5ACCE55;
+	*(int*)0x54164000 = 0x380;
+	*(int*)0x54158FB0 = 0xC5ACCE55;
+	*(int*)0x54158000 = 0x3FF;
+	
+ 
+	//CoreSight STM 
+	*(int*)0x5415AFB0 = 0xC5ACCE55;
+	*(int*)0x5415AE00 = 0xFFFFFFFF;
+	*(int*)0x5415AE90 = 0xFFF;
+	*(int*)0x5415AE60 = 0x00100003;
+	*(int*)0x5415AE64 = 0x00000000;
+	*(int*)0x5415AE80 |= ((0x40 << 16) | 0x1);
+
+}
+
+hotmenu configure_tbr_stop_enable()
+{
+    GEL_TextOut("--->>> Configure TBR stop <<<---\n"); 
+	    
+    //For the TBR	
+	*(int*)0x54167304 |= (1 << 6);
+	*(int*)0x54167020 = 0x0;
+	
+	//CoreSight STM (clear the enable)
+	*(int*)0x5415AE80 &= ~(1 << 0);
+}
+
+force_efuse()
+{
+    GEL_TextOut("--->>> force_efuse <<<---\n"); 
+    
+    //For the Core
+    *(int*)0x4ae07bc4=0x00000002;
+     
+    //For the MM 
+    *(int*)0x4ae07bd4=0x00000002;
+
+    //For the MPU 
+    *(int*)0x4ae07bcc=0x00000002;
+    
+    GEL_TextOut("---<<< force_efuse >>>---\n"); 
+}    
+
+OnTargetConnect()
+{ 
+	int device_type;
+       
+    GEL_TextOut("--->>> CONFIGURE DEBUG DPLL settings to 1.6 GHZs  <<<---\n");
+    dpll_dbgss_config_board_1600_M4_3();
+    
+    GEL_TextOut("--->>> TURNING ON L3_INSTR and L3_3 clocks required for debug instrumention <<<<<<----\n");
+    Configure_CM2_provide_instrumentation_clocks();
+    
+    	device_type = *(int*)0x4A002134;
+    
+    	// GP device	
+    	if (((device_type & 0x1C0)>>6) == 0x3)
+    	{
+     	   GEL_TextOut("--->>> GP device, no FW settings needed. <<<---\n"); 
+    	}
+    	else
+    	{	
+		// HS device
+    		if (((device_type & 0x1C0)>>6) == 0x2) 	
+    		{
+        		GEL_TextOut("--->>> HS device, no FW settings needed  <<<---\n");
+                //set_firewalls_to_public(); 
+
+    		}
+    		else
+    		{	
+				// EMU device
+    			if (((device_type & 0x1C0)>>6) == 0x1) 	
+    			{
+        			//GEL_TextOut("--->>> EMU device, FW settings needed -> allow all access <<<---\n"); 
+        			set_firewalls_to_public();
+    			}
+				else
+				{
+					// TEST device
+					if (((device_type & 0x1C0)>>6) == 0x0) 	
+    				{
+        				GEL_TextOut("--->>> TEST device, FW settings needed -> allow all access <<<---\n"); 
+        				set_firewalls_to_public();
+    				}
+					else
+					{	
+						GEL_TextOut("--->>> UNKOWN device maybe NON FUSED , FW settings needed -> allow all access <<<---\n"); 
+        				set_firewalls_to_public();
+					}
+				}
+		}
+	}
+	
+	GEL_TextOut("---<<< Firewalls settings >>>---\n");
+
+	// To Disable the TPIU
+	//*(int*)0x54163FB0 = 0xC5ACCE55;
+	//*(int*)0x54163304 |= (1 << 6);
+	//*(int*)0x54163304 |= (1 << 12);  
+
+    //while ( ((*(int*)0x54163300)&0x2) == 0 );
+    //GEL_TextOut("---<<< TPIU formatter has been stopped >>>---\n");
+
+}  
+
+
+
+hotmenu SetGPIOwakeUp5ToOutputAndSetTo1es2()
+{
+
+    int value;
+    
+    if (INFO_PRINT) {
+    GEL_TextOut("> SetGPIOwakeUp5ToOutputAndSetTo1\n");
+    }
+    
+    // Enable SW domain du AON domain .
+   value = *(int*)0x4AE07800;
+   value|=0x2;
+   *(int*)0x4AE07800=value;
+   
+   // Enable AON domain in auto
+   value = *(int*)0x4AE07838;
+   value|=0x1;
+   *(int*)0x4AE07838=value;
+    
+    	
+    // Set pin mux for wakeUp GPIO5.
+   value = *(int*)0x4AE0C878;
+   value&=0xFFF8FFFF;
+   value|=0x6<<16;
+   *(int*)0x4AE0C878=value;
+   
+    
+// READ value OMAP5430:GPIO1:GPIO_OE
+  value = *(int*)0x4AE10134;
+    
+  // Configure SOC_GPIO_PIN_WK5 in output
+  value &=~(1 << 5);    
+  *(int*)0x4AE10134 = value;
+    
+  // SET GPIO5 to 1
+  value = *(int*)0x4AE1013C;
+  value |=(1 << 5);
+  *(int*)0x4AE1013C = value;
+
+  GEL_TextOut("< SetGPIOwakeUp5ToOutputAndSetTo1\n");
+
+}
+
+
+hotmenu Enable_System_Trace_PTI_1_Data_Pin()
+{
+	GEL_TextOut("Enable PTI single data pin trace \n");
+	Configure_Spinner_For_STM_trace_Pins_1_data_pin();
+	Configure_DRM_to_assign_STM_to_DP0_DP1();
+	GEL_TextOut("Enable PTI single data pin trace DONE \n");
+}	
+
+
+hotmenu Configure_Spinner_For_STM_trace_Pins_1_data_pin()
+{
+
+    *(int*)PAD0_DRM_EMU0_PAD1_DRM_EMU1 = 0x01180118;    //set bit 18:16 and 2:0 to 0 to enable both emu0 and emu1. Set 0 to other bits
+
+
+    GEL_TextOut("Set pad registers to enable emu0 and emu1 pins \n");
+}  
+
+
+hotmenu Configure_DRM_to_assign_STM_to_DP0_DP1()
+{
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM@data = (0x2 << 30);
+   *(int*)DPM_CTRL0@data = 0x2; // STM_DATA[0] (DP0)
+   *(int*)DPM_CTRL1@data = 0x6; // STM_CLK (DP1)
+
+   /* clear\disable the other 3 data pins */
+   *(int*)DPM_CTRL2@data = 0x0; // STM_DATA[2] (DP2)
+   *(int*)DPM_CTRL3@data = 0x0; // STM_DATA[2] (DP3)
+   *(int*)DPM_CTRL4@data = 0x0; // STM_DATA[3] (DP4)
+   // Note the app owned state status bit should be '0' after PAD configuration
+   // Debug only status bit is always '0' because on OMAP-4 no DP pin is exclusively available for debug
+
+   // The output and output enable status bits should reflect the way STM is driving
+   // the pins (output enable should go to zero and stay zero)
+
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 1 pin STM data \n");
+}
+
+
+hotmenu Configure_CM2_provide_instrumentation_clocks()
+{
+	*(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1; /* Provide L3_3 clock */
+	
+	*(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1; /* Provide L3 instr clock */
+	
+	GEL_TextOut("---<<< L3 instrumentation clocks are enabled >>>> ---\n");
+}
+
+
+hotmenu set_firewalls_to_public()
+{
+	int control_l3_hw_fw_exported_values_conf_dbg_register_value;
+    
+    int control_l3_hw_fw_exported_values_conf_lock_register_value;
+	
+	int control_l3ram_regupdate_control_dbg_register_value;
+    
+    int control_l3ram_regupdate_control_lock_register_value;
+	
+	int control_l4_hw_fw_exported_values_conf_register_value;
+
+if (INFO_PRINT) {
+	GEL_TextOut("--->>> ENTER set_firewalls_to_public <<<---\n");
+	}
+	
+	/* Set Public rights for some L3 firewalls */
+	//control_l3_hw_fw_exported_values_conf_dbg_register_value = *(int*)CONTROL_L3_HW_FW_EXPORTED_VALUES_CONF_DBG;
+    
+    control_l3_hw_fw_exported_values_conf_lock_register_value = *(int*)CONTROL_L3_HW_FW_EXPORTED_VALUES_CONF_LOCK;
+
+	control_l3_hw_fw_exported_values_conf_dbg_register_value = 0xFFFFFFFF;
+	*(int*)CONTROL_L3_HW_FW_EXPORTED_VALUES_CONF_DBG = control_l3_hw_fw_exported_values_conf_dbg_register_value;
+
+	control_l3_hw_fw_exported_values_conf_lock_register_value &= 0xFFFF720A;
+    
+    //control_l3_hw_fw_exported_values_conf_lock_register_value = 0xFFFFFFFF;
+	*(int*)CONTROL_L3_HW_FW_EXPORTED_VALUES_CONF_LOCK = control_l3_hw_fw_exported_values_conf_lock_register_value;
+   
+	 /* Request L3 firewalls to load exported values: */
+     /*  - Set BUSY_REQ bit (avoid requests to go through FW while updating registers) */
+     /*  - Request load of exported values (Write '1' to FW_LOAD_REQ bit) */
+     /*  - Clear BUSY_REQ bit */
+     
+     /* Set BUSY_REQ Bit */
+     *(int*)fw_lli_ocp_regupdate = 0x1;
+     *(int*)fw_modem_regupdate_control = 0x1;
+     *(int*)fw_modem_ocp_regupdate_control = 0x1;
+     *(int*)fw_lli_regupdate = 0x1;
+     *(int*)fw_mpuma_regupdate_control = 0x1;
+     *(int*)fw_emif_regupdate_control = 0x1;
+     *(int*)fw_sgx_regupdate_control = 0x1;
+     *(int*)fw_iss_regupdate_control = 0x1;
+     *(int*)fw_ipu_regupdate_control = 0x1;
+     *(int*)fw_dss_regupdate_control = 0x1;
+     *(int*)fw_sl2_regupdate_control = 0x1;
+     *(int*)fw_ivahd_regupdate_control = 0x1;
+	 *(int*)fw_abe_regupdate_control = 0x1;
+     *(int*)fw_cal_regupdate_control = 0x1;
+     *(int*)fw_ct_tbr_regupdate_control = 0x1;
+     *(int*)fw_crypto_regupdate_control = 0x1;
+     *(int*)fw_debug_regupdate_control = 0x1;
+     *(int*)fw_l3_inst_regupdate_control = 0x1;
+     
+	 
+	 /* Request load of exported value */
+     *(int*)fw_lli_ocp_regupdate = 0x3;
+     *(int*)fw_modem_regupdate_control = 0x3;
+     *(int*)fw_modem_ocp_regupdate_control = 0x3;
+     *(int*)fw_lli_regupdate = 0x3;
+     *(int*)fw_mpuma_regupdate_control = 0x3;
+     *(int*)fw_emif_regupdate_control = 0x3;
+     *(int*)fw_sgx_regupdate_control = 0x3;
+     *(int*)fw_iss_regupdate_control = 0x3;
+     *(int*)fw_ipu_regupdate_control = 0x3;
+     *(int*)fw_dss_regupdate_control = 0x3;
+     *(int*)fw_sl2_regupdate_control = 0x3;
+     *(int*)fw_ivahd_regupdate_control = 0x3;
+	 *(int*)fw_abe_regupdate_control = 0x3;
+     *(int*)fw_cal_regupdate_control = 0x3;
+     *(int*)fw_ct_tbr_regupdate_control = 0x3;
+     *(int*)fw_crypto_regupdate_control = 0x3;
+     *(int*)fw_debug_regupdate_control = 0x3;
+     *(int*)fw_l3_inst_regupdate_control = 0x3; 
+	 
+	/* Clear BUSY_REQ Bit */
+     *(int*)fw_lli_ocp_regupdate = 0x0;
+     *(int*)fw_modem_regupdate_control = 0x0;
+     *(int*)fw_modem_ocp_regupdate_control = 0x0;
+     *(int*)fw_lli_regupdate = 0x0;
+     *(int*)fw_mpuma_regupdate_control = 0x0;
+     *(int*)fw_emif_regupdate_control = 0x0;
+     *(int*)fw_sgx_regupdate_control = 0x0;
+     *(int*)fw_iss_regupdate_control = 0x0;
+     *(int*)fw_ipu_regupdate_control = 0x0;
+     *(int*)fw_dss_regupdate_control = 0x0;
+     *(int*)fw_sl2_regupdate_control = 0x0;
+     *(int*)fw_ivahd_regupdate_control = 0x0;
+	 *(int*)fw_abe_regupdate_control = 0x0;
+     *(int*)fw_cal_regupdate_control = 0x0;
+     *(int*)fw_ct_tbr_regupdate_control = 0x0;
+     *(int*)fw_crypto_regupdate_control = 0x0;
+     *(int*)fw_debug_regupdate_control = 0x0;
+     *(int*)fw_l3_inst_regupdate_control = 0x0;
+ 
+	 /*  GPMC firewall configuration load request is done there to take care of extermal booting */
+     /* in GPMC case. Indeed setting the BUSY_REQ bit locks access to GPMC in which code is located */
+     /* when booting in GPMC. Thus in order to avoid deadlock (can not fetch code because of BUSY_REQ */
+     /* assertion) the six following instructions are aligned on 8 words boundary. So they are all */
+     /* loaded in one time in the prefetch buffer, avoiding the deadlock case to happen. */
+     
+     /* Set GPMC BUSY_REQ */
+     *(int*)fw_gpmc_regupdate_control = 0x1;
+     
+     /* Request load of exported value */
+     *(int*)fw_gpmc_regupdate_control = 0x3;
+     
+     /* Clear BUSY_REQ Bit */
+     *(int*)fw_gpmc_regupdate_control = 0x0;
+     
+     /* Configure partially OCMCRAM in public with region1 */
+     /* control_l3ram_regupdate_control_register_value = *(int*)fw_l3ram_regupdate_control; */
+      *(int*)fw_l3ram_regupdate_control = 0x1;  
+     
+     *(int*)FW_L3RAM_START_REGION_1_VALUE = fw_l3ram_start_region_1_val; 
+
+     *(int*)FW_L3RAM_END_REGION_1_VALUE =  fw_l3ram_end_region_1_val; 
+
+
+     *(int*)fw_l3ram_regupdate_control = 0x0; 
+  
+     /* Set public rights for some L4 firewalls */
+     control_l4_hw_fw_exported_values_conf_register_value = *(int*)control_l4_hw_fw_exported_values_conf;
+     /* Clear L4CONFIG_USIM_seclock bit */
+     control_l4_hw_fw_exported_values_conf_register_value &= ~(1 << 6);
+     
+     *(int*)CONTROL_L4_HW_FW_EXPORTED_VALUES_CONF = control_l4_hw_fw_exported_values_conf_register_value;
+     
+     /* Request L4CONFIG firewalls to load exported values */
+     *(int*)CONTROL_SEC_LOAD_FW_EXPORTED_VALUES=0x4;
+     
+     /* Set debug firewall to public */
+     *(int*)fw_debug_regupdate_control = 0xFFFFFFFF;
+     
+     /* Set all region low for TTBR to 0xFFFFFFFF */
+     *(int*)fw_ct_tbr_mrm_permission_region_low = 0xFFFFFFFF;
+     
+     /* Set all region high for TTBR to 0xFFFFFFFF */
+     *(int*)fw_ct_tbr_mrm_permission_region_high = 0xFFFFFFFF;
+     
+     /* set all region low for MRM_PERMISSION_REGION_0_LOW for EMIF register to 0xFFFFFFFF */
+     //*(int*) 0x4a20C088 = 0xFFFFFFFF;
+     
+     /* set all region low for MRM_PERMISSION_REGION_0_LOW for LLI register to 0xFFFFFFFF */
+     *(int*)0x4a202088 = 0xFFFFFFFF;
+     
+     /* clear FW functional regisater error */
+     *(int*)0x4a002148=0xFFFFFFFF;
+     
+     
+ if (INFO_PRINT) {    
+     GEL_TextOut("--->>> EXIT set_firewalls_to_public <<<---\n");
+}     
+}

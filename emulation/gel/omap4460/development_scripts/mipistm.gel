@@ -1,0 +1,274 @@
+menuitem "MIPI_STM functions"
+
+// Support MIPI_STM base addresses
+#define STM_BASE_ADDRESS_APP       0x54161000
+#define STM_BASE_ADDRESS_DBG       0xd4161000
+
+#define STM_REVISION_OFFSET       0x00
+#define STM_SYSCONFIG_OFFSET      0x10
+#define STM_SYSSTATUS_OFFSET      0x14
+#define STM_SWMCTRL0_OFFSET       0x24
+#define STM_SWMCTRL1_OFFSET       0x28
+#define STM_SWMCTRL2_OFFSET       0x2c
+#define STM_SWMCTRL3_OFFSET       0x30
+#define STM_SWMCTRL4_OFFSET       0x34
+#define STM_HWMCTRL_OFFSET        0x38
+#define STM_PTI_CONFIG_OFFSET     0x3c
+#define STM_PTI_COUNTD_OFFSET     0x40
+#define STM_ATB_CONFIG_OFFSET     0x44
+#define STM_ATB_POINTER_OFFSET    0x48
+#define STM_ATB_ID_OFFSET         0x4c
+#define STM_LOCK_ACCESS_OFFSET    0xFB0
+
+
+// Support OCP-WP base addresses
+#define OCPWP_BASE_ADDRESS_APP    0x4A102000
+#define OCPWP_BASE_ADDRESS_DBG    0xcA102000
+
+#define OCPWP_REVISION            0x00
+#define OCPWP_SYSCONFIG           0x10
+#define OCPWP_CFG                 0x24
+#define OCPWP_ADDRESS0            0x28
+#define OCPWP_ADDRESS1            0x2c
+#define OCPWP_MASTERIDMATCH0      0x30
+#define OCPWP_MASTERIDMASK0       0x34
+#define OCPWP_MASTERIDMATCH1      0x38
+#define OCPWP_MASTERIDMASK1       0x3c
+#define OCPWP_MASTERIDMATCH2      0x40
+#define OCPWP_MASTERIDMASK2       0x44
+#define OCPWP_MASTERIDMATCH3      0x48      
+#define OCPWP_MASTERIDMASK3       0x4c
+#define OCPWP_DMAFILTER           0x50
+#define OCPWP_MREQINFOSELECT      0x54
+#define OCPWP_DATABYTESELECT      0x58
+#define OCPWP_COMPCTLREG          0x5c
+#define OCPWP_TRIGGERCTL          0x60
+#define OCP_LOCK_ACCESS           0xFB0
+
+
+#define PRM_PRM_PROFILING_CLKCTRL 0x4A306040
+
+#define PRM_PMI_BASE_ADDRESS 0x4A307F00
+
+#define PRM_PMI_ID_OFFSET         0x00              
+#define PRM_PMI_SYS_CONFIG        0x10
+#define PRM_PMI_STATUS            0x14
+#define PRM_PMI_CONFIGURATION     0x24
+#define PRM_PMI_CLASS_FILTERING   0x28
+#define PRM_PMI_TRIGGERING        0x2c
+#define PRM_PMI_SAMPLING          0x30
+
+
+// Support Trace Funnel base addresses
+#define CSTF_ADDRESS_APP       0x54164000
+#define CSTF_ADDRESS_DBG       0xd4164000
+
+#define CSTF_FCTL              0x0
+#define CSTF_LOCK_ACCESS       0xFB0
+
+// Support ETB base addresses
+#define CSETB_ADDRESS_APP       0x54162000
+#define CSETB_ADDRESS_DBG       0xd4162000
+
+#define CSETB_RRP               0x14
+#define CSETB_RWP	            0x18
+#define CSETB_CTL               0x20
+#define CSETB_FFCR              0x304
+#define CSETB_LOCK              0xFB0
+
+#define CM_L3INSTR_L3_3_CLKCTRL      *(int*)0x4A008E20  
+#define CM_L3INSTR_L3_INSTR_CLKCTRL  *(int*)0x4A008E28
+
+
+hotmenu Initialize_PMI_PRM()
+{
+  GEL_TextOut("Initialize PMI_PRM \n"); 
+  
+  // Initializing PMI_PRM (turn on clock)
+  *(int*)PRM_PRM_PROFILING_CLKCTRL = 0x1;
+  
+  // Claim and enable ownership
+  *(int*)(PRM_PMI_BASE_ADDRESS + PRM_PMI_CONFIGURATION) = 0x60000000;
+  *(int*)(PRM_PMI_BASE_ADDRESS + PRM_PMI_CONFIGURATION) = 0x80000000; 
+  
+  // class 3 enable - memory power state
+  //*(int*)(PRM_PMI_BASE_ADDRESS + PRM_PMI_CLASS_FILTERING) = 0x8; 
+  
+  // class 2 enable - logic power state 
+  *(int*)(PRM_PMI_BASE_ADDRESS + PRM_PMI_CLASS_FILTERING) |= 0x4;
+  
+  // sampling window class 2
+  *(int*)(PRM_PMI_BASE_ADDRESS + PRM_PMI_SAMPLING) = 0x8;
+  
+  // class 2 + class 3
+  //*(int*)(PRM_PMI_BASE_ADDRESS + PRM_PMI_SAMPLING) = 0x40008;
+  
+  *(int*)(PRM_PMI_BASE_ADDRESS + PRM_PMI_CONFIGURATION) |= (0x1 << 7);
+  
+  GEL_TextOut("Initialization completed  of PMI_PRM \n"); 
+}
+
+hotmenu Initialize_OCPWP()
+{
+  GEL_TextOut("Initialize OCP-WP \n"); 
+
+   // Enable OCP-WP clocks
+   *(int*)(0x4A008E40) = 0x1;
+
+   // Initiate a module reset
+  *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_SYSCONFIG) = (0x1 << 1);   
+}
+
+hotmenu Configure_OCPWP_Probe_2()
+{
+
+  GEL_TextOut("Configure OCP-WP for probe 2 (L4_PER) \n"); 
+
+   // Set application access the module
+ // *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_LOCK_ACCESS) = 0xC5ACCE55;
+
+   // Claim ownership
+  *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_CFG) = (0x1 << 30);
+
+  // Configure probe 2 
+  // 1. GPMC, 2. L4_PER 3. L4_CFG 4. DMM1 5. DMM2
+  *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_CFG) |= 0x2;
+
+  // Configure top address
+  *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_ADDRESS0) = 0xFFFFFFF0;
+
+  // Configure bottom address
+  *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_ADDRESS1) = 0x00000000;
+
+  // Enable filter 0
+  *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_MASTERIDMATCH0) = 0x80000000;
+
+  // Enable filter 0 mask
+  *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_MASTERIDMASK0) = 0xFFFFFFFF;
+
+  // Filter DMA channel
+  *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_DMAFILTER) = 0xFFFFFFFF;
+
+  // Configure the TriggerCTRL register (address match in the range)
+  *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_TRIGGERCTL) = 0x1;         
+
+  // Enable traffic monitoring
+  *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_CFG) |= (0x1 << 7);
+
+   // Enable ownership
+  *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_CFG) = ((0x2 << 30) | (0x1 << 7) | (0x2 << 0));
+}
+
+
+hotmenu Disable_OCPWP()
+{
+  // Disable OCPWP
+  *(int*)(OCPWP_BASE_ADDRESS_APP + OCPWP_CFG) = ((0x2 << 30) | (0x2 << 0));
+}
+
+
+hotmenu Configure_STM_To_Capture_PMI_PRM_ATB_IF()
+{
+   GEL_TextOut("STM configuration to enable LAT0/LAT1/STAT COLL to ETB \n");
+
+   // Initiate a module reset
+  *(int*)(STM_BASE_ADDRESS_APP + STM_SYSCONFIG_OFFSET) = (0x1 << 1);
+
+   // Set application access the module
+  *(int*)(STM_BASE_ADDRESS_APP + STM_LOCK_ACCESS_OFFSET) = 0xC5ACCE55;
+
+   // Claim ownership
+  *(int*)(STM_BASE_ADDRESS_APP + STM_SWMCTRL0_OFFSET) = (0x1 << 30);
+
+   // Allow H/W Master for all 3 stat colls to transmit data to ETB
+   // Allow OCP-WP to pass data through
+   //*(int*)(STM_BASE_ADDRESS_APP + STM_HWMCTRL_OFFSET) = 0xE0 | (0x80 << 8);
+
+   // Allow H/W Master (PMI) to pass through data (PRM)
+  *(int*)(STM_BASE_ADDRESS_APP + STM_HWMCTRL_OFFSET) = 0xF4;
+  
+  // Allow iCont1 and iCont2 S/W message access
+  // Allow MPU S/W message access
+  // SDMA WR port access
+  *(int*)(STM_BASE_ADDRESS_APP + STM_SWMCTRL1_OFFSET) = (0x34 << 0) |
+                                                        (0x38 << 8) |
+                                                        (0x54 << 16);
+                                                      
+   // Allow S/W master to take the data from the MPU subsystem
+  *(int*)(STM_BASE_ADDRESS_APP + STM_SWMCTRL2_OFFSET) = 0x3;
+
+  // Configure the Repeat registers (channel repeat as well as master repeat)
+  *(int*)(STM_BASE_ADDRESS_APP + STM_ATB_CONFIG_OFFSET ) |= 0x2200;
+
+   // Enable ATB I/F
+  *(int*)(STM_BASE_ADDRESS_APP + STM_ATB_CONFIG_OFFSET ) |= (0x1 << 16);
+
+  
+   // Enable ownership
+  *(int*)(STM_BASE_ADDRESS_APP + STM_SWMCTRL0_OFFSET) = (0x2 << 30);
+
+  GEL_TextOut("STM configuration to enable LAT0/LAT1/STAT COLL to ETB done\n");
+}
+
+
+
+
+
+hotmenu Configure_Trace_Funnel_STM_TO_ETB()
+{
+   GEL_TextOut("Trace Funnel config to enable STM to ETB data path \n");
+
+  // Allow application access to the module
+ *(int*)(CSTF_ADDRESS_APP + CSTF_LOCK_ACCESS) = 0xC5ACCE55;
+
+  // Enable slave 7 (STM->ETB)
+ *(int*)(CSTF_ADDRESS_APP + CSTF_FCTL ) = 0x80;
+
+   GEL_TextOut("Trace Funnel config to enable STM to ETB data path complete \n");
+
+}
+
+hotmenu Enable_ETB_For_Data_Capture()
+{
+
+   GEL_TextOut("Configure ETB for data capture \n");
+
+   // Allow application access to the module
+  *(int*)(CSETB_ADDRESS_APP + CSETB_LOCK) = 0xC5ACCE55;
+
+   // clear flush control regitser
+  *(int*)(CSETB_ADDRESS_APP + CSETB_FFCR) = 0; 
+
+   // Set Read pointer to zero
+  *(int*)(CSETB_ADDRESS_APP + CSETB_RRP) = 0;
+
+   // Set Write pointer to zero
+  *(int*)(CSETB_ADDRESS_APP + CSETB_RWP) = 0;
+
+   // Set flush control register
+   // stop formatter upon a flush completion
+  *(int*)(CSETB_ADDRESS_APP + CSETB_FFCR) = (1 << 12);
+
+   // Enable module
+  *(int*)(CSETB_ADDRESS_APP + CSETB_CTL) = 1;
+
+  GEL_TextOut("Configure ETB for data capture done \n");
+
+}
+
+hotmenu Stop_ETB()
+{
+   GEL_TextOut("STOP ETB \n");
+   
+   CM_L3INSTR_L3_3_CLKCTRL     = 0x1;
+   CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+
+   // Set flush control register
+   // issue a manual flush
+  *(int*)(CSETB_ADDRESS_APP + CSETB_FFCR) |= (1 << 6);   
+
+   // Disable the module
+  *(int*)(CSETB_ADDRESS_APP + CSETB_CTL) = 0;
+
+}
+

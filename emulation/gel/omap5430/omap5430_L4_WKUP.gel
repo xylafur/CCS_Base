@@ -1,0 +1,50 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* Attila L4 WKUP     			     						   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+memorymap_init_L4_WKUP()
+{
+    GEL_MapAddStr(0x4ae00000, 0, 0x00000800, "R|W|AS4", 0); 	/* L4 WKUP configuration AP - 2KBytes */
+    GEL_MapAddStr(0x4ae00800, 0, 0x00000800, "R|W|AS4", 0); 	/* L4 WKUP configuration LA - 2KBytes */
+    GEL_MapAddStr(0x4ae01000, 0, 0x00001000, "R|W|AS4", 0); 	/* L4 WKUP configuration IP0 - 4KBytes */
+    GEL_MapAddStr(0x4ae04000, 0, 0x00001000, "R|W|AS4", 0); 	/* Synctimer32K Module - 4KBytes */
+    GEL_MapAddStr(0x4ae05000, 0, 0x00001000, "R|W|AS4", 0); 	/* Synctimer32K L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4ae06000, 0, 0x00002000, "R|W|AS4", 0); 	/* PRM Module - 8KBytes */
+    GEL_MapAddStr(0x4ae08000, 0, 0x00001000, "R|W|AS4", 0); 	/* PRM L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4ae0A000, 0, 0x00001000, "R|W|AS4", 0); 	/* SCRM Module - 4KBytes */
+    GEL_MapAddStr(0x4ae0B000, 0, 0x00001000, "R|W|AS4", 0); 	/* SCRM L4 interconnect - 4KBytes */
+    /* GEL_MapAddStr(0x4ae0C000, 0, 0x00000008, "R|W|AS4", 0); 	*/ /* WKUP Control Module - 4KBytes */
+    /* GEL_MapAddStr(0x4ae0C010, 0, 0x00000004, "R|W|AS4", 0); 	*/ /* WKUP Control Module - 4KBytes */
+    /* GEL_MapAddStr(0x4ae0C100, 0, 0x00000F00, "R|W|AS4", 0); 	*/ /* WKUP Control Module - 4KBytes */
+    GEL_MapAddStr(0x4ae0C000, 0, 0x00001000, "R|W|AS4", 0); 	 /* WKUP Control Module - 4KBytes */
+    GEL_MapAddStr(0x4ae0D000, 0, 0x00001000, "R|W|AS4", 0); 	/* WKUP Control L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4ae10000, 0, 0x00001000, "R|W|AS4", 0); 	/* GPIO1 Module - 4KBytes */
+    GEL_MapAddStr(0x4ae11000, 0, 0x00001000, "R|W|AS4", 0); 	/* GPIO1 L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4ae14000, 0, 0x00001000, "R|W|AS4", 0); 	/* WDT2 Module - 4KBytes */
+    GEL_MapAddStr(0x4ae15000, 0, 0x00001000, "R|W|AS4", 0); 	/* WDT2 L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4ae18000, 0, 0x00001000, "R|W|AS4", 0); 	/* DM_TIMER_1MS_1 Module - 4KBytes */
+    GEL_MapAddStr(0x4ae19000, 0, 0x00001000, "R|W|AS4", 0); 	/* DM_TIMER_1MS_1 L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4ae1C000, 0, 0x00001000, "R|W|AS4", 0); 	/* KBDOCP Module - 4KBytes */
+    GEL_MapAddStr(0x4ae1D000, 0, 0x00001000, "R|W|AS4", 0); 	/* KBDOCP L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4ae20000, 0, 0x00001000, "R|W|AS4", 0); 	/* DM_TIMER_12 Module - 4KBytes */
+    GEL_MapAddStr(0x4ae21000, 0, 0x00001000, "R|W|AS4", 0); 	/* DM_TIMER_12 L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4ae22000, 0, 0x00001000, "R|W|AS4", 0); 	/* WDT1 Secure Module - 4KBytes */
+    GEL_MapAddStr(0x4ae23000, 0, 0x00001000, "R|W|AS4", 0); 	/* WDT1 Secure L4 interconnect - 4KBytes */
+    GEL_MapAddStr(0x4ae26000, 0, 0x00001000, "R|W|AS4", 0); 	/* SAR Space 1 Module - 1KBytes */
+    GEL_MapAddStr(0x4ae27000, 0, 0x00000400, "R|W|AS4", 0); 	/* SAR Space 2 Module - 1KBytes */
+    GEL_MapAddStr(0x4ae28000, 0, 0x00000800, "R|W|AS4", 0); 	/* SAR Space 3 Module - 1KBytes */
+    GEL_MapAddStr(0x4ae29000, 0, 0x00000400, "R|W|AS4", 0); 	/* SAR Space 4 Module - 1KBytes */
+    GEL_MapAddStr(0x4ae2A000, 0, 0x00001000, "R|W|AS4", 0); 	/* SAR L4 interconnect - 4KBytes */
+    
+    }
+    
+ 
+    
+    

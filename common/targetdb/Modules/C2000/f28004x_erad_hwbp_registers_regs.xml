@@ -1,0 +1,210 @@
+<module id="ERAD_HWBP_REGISTERS" HW_revision="" description="ERAD HWBP REGISTERS Registers">
+	<register id="HWBP_MASK_LOW1" width="16" page="1" offset="0x0" internal="0" description="HWBP_MASK_LOW1">
+		<bitfield id="MASK_LOW" description="Lower 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_MASK_HIGH1" width="16" page="1" offset="0x1" internal="0" description="HWBP_MASK_HIGH1">
+		<bitfield id="MASK_HIGH" description="Upper 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_LOW1" width="16" page="1" offset="0x2" internal="0" description="HWBP_REF_LOW1">
+		<bitfield id="REF_LOW" description="Lower 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_HIGH1" width="16" page="1" offset="0x3" internal="0" description="HWBP_REF_HIGH1">
+		<bitfield id="REF_HIGH" description="Higher 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_CLEAR1" width="16" page="1" offset="0x4" internal="0" description="HWBP_CLEAR1">
+		<bitfield id="EVENT_CLR" description="Event Clear register" begin="0" end="0" width="1" rwaccess="R=0/W"/>
+	</register>
+	<register id="HWBP_CNTL1" width="16" page="1" offset="0x6" internal="0" description="HWBP_CNTL1">
+		<bitfield id="BUS_SEL" description="Bus select bits" begin="4" end="2" width="3" rwaccess="R/W"/>
+		<bitfield id="STOP" description="Stop bit (Halt/No Halt of CPU)" begin="5" end="5" width="1" rwaccess="R/W"/>
+		<bitfield id="RTOSINT" description="RTOSINT bit" begin="6" end="6" width="1" rwaccess="R/W"/>
+		<bitfield id="COMP_MODE" description="Compare mode" begin="9" end="7" width="3" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_STATUS1" width="16" page="1" offset="0x7" internal="0" description="HWBP_STATUS1">
+		<bitfield id="EVENT_FIRED" description="HWBP Event Fired bits" begin="0" end="0" width="1" rwaccess="R"/>
+		<bitfield id="MODULE_ID" description="Identification bits" begin="13" end="8" width="6" rwaccess="R"/>
+		<bitfield id="STATUS" description="Status bits" begin="15" end="14" width="2" rwaccess="R"/>
+	</register>
+	<register id="HWBP_MASK_LOW2" width="16" page="1" offset="0x8" internal="0" description="HWBP_MASK_LOW2">
+		<bitfield id="MASK_LOW" description="Lower 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_MASK_HIGH2" width="16" page="1" offset="0x9" internal="0" description="HWBP_MASK_HIGH2">
+		<bitfield id="MASK_HIGH" description="Upper 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_LOW2" width="16" page="1" offset="0xa" internal="0" description="HWBP_REF_LOW2">
+		<bitfield id="REF_LOW" description="Lower 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_HIGH2" width="16" page="1" offset="0xb" internal="0" description="HWBP_REF_HIGH2">
+		<bitfield id="REF_HIGH" description="Higher 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_CLEAR2" width="16" page="1" offset="0xc" internal="0" description="HWBP_CLEAR2">
+		<bitfield id="EVENT_CLR" description="Event Clear register" begin="0" end="0" width="1" rwaccess="R=0/W"/>
+	</register>
+	<register id="HWBP_CNTL2" width="16" page="1" offset="0xe" internal="0" description="HWBP_CNTL2">
+		<bitfield id="BUS_SEL" description="Bus select bits" begin="4" end="2" width="3" rwaccess="R/W"/>
+		<bitfield id="STOP" description="Stop bit (Halt/No Halt of CPU)" begin="5" end="5" width="1" rwaccess="R/W"/>
+		<bitfield id="RTOSINT" description="RTOSINT bit" begin="6" end="6" width="1" rwaccess="R/W"/>
+		<bitfield id="COMP_MODE" description="Compare mode" begin="9" end="7" width="3" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_STATUS2" width="16" page="1" offset="0xf" internal="0" description="HWBP_STATUS2">
+		<bitfield id="EVENT_FIRED" description="HWBP Event Fired bits" begin="0" end="0" width="1" rwaccess="R"/>
+		<bitfield id="MODULE_ID" description="Identification bits" begin="13" end="8" width="6" rwaccess="R"/>
+		<bitfield id="STATUS" description="Status bits" begin="15" end="14" width="2" rwaccess="R"/>
+	</register>
+	<register id="HWBP_MASK_LOW3" width="16" page="1" offset="0x10" internal="0" description="HWBP_MASK_LOW3">
+		<bitfield id="MASK_LOW" description="Lower 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_MASK_HIGH3" width="16" page="1" offset="0x11" internal="0" description="HWBP_MASK_HIGH3">
+		<bitfield id="MASK_HIGH" description="Upper 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_LOW3" width="16" page="1" offset="0x12" internal="0" description="HWBP_REF_LOW3">
+		<bitfield id="REF_LOW" description="Lower 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_HIGH3" width="16" page="1" offset="0x13" internal="0" description="HWBP_REF_HIGH3">
+		<bitfield id="REF_HIGH" description="Higher 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_CLEAR3" width="16" page="1" offset="0x14" internal="0" description="HWBP_CLEAR3">
+		<bitfield id="EVENT_CLR" description="Event Clear register" begin="0" end="0" width="1" rwaccess="R=0/W"/>
+	</register>
+	<register id="HWBP_CNTL3" width="16" page="1" offset="0x16" internal="0" description="HWBP_CNTL3">
+		<bitfield id="BUS_SEL" description="Bus select bits" begin="4" end="2" width="3" rwaccess="R/W"/>
+		<bitfield id="STOP" description="Stop bit (Halt/No Halt of CPU)" begin="5" end="5" width="1" rwaccess="R/W"/>
+		<bitfield id="RTOSINT" description="RTOSINT bit" begin="6" end="6" width="1" rwaccess="R/W"/>
+		<bitfield id="COMP_MODE" description="Compare mode" begin="9" end="7" width="3" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_STATUS3" width="16" page="1" offset="0x17" internal="0" description="HWBP_STATUS3">
+		<bitfield id="EVENT_FIRED" description="HWBP Event Fired bits" begin="0" end="0" width="1" rwaccess="R"/>
+		<bitfield id="MODULE_ID" description="Identification bits" begin="13" end="8" width="6" rwaccess="R"/>
+		<bitfield id="STATUS" description="Status bits" begin="15" end="14" width="2" rwaccess="R"/>
+	</register>
+	<register id="HWBP_MASK_LOW4" width="16" page="1" offset="0x18" internal="0" description="HWBP_MASK_LOW4">
+		<bitfield id="MASK_LOW" description="Lower 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_MASK_HIGH4" width="16" page="1" offset="0x19" internal="0" description="HWBP_MASK_HIGH4">
+		<bitfield id="MASK_HIGH" description="Upper 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_LOW4" width="16" page="1" offset="0x1a" internal="0" description="HWBP_REF_LOW4">
+		<bitfield id="REF_LOW" description="Lower 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_HIGH4" width="16" page="1" offset="0x1b" internal="0" description="HWBP_REF_HIGH4">
+		<bitfield id="REF_HIGH" description="Higher 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_CLEAR4" width="16" page="1" offset="0x1c" internal="0" description="HWBP_CLEAR4">
+		<bitfield id="EVENT_CLR" description="Event Clear register" begin="0" end="0" width="1" rwaccess="R=0/W"/>
+	</register>
+	<register id="HWBP_CNTL4" width="16" page="1" offset="0x1e" internal="0" description="HWBP_CNTL4">
+		<bitfield id="BUS_SEL" description="Bus select bits" begin="4" end="2" width="3" rwaccess="R/W"/>
+		<bitfield id="STOP" description="Stop bit (Halt/No Halt of CPU)" begin="5" end="5" width="1" rwaccess="R/W"/>
+		<bitfield id="RTOSINT" description="RTOSINT bit" begin="6" end="6" width="1" rwaccess="R/W"/>
+		<bitfield id="COMP_MODE" description="Compare mode" begin="9" end="7" width="3" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_STATUS4" width="16" page="1" offset="0x1f" internal="0" description="HWBP_STATUS4">
+		<bitfield id="EVENT_FIRED" description="HWBP Event Fired bits" begin="0" end="0" width="1" rwaccess="R"/>
+		<bitfield id="MODULE_ID" description="Identification bits" begin="13" end="8" width="6" rwaccess="R"/>
+		<bitfield id="STATUS" description="Status bits" begin="15" end="14" width="2" rwaccess="R"/>
+	</register>
+	<register id="HWBP_MASK_LOW5" width="16" page="1" offset="0x20" internal="0" description="HWBP_MASK_LOW5">
+		<bitfield id="MASK_LOW" description="Lower 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_MASK_HIGH5" width="16" page="1" offset="0x21" internal="0" description="HWBP_MASK_HIGH5">
+		<bitfield id="MASK_HIGH" description="Upper 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_LOW5" width="16" page="1" offset="0x22" internal="0" description="HWBP_REF_LOW5">
+		<bitfield id="REF_LOW" description="Lower 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_HIGH5" width="16" page="1" offset="0x23" internal="0" description="HWBP_REF_HIGH5">
+		<bitfield id="REF_HIGH" description="Higher 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_CLEAR5" width="16" page="1" offset="0x24" internal="0" description="HWBP_CLEAR5">
+		<bitfield id="EVENT_CLR" description="Event Clear register" begin="0" end="0" width="1" rwaccess="R=0/W"/>
+	</register>
+	<register id="HWBP_CNTL5" width="16" page="1" offset="0x26" internal="0" description="HWBP_CNTL5">
+		<bitfield id="BUS_SEL" description="Bus select bits" begin="4" end="2" width="3" rwaccess="R/W"/>
+		<bitfield id="STOP" description="Stop bit (Halt/No Halt of CPU)" begin="5" end="5" width="1" rwaccess="R/W"/>
+		<bitfield id="RTOSINT" description="RTOSINT bit" begin="6" end="6" width="1" rwaccess="R/W"/>
+		<bitfield id="COMP_MODE" description="Compare mode" begin="9" end="7" width="3" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_STATUS5" width="16" page="1" offset="0x27" internal="0" description="HWBP_STATUS5">
+		<bitfield id="EVENT_FIRED" description="HWBP Event Fired bits" begin="0" end="0" width="1" rwaccess="R"/>
+		<bitfield id="MODULE_ID" description="Identification bits" begin="13" end="8" width="6" rwaccess="R"/>
+		<bitfield id="STATUS" description="Status bits" begin="15" end="14" width="2" rwaccess="R"/>
+	</register>
+	<register id="HWBP_MASK_LOW6" width="16" page="1" offset="0x28" internal="0" description="HWBP_MASK_LOW6">
+		<bitfield id="MASK_LOW" description="Lower 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_MASK_HIGH6" width="16" page="1" offset="0x29" internal="0" description="HWBP_MASK_HIGH6">
+		<bitfield id="MASK_HIGH" description="Upper 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_LOW6" width="16" page="1" offset="0x2a" internal="0" description="HWBP_REF_LOW6">
+		<bitfield id="REF_LOW" description="Lower 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_HIGH6" width="16" page="1" offset="0x2b" internal="0" description="HWBP_REF_HIGH6">
+		<bitfield id="REF_HIGH" description="Higher 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_CLEAR6" width="16" page="1" offset="0x2c" internal="0" description="HWBP_CLEAR6">
+		<bitfield id="EVENT_CLR" description="Event Clear register" begin="0" end="0" width="1" rwaccess="R=0/W"/>
+	</register>
+	<register id="HWBP_CNTL6" width="16" page="1" offset="0x2e" internal="0" description="HWBP_CNTL6">
+		<bitfield id="BUS_SEL" description="Bus select bits" begin="4" end="2" width="3" rwaccess="R/W"/>
+		<bitfield id="STOP" description="Stop bit (Halt/No Halt of CPU)" begin="5" end="5" width="1" rwaccess="R/W"/>
+		<bitfield id="RTOSINT" description="RTOSINT bit" begin="6" end="6" width="1" rwaccess="R/W"/>
+		<bitfield id="COMP_MODE" description="Compare mode" begin="9" end="7" width="3" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_STATUS6" width="16" page="1" offset="0x2f" internal="0" description="HWBP_STATUS6">
+		<bitfield id="EVENT_FIRED" description="HWBP Event Fired bits" begin="0" end="0" width="1" rwaccess="R"/>
+		<bitfield id="MODULE_ID" description="Identification bits" begin="13" end="8" width="6" rwaccess="R"/>
+		<bitfield id="STATUS" description="Status bits" begin="15" end="14" width="2" rwaccess="R"/>
+	</register>
+	<register id="HWBP_MASK_LOW7" width="16" page="1" offset="0x30" internal="0" description="HWBP_MASK_LOW7">
+		<bitfield id="MASK_LOW" description="Lower 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_MASK_HIGH7" width="16" page="1" offset="0x31" internal="0" description="HWBP_MASK_HIGH7">
+		<bitfield id="MASK_HIGH" description="Upper 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_LOW7" width="16" page="1" offset="0x32" internal="0" description="HWBP_REF_LOW7">
+		<bitfield id="REF_LOW" description="Lower 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_HIGH7" width="16" page="1" offset="0x33" internal="0" description="HWBP_REF_HIGH7">
+		<bitfield id="REF_HIGH" description="Higher 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_CLEAR7" width="16" page="1" offset="0x34" internal="0" description="HWBP_CLEAR7">
+		<bitfield id="EVENT_CLR" description="Event Clear register" begin="0" end="0" width="1" rwaccess="R=0/W"/>
+	</register>
+	<register id="HWBP_CNTL7" width="16" page="1" offset="0x36" internal="0" description="HWBP_CNTL7">
+		<bitfield id="BUS_SEL" description="Bus select bits" begin="4" end="2" width="3" rwaccess="R/W"/>
+		<bitfield id="STOP" description="Stop bit (Halt/No Halt of CPU)" begin="5" end="5" width="1" rwaccess="R/W"/>
+		<bitfield id="RTOSINT" description="RTOSINT bit" begin="6" end="6" width="1" rwaccess="R/W"/>
+		<bitfield id="COMP_MODE" description="Compare mode" begin="9" end="7" width="3" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_STATUS7" width="16" page="1" offset="0x37" internal="0" description="HWBP_STATUS7">
+		<bitfield id="EVENT_FIRED" description="HWBP Event Fired bits" begin="0" end="0" width="1" rwaccess="R"/>
+		<bitfield id="MODULE_ID" description="Identification bits" begin="13" end="8" width="6" rwaccess="R"/>
+		<bitfield id="STATUS" description="Status bits" begin="15" end="14" width="2" rwaccess="R"/>
+	</register>
+	<register id="HWBP_MASK_LOW8" width="16" page="1" offset="0x38" internal="0" description="HWBP_MASK_LOW8">
+		<bitfield id="MASK_LOW" description="Lower 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_MASK_HIGH8" width="16" page="1" offset="0x39" internal="0" description="HWBP_MASK_HIGH8">
+		<bitfield id="MASK_HIGH" description="Upper 16 bits of the Address mask[[br]]register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_LOW8" width="16" page="1" offset="0x3a" internal="0" description="HWBP_REF_LOW8">
+		<bitfield id="REF_LOW" description="Lower 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_REF_HIGH8" width="16" page="1" offset="0x3b" internal="0" description="HWBP_REF_HIGH8">
+		<bitfield id="REF_HIGH" description="Higher 16 bits of the Address reference register" begin="15" end="0" width="16" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_CLEAR8" width="16" page="1" offset="0x3c" internal="0" description="HWBP_CLEAR8">
+		<bitfield id="EVENT_CLR" description="Event Clear register" begin="0" end="0" width="1" rwaccess="R=0/W"/>
+	</register>
+	<register id="HWBP_CNTL8" width="16" page="1" offset="0x3e" internal="0" description="HWBP_CNTL8">
+		<bitfield id="BUS_SEL" description="Bus select bits" begin="4" end="2" width="3" rwaccess="R/W"/>
+		<bitfield id="STOP" description="Stop bit (Halt/No Halt of CPU)" begin="5" end="5" width="1" rwaccess="R/W"/>
+		<bitfield id="RTOSINT" description="RTOSINT bit" begin="6" end="6" width="1" rwaccess="R/W"/>
+		<bitfield id="COMP_MODE" description="Compare mode" begin="9" end="7" width="3" rwaccess="R/W"/>
+	</register>
+	<register id="HWBP_STATUS8" width="16" page="1" offset="0x3f" internal="0" description="HWBP_STATUS8">
+		<bitfield id="EVENT_FIRED" description="HWBP Event Fired bits" begin="0" end="0" width="1" rwaccess="R"/>
+		<bitfield id="MODULE_ID" description="Identification bits" begin="13" end="8" width="6" rwaccess="R"/>
+		<bitfield id="STATUS" description="Status bits" begin="15" end="14" width="2" rwaccess="R"/>
+	</register>
+</module>

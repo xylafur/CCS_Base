@@ -1,0 +1,203 @@
+/* ----------------------------------------------------------------------------
+* Definition: RET_CODE_BASE
+*
+* DESCRIPTION:  Base value for return code offsets
+*
+* -----------------------------------------------------------------------------
+*/
+#define RET_CODE_BASE        0
+
+
+/* ----------------------------------------------------------------------------
+* Definition: READ_ONLY, WRITE_ONLY, READ_WRITE
+*
+* DESCRIPTION:  access types for Beach generated register tests
+*
+* -----------------------------------------------------------------------------
+*/
+#define READ_ONLY    1
+#define WRITE_ONLY   2
+#define READ_WRITE   3
+
+/* ----------------------------------------------------------------------------
+* Definition: *BIT_OFFSET
+*
+* DESCRIPTION:  offset in bytes from start of 32-bit word.
+*
+* -----------------------------------------------------------------------------
+*/
+#define LOWER_16BIT_OFFSET          0
+#define UPPER_16BIT_OFFSET          2
+
+#define LOWER_8BIT_OFFSET           0
+#define LOWER_MIDDLE_8BIT_OFFSET    1
+#define UPPER_MIDDLE_8BIT_OFFSET    2
+#define UPPER_8BIT_OFFSET           3
+
+#define LOWER_8BIT_OF16_OFFSET      0
+#define UPPER_8BIT_OF16_OFFSET      1
+
+
+/* ----------------------------------------------------------------------------
+* Definition: *BIT_OFFSET
+*
+* DESCRIPTION:  Added March 1st 2005 - Beach generated for 64bit support
+*
+* -----------------------------------------------------------------------------
+*/
+/*** address offsets for 32-bit sub-width register access ***/
+#define UPPER_WORD_32BIT_OFFSET 4
+#define LOWER_WORD_32BIT_OFFSET 0
+
+/*** address offsets for 16-bit sub-width register access ***/
+#define UPPER_WORD_UPPER_16BIT_OFFSET 6
+#define UPPER_WORD_LOWER_16BIT_OFFSET 4
+#define LOWER_WORD_UPPER_16BIT_OFFSET 2
+#define LOWER_WORD_LOWER_16BIT_OFFSET 0
+
+/*** address offsets for 8-bit sub-width register access ***/
+#define UPPER_WORD_UPPER_8BIT_OFFSET        7
+#define UPPER_WORD_UPPER_MIDDLE_8BIT_OFFSET 6
+#define UPPER_WORD_LOWER_MIDDLE_8BIT_OFFSET 5
+#define UPPER_WORD_LOWER_8BIT_OFFSET        4
+#define LOWER_WORD_UPPER_8BIT_OFFSET        3
+#define LOWER_WORD_UPPER_MIDDLE_8BIT_OFFSET 2
+#define LOWER_WORD_LOWER_MIDDLE_8BIT_OFFSET 1
+#define LOWER_WORD_LOWER_8BIT_OFFSET        0
+
+
+/* ----------------------------------------------------------------------------
+* Definition: *BIT_SHIFT
+*
+* DESCRIPTION:  offset in bits from start of 32-bit word.
+*
+* -----------------------------------------------------------------------------
+*/
+#define LOWER_16BIT_SHIFT          0
+#define UPPER_16BIT_SHIFT          16
+
+#define LOWER_8BIT_SHIFT           0
+#define LOWER_MIDDLE_8BIT_SHIFT    8
+#define UPPER_MIDDLE_8BIT_SHIFT    16
+#define UPPER_8BIT_SHIFT           24
+
+#define LOWER_8BIT_OF16_SHIFT      0
+#define UPPER_8BIT_OF16_SHIFT      8
+
+
+/* ----------------------------------------------------------------------------
+* Definition: *_*BIT_MASK
+*
+* DESCRIPTION:  LOWER/MIDDLE/UPPER_8/16/BIT masks
+*               example: 16 bit mask used for inclusion of lower 16 bits i.e. mask out 
+*               the upper 16 bits
+*
+* -----------------------------------------------------------------------------
+*/
+#define LOWER_16BIT_MASK          0x0000FFFFu
+#define UPPER_16BIT_MASK          0xFFFF0000u
+
+#define LOWER_8BIT_MASK           0x000000FFu
+#define LOWER_MIDDLE_8BIT_MASK    0x0000FF00u
+#define UPPER_MIDDLE_8BIT_MASK    0x00FF0000u
+#define UPPER_8BIT_MASK           0xFF000000u
+
+#define LOWER_8BIT_OF16_MASK      0x00FFu
+#define UPPER_8BIT_OF16_MASK      0xFF00u
+
+
+/* ----------------------------------------------------------------------------
+* MACRO: RD_MEM_8, WR_MEM_8        
+*
+* DESCRIPTION:  8 bit memory access macros
+*
+* -----------------------------------------------------------------------------
+*/
+// #define RD_MEM_8(addr)	((unsigned char)(*((unsigned char *)(addr))))
+// #define WR_MEM_8(addr, data)	(*((unsigned char *)(addr)) = (unsigned char)(data))
+
+/* ----------------------------------------------------------------------------
+* MACRO: RD_MEM_16, WR_MEM_16        
+*
+* DESCRIPTION:  16 bit memory access macros
+*
+* -----------------------------------------------------------------------------
+*/
+// #define RD_MEM_16(addr)	((unsigned short)(*((unsigned short *)(addr))))
+// #define WR_MEM_16(addr, data)	(*((unsigned short *)(addr)) = (unsigned short)(data))
+
+/* ----------------------------------------------------------------------------
+* MACRO: RD_MEM_32, WR_MEM_32        
+*
+* DESCRIPTION:  32 bit memory access macros
+*
+* -----------------------------------------------------------------------------
+*/
+// #define RD_MEM_32(addr)	((unsigned int)(*((unsigned int *)(addr))))
+// #define WR_MEM_32(addr, data)	(*((unsigned int *)(addr)) = (unsigned int)(data))
+
+/* ----------------------------------------------------------------------------
+* MACRO: RD_MEM_64, WR_MEM_64        
+*
+* DESCRIPTION:  64 bit memory access macros
+*
+* -----------------------------------------------------------------------------
+*/
+// #define RD_MEM_64(addr)	((unsigned long)(*((unsigned long *)(addr))))
+// #define WR_MEM_64(addr, data)	(*((unsigned long *)(addr)) = (unsigned long)(data))
+
+
+  /* ----------------------------------------------------------------------------
+  * MACRO: RD_MEM_8_VOLATILE, WR_MEM_8_VOLATILE        
+  *
+  * DESCRIPTION:  8 bit register access macros
+  *
+  * -----------------------------------------------------------------------------
+  */
+  #define RD_MEM_8_VOLATILE(addr)	((unsigned char)(*((unsigned char *)(addr))))
+  #define WR_MEM_8_VOLATILE(addr, data)	(*((unsigned char *)(addr)) = (unsigned char)(data))
+
+  /* ----------------------------------------------------------------------------
+  * MACRO: RD_MEM_16_VOLATILE, WR_MEM_16_VOLATILE        
+  *
+  * DESCRIPTION:  16 bit register access macros
+  *
+  * -----------------------------------------------------------------------------
+  */
+  #define RD_MEM_16_VOLATILE(addr)	((unsigned short)(*((unsigned short *)(addr))))
+  #define WR_MEM_16_VOLATILE(addr, data)	(*((unsigned short *)(addr)) = (unsigned short)(data))
+
+  /* ----------------------------------------------------------------------------
+  * MACRO: RD_MEM_32_VOLATILE, WR_MEM_32_VOLATILE        
+  *
+  * DESCRIPTION:  32 bit register access macros
+  *
+  * -----------------------------------------------------------------------------
+  */
+//  #define RD_MEM_32_VOLATILE(addr)	((unsigned int)(*((unsigned int *)(addr))))
+//  #define WR_MEM_32_VOLATILE(addr, data)	(*((unsigned int *)(addr)) = (unsigned int)(data))
+
+  /* ----------------------------------------------------------------------------
+  * MACRO: RD_MEM_64_VOLATILE, WR_MEM_64_VOLATILE        
+  *
+  * DESCRIPTION:  64 bit register access macros
+  *
+  * -----------------------------------------------------------------------------
+  */
+//  #define RD_MEM_64_VOLATILE(addr)	((unsigned long)(*((unsigned long *)(addr))))
+//  #define WR_MEM_64_VOLATILE(addr, data)	(*((unsigned long *)(addr)) = (unsigned long)(data))
+
+
+#define NO                                        FALSE
+#define YES                                       TRUE
+
+#define NOT_OK                                    FALSE
+#define IS_OK                                     TRUE
+
+#define ENABLE                                    TRUE
+#define DISABLE                                   FALSE
+
+#define HIGH_LEVEL                                TRUE
+#define LOW_LEVEL                                 FALSE
+
+#define OK      1

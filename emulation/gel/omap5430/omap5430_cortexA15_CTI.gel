@@ -1,0 +1,253 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* omap5430 CTI config            		     					   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+
+/**********************************************************************
+ *
+ *  DEFINITIONS
+ *
+ **********************************************************************/
+#define CTI0_BASE        0x54148000
+#define CTI1_BASE        0x54149000
+
+
+#define UNLOCK_VALUE    0xC5ACCE55
+
+#define CTINEN(CTI_BASE_ADDRESS) *(unsigned int *)(CTI_BASE_ADDRESS + 0x20)
+#define CTIOUTEN0(CTI_BASE_ADDRESS) *(unsigned int *)(CTI_BASE_ADDRESS + 0xA0)
+#define CTIINTACK(CTI_BASE_ADDRESS) *(unsigned int *)(CTI_BASE_ADDRESS + 0x10)
+#define CTI_Control(CTI_BASE_ADDRESS) *(unsigned int *)(CTI_BASE_ADDRESS + 0x0)
+#define LOCK_ACCESS_REG(CTI_BASE_ADDRESS) *(unsigned int *)(CTI_BASE_ADDRESS + 0xFB0)
+#define LOCK_ACCESS_STATUS_REG(CTI_BASE_ADDRESS) *(unsigned int *)(CTI_BASE_ADDRESS + 0xFB4)
+
+/**********************************************************************
+ *
+ *  FUNCTIONS
+ *
+ **********************************************************************/
+menuitem "CTI config"
+
+
+hotmenu CortexA15_CPU1_halts_CortexA15_CPU0()
+{
+    Init_CTI0_config();
+    Set_DBGREQ_CTI0_config();
+    Init_CTI1_config();
+    Set_DBGACK_CTI1_config();
+    Enable_CTI0_config();
+    Enable_CTI1_config();
+}
+
+
+hotmenu CortexA15_CPU0_halts_CortexA15_CPU1()
+{
+    Init_CTI0_config();
+    Set_DBGACK_CTI0_config();
+    Init_CTI1_config();
+    Set_DBGREQ_CTI1_config();
+    Enable_CTI0_config();
+    Enable_CTI1_config();
+    
+}
+
+hotmenu reinit_CortexA15_CPU1()
+{
+    Remove_DBGREQ_CTI1_config();
+    Clear_DBGREQ_CTI1_status();
+    Set_DBGREQ_CTI1_config();
+    
+}
+
+hotmenu reinit_CortexA15_CPU0()
+{
+    Remove_DBGREQ_CTI0_config();
+    Clear_DBGREQ_CTI0_status();
+    Set_DBGREQ_CTI0_config();    
+}
+
+hotmenu Clear_DBGREQ_CTI1_status()
+{
+    CTIINTACK(CTI1_BASE) = 0x1;
+}
+
+hotmenu Clear_DBGREQ_CTI0_status()
+{
+    CTIINTACK(CTI0_BASE) = 0x1;
+}
+
+hotmenu CrossTrigerring_CTIO()
+{
+    Init_CTI0_config();
+    Set_DBGACK_CTI0_config();
+    Enable_CTI0_config();
+}
+
+hotmenu CrossTrigerring_CTI1()
+{
+    Init_CTI1_config();
+    Set_DBGACK_CTI1_config();
+    Enable_CTI1_config();
+}
+
+hotmenu Init_CTI0_config()
+{
+
+GEL_TextOut("--->>> enter Init_CTI0_config <<<---\n");
+
+/* Write to Lock Access Register at offset 0xFB0 the keycode 0xC5ACCE55 */
+LOCK_ACCESS_REG(CTI0_BASE) = UNLOCK_VALUE;
+
+/* Check Lock status register at 0xFB4 that software lock has been disabled */
+while (((LOCK_ACCESS_STATUS_REG(CTI0_BASE))&0x3)==0x3);
+
+GEL_TextOut("--->>> exit Init_CTI0_config <<<---\n");
+}
+
+hotmenu Enable_CTI0_config()
+{
+    GEL_TextOut("--->>> enter  Enable_CTI0_config <<<---\n");
+    
+    CTI_Control(CTI0_BASE) = 0x1;
+    
+    GEL_TextOut("--->>> exit  Enable_CTI0_config <<<---\n");
+}
+
+hotmenu Disable_CTI0_config()
+{
+    GEL_TextOut("--->>> enter  Disable_CTI0_config <<<---\n");
+    
+    CTI_Control(CTI0_BASE) = 0x0;
+    
+    GEL_TextOut("--->>> exit  Disable_CTI0_config <<<---\n");
+}
+
+hotmenu Set_DBGACK_CTI0_config()
+{
+/* Use Channel 0 to map trigger out  for DBGACK */
+GEL_TextOut("--->>> enter Set_DBGACK_CTI0_config <<<---\n");
+
+/* CTINEN (Offset 0x20): Set bit 0 to enable trigger out on channel0 which maps to DBGACK [ output trigger ]*/
+CTINEN(CTI0_BASE) = 0x1;
+ 
+GEL_TextOut("--->>> exit Set_DBGACK_CTI0_config <<<---\n");
+}
+
+hotmenu Remove_DBGACK_CTI0_config()
+{
+
+GEL_TextOut("--->>> enter Remove_DBGACK_CTI0_config <<<---\n");
+
+/* CTINEN (Offset 0x20): Set bit 0 to 0 to disable trigger out on channel0 which maps to DBGACK [ output trigger ]*/
+CTINEN(CTI0_BASE) = 0x0;
+ 
+GEL_TextOut("--->>> exit Remove_DBGACK_CTI0_config <<<---\n");
+}
+
+hotmenu Set_DBGREQ_CTI0_config()
+{
+/* Use Channel 0 to map trigger in for EDBGREQ */
+
+GEL_TextOut("--->>> enter Set_DBGREQ_CTI0_config <<<---\n");
+ 
+/*CTIOUTEN0 (Offset 0xa0): Set bit 0 to enable halt event from DBGREQ [input trigger] */
+CTIOUTEN0(CTI0_BASE) = 0x1;
+
+GEL_TextOut("--->>> exit Set_DBGREQ_CTI0_config <<<---\n");
+}
+
+hotmenu Remove_DBGREQ_CTI0_config()
+{
+
+GEL_TextOut("--->>> enter Remove_DBGREQ_CTI0_config <<<---\n");
+
+/*CTIOUTEN0 (Offset 0xa0): Set bit 0 to 0 to disable halt event from DBGREQ [input trigger] */
+CTIOUTEN0(CTI0_BASE) = 0x0;
+
+GEL_TextOut("--->>> exit Remove_DBGREQ_CTI0_config <<<---\n");
+}
+
+
+hotmenu Init_CTI1_config()
+{
+
+GEL_TextOut("--->>> enter Init_CTI1_config <<<---\n");
+
+/* Write to Lock Access Register at offset 0xFB0 the keycode 0xC5ACCE55 */
+LOCK_ACCESS_REG(CTI1_BASE) = UNLOCK_VALUE;
+
+/* Check Lock status register at 0xFB4 that software lock has been disabled */
+while (((LOCK_ACCESS_STATUS_REG(CTI1_BASE))&0x3)==0x3);
+
+GEL_TextOut("--->>> exit Init_CTI1_config <<<---\n");
+}
+
+hotmenu Enable_CTI1_config()
+{
+    GEL_TextOut("--->>> enter  Enable_CTI1_config <<<---\n");
+    
+    CTI_Control(CTI1_BASE) = 0x1;
+    
+    GEL_TextOut("--->>> exit  Enable_CTI1_config <<<---\n");
+}
+
+hotmenu Disable_CTI1_config()
+{
+    GEL_TextOut("--->>> enter  Disable_CTI1_config <<<---\n");
+    
+    CTI_Control(CTI1_BASE) = 0x0;
+    
+    GEL_TextOut("--->>> exit  Disable_CTI1_config <<<---\n");
+}
+
+hotmenu Set_DBGACK_CTI1_config()
+{
+/* Use Channel 0 to map trigger out  for DBGACK */
+GEL_TextOut("--->>> enter Set_DBGACK_CTI1_config <<<---\n");
+
+/* CTINEN (Offset 0x20): Set bit 0 to enable trigger out on channel0 which maps to DBGACK [ output trigger ]*/
+CTINEN(CTI1_BASE) = 0x1;
+ 
+GEL_TextOut("--->>> exit Set_DBGACK_CTI1_config <<<---\n");
+}
+
+hotmenu Remove_DBGACK_CTI1_config()
+{
+
+GEL_TextOut("--->>> enter Remove_DBGACK_CTI1_config <<<---\n");
+
+/* CTINEN (Offset 0x20): Set bit 0 to 0 to disable trigger out on channel0 which maps to DBGACK [ output trigger ]*/
+CTINEN(CTI1_BASE) = 0x0;
+ 
+GEL_TextOut("--->>> exit Remove_DBGACK_CTI1_config <<<---\n");
+}
+
+hotmenu Set_DBGREQ_CTI1_config()
+{
+/* Use Channel 1 to map trigger in for EDBGREQ */
+
+GEL_TextOut("--->>> enter Set_DBGREQ_CTI1_config <<<---\n");
+ 
+/*CTIOUTEN0 (Offset 0xa0): Set bit 0 to enable halt event from DBGREQ [input trigger] */
+CTIOUTEN0(CTI1_BASE) = 0x1;
+
+GEL_TextOut("--->>> exit Set_DBGREQ_CTI1_config <<<---\n");
+}
+
+hotmenu Remove_DBGREQ_CTI1_config()
+{
+
+GEL_TextOut("--->>> enter Remove_DBGREQ_CTI1_config <<<---\n");
+
+/*CTIOUTEN0 (Offset 0xa0): Set bit 0 to 0 to disable halt event from DBGREQ [input trigger] */
+CTIOUTEN0(CTI1_BASE) = 0x0;
+
+GEL_TextOut("--->>> exit Remove_DBGREQ_CTI1_config <<<---\n");
+}

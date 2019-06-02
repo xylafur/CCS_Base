@@ -1,0 +1,306 @@
+/*******************************************************************/ 
+/* This GEL file is doing Automated SCHMOO on VCORE3 vs DDR Freq   */
+/* OMAP SmartReflex Force command is used to control VCORE3        */
+/* All voltages supported from Phoenix PMIC spec (cf. VSEL table)  */
+/* Note that it is matching Phoenix Power IC ES2.0 EEPROM 03       */
+/* (to be updated with EEPROM 05                                   */
+/* 600mV up to 1300mV supported in main loop, dedicated loops for  */
+/* 1350mV & 1500mV (no array supported in GEL scripts  :-(         */
+/*                                                                 */
+/* Author: Yoan Hebrard (y-hebrard@ti.com)                    	    */
+/*******************************************************************/
+
+#define CM_CLKSEL_DPLL_CORE		0x4A00412C
+#define CM_CLKMODE_DPLL_CORE	0x4A004120
+#define CM_IDLEST_DPLL_CORE		0x4A004124
+#define ST_MN_BYPASS			0x8
+#define ST_DPLL_CLK				0x0
+#define DPLL_MULT				0x8
+#define DPLL_EN_MASK			0xFFFFFFF8
+#define MNBYPASS				4
+#define LOCK					7
+
+#define SYS_CLk_FREQ_x10		384 		//38.4MHz
+
+// #define myM2					0
+
+#define INFO_PRINT				0			// 0 means no additional printout, 1 means debug printout
+
+#define DDR_FREQ_MIN			200			// 200MHz as starting freq
+#define DDR_FREQ_MAX			400			// 400MHz as end freq
+
+int global_return = 0;						// 0 means FALSE, 1 means TRUE
+
+int silicon_release = 0xFF;
+
+
+menuitem "Automated Schmoo"
+
+hotmenu Automated_schmoo()
+{
+
+int i,j,tmp, loop, vcore3_mv, ddr_freq, tmp_reg, next_dpll_mult, n;
+int ddr_freq_min = DDR_FREQ_MIN; 			// Can be overwritten if current freq is supported by current voltage
+
+int myM2;
+
+char phoenixRevision;
+char phoenixVersion;
+
+int ID_CODE	  = *(int*)0x4A002204;
+    
+silicon_release = (ID_CODE & 0xF0000000) >> 28;
+
+if (INFO_PRINT) GEL_TextOut("--- silicon_release = %d ---\n",,,,,silicon_release);
+	
+phoenixRevision = PHOENIX_I2C_Read8(PHOENIX_I2C_SLAVE_ADDRESS, 0xDF, phoenixRevision);
+	
+if (phoenixRevision >= 5)
+{
+   	phoenixVersion = 2;
+}
+else
+{
+    if (phoenixRevision < 5)
+   	{
+   		phoenixVersion = 1;
+   	}
+}
+
+// Getting CORE DPLL N divider parameter that can differ according to initial CORE OPP selected by user in omap4430_startup_common.gel
+n = (*(int*)(CM_CLKSEL_DPLL_CORE)) & 0x7F;
+
+
+GEL_TextOut("--------------------------------------------\n");	
+GEL_TextOut("---      Starting Automated Schmoo       ---\n");	
+GEL_TextOut("--------------------------------------------\n\n");	
+
+
+/* For each VCORE3 Voltage (Step of 25mV) */
+for ( vcore3_mv = 875; vcore3_mv <= 1300; vcore3_mv+=25){
+//for (vcore3_mv = 1350; vcore3_mv <= 1350; vcore3_mv+=25){
+//for (vcore3_mv = 1500; vcore3_mv <= 1500; vcore3_mv+=25){
+
+GEL_TextOut("--------------------------------------------\n");	
+GEL_TextOut("---       Testing VCORE3 @ %d(mV)        ---\n",,,,,vcore3_mv);	
+GEL_TextOut("--------------------------------------------\n");	
+
+// Apply new VCORE3
+Force_PMIC_VCORE(phoenixVersion, PHOENIX_PMIC_VCORE3_CFG_FORCE_REG, vcore3_mv);
+
+/* For each frequency b/w 250MHz & 400MHz (step of 10MHz) */
+for ( ddr_freq = ddr_freq_min; ddr_freq <= DDR_FREQ_MAX; ddr_freq += 10){
+
+GEL_TextOut("--->>> Testing ddr_freq @ %d(MHz) \n",,,,,ddr_freq);
+
+
+// Unlock DPLL (MN Bypass)
+if (INFO_PRINT) GEL_TextOut("--- Unlocking DPLL ---\n");
+tmp_reg = *(int*)(CM_CLKMODE_DPLL_CORE) & DPLL_EN_MASK;
+*(int*)(CM_CLKMODE_DPLL_CORE) = (tmp_reg | MNBYPASS);
+while ( !(*(int*)(CM_IDLEST_DPLL_CORE) & (0x1<<ST_MN_BYPASS)) ); // wait until DPLL MN Bypass status bit set
+if (INFO_PRINT) GEL_TextOut("--- DPLL successfully unlocked! \n");
+
+if (silicon_release == 1)
+{
+    myM2=2;
+}
+else
+{
+    myM2=1;
+}
+
+// Compute next M
+if (INFO_PRINT) GEL_TextOut("--- Computing M ---\n");
+if (INFO_PRINT) GEL_TextOut("--- SYS_CLk_FREQ_x10 = %d ---\n",,,,,SYS_CLk_FREQ_x10);
+if (INFO_PRINT) GEL_TextOut("--- ddr_freq = %d ---\n",,,,,ddr_freq);
+if (INFO_PRINT) GEL_TextOut("--- N = %d ---\n",,,,,n);
+if (INFO_PRINT) GEL_TextOut("--- M2 = %d ---\n",,,,,myM2);
+if (INFO_PRINT) GEL_TextOut("--- (ddr_freq*10)/SYS_CLk_FREQ_x10 = %d ---\n",,,,,(ddr_freq*10)/SYS_CLk_FREQ_x10);
+tmp = (ddr_freq*10)/SYS_CLk_FREQ_x10;
+if (INFO_PRINT) GEL_TextOut("--- N+1=%d\n",,,,,n+1);
+
+
+    
+    
+if (INFO_PRINT) GEL_TextOut("--- (ddr_freq*10)/SYS_CLk_FREQ_x10)*(N+1)=%d\n",,,,,tmp*(n+1));
+if (INFO_PRINT) GEL_TextOut("--- (ddr_freq*10)/SYS_CLk_FREQ_x10)*(N+1)*M2=%d\n",,,,,(tmp*(n+1))*myM2);
+
+next_dpll_mult = ( (ddr_freq*10)*(n+1)*myM2)/SYS_CLk_FREQ_x10;
+if (INFO_PRINT) GEL_TextOut("--- next_dpll_mult = %d ---\n",,,,,next_dpll_mult);
+
+
+// Set next M
+if (INFO_PRINT) GEL_TextOut("--- Applying new M ---\n");
+tmp_reg = *(int*)(CM_CLKSEL_DPLL_CORE); // No need to mask as M was cleared from previous MN Bypass cmd
+if (INFO_PRINT) GEL_TextOut("--- tmp_reg = %x | M = %x---\n",,,,,tmp_reg, next_dpll_mult);
+*(int*)(CM_CLKSEL_DPLL_CORE) = tmp_reg | (next_dpll_mult << DPLL_MULT); // DPLL_MULT is reset from previous MN Bypass cmd, just need to write new M value
+if (INFO_PRINT) GEL_TextOut("--- Writting %x @ %x ---\n",,,,,(tmp_reg | (next_dpll_mult << DPLL_MULT)), CM_CLKSEL_DPLL_CORE);
+
+// Lock DPLL with new freq
+if (INFO_PRINT) GEL_TextOut("--- Locking DPLL ---\n");
+tmp_reg = *(int*)(CM_CLKMODE_DPLL_CORE) & DPLL_EN_MASK;
+*(int*)(CM_CLKMODE_DPLL_CORE) = (tmp_reg | LOCK);
+while ( !(*(int*)(CM_IDLEST_DPLL_CORE) & (0x1<<ST_DPLL_CLK)) ); // wait until DPLL lock status bit set
+
+// Wait until DPLL got locked
+while ( !(*(int*)(CM_IDLEST_DPLL_CORE) & (0x1<<ST_DPLL_CLK)) );
+if (INFO_PRINT) GEL_TextOut("--- DPLL successfully locked! \n");
+
+
+if (silicon_release == 1)
+{
+    // Reset PHY
+    if (INFO_PRINT) GEL_TextOut("--- Resetting PHY ---\n");
+    force_keeper();
+}    
+
+// Erase Memory (fill 0x0)
+if (INFO_PRINT) GEL_TextOut("--- Erasing memory ---\n");
+erase_memory();
+
+// Fill Memory
+if (INFO_PRINT)  GEL_TextOut("--- Filling memory ---\n");
+fill_memory();
+
+// Compare
+if (INFO_PRINT)  GEL_TextOut("--- Comparing memory ---\n");
+compare_memory();
+if (global_return){
+	GEL_TextOut("--->>> Comparison OK, moving to next DRR Frequency \n");
+	global_return = 0; 			// FALSE by default
+	ddr_freq_min = ddr_freq; 	// No need to test lower frequency on next voltage run
+} else {
+	GEL_TextOut("--->>> Error detected, stopping DDR frequency increase & moving to next Voltage \n");
+	break;
+}	
+
+
+
+/* End of frequency loop */
+}
+
+GEL_TextOut("--->>> Moving to next VCORE3 Voltage \n");
+
+/* End of VCORE3 loop */
+}
+
+
+
+GEL_TextOut("--------------------------------------------\n");	
+GEL_TextOut("---    END OF Automated Schmoo script    ---\n");	
+GEL_TextOut("--------------------------------------------\n");	
+
+
+}
+
+
+
+
+
+
+
+hotmenu test_read()
+{
+int tmp, loop;
+
+	for (loop=0;loop<5;loop++)
+	{
+		tmp = *(int*)0x80000080;
+		if (INFO_PRINT)  GEL_TextOut("%x: \n",,,,,tmp);
+		tmp = *(int*)0x80000088;
+		if (INFO_PRINT)  GEL_TextOut("%x: \n\n",,,,,tmp);
+	}
+}
+
+hotmenu fill_memory()
+{
+
+int loop;
+
+if (INFO_PRINT)  GEL_TextOut("--->>> Filling memory with incrementing data \n");
+for (loop = 0;loop<256;loop++)
+{
+	*(int*)(0x80000000+4*loop) = (((4*loop+3)&0xFF)<<24)+(((4*loop+2)&0xFF)<<16)+(((4*loop+1)&0xFF)<<8)+((4*loop)&0xFF);
+}
+if (INFO_PRINT)  GEL_TextOut("--->>> Memory successfully updated \n");
+
+}
+
+hotmenu erase_memory()
+{
+
+int loop;
+
+if (INFO_PRINT)  GEL_TextOut("--->>> Filling memory with 0x0 \n");
+for (loop = 0;loop<256;loop++)
+{
+	*(int*)(0x80000000+4*loop) = 0x0;
+}
+if (INFO_PRINT)  GEL_TextOut("--->>> Memory successfully erased \n");
+
+}
+
+
+hotmenu compare_memory()
+{
+
+int loop, pattern;
+
+if (INFO_PRINT)  GEL_TextOut("--->>> Comparing memory with incrementing data \n");
+for (loop = 0;loop<256;loop++)
+{
+	pattern = (((4*loop+3)&0xFF)<<24)+(((4*loop+2)&0xFF)<<16)+(((4*loop+1)&0xFF)<<8)+((4*loop)&0xFF);
+	if ( *(int*)(0x80000000+4*loop) != pattern ){
+		if (INFO_PRINT)  GEL_TextOut("--->>> Error: Memory comparison failed @ address:%x! \n",,,,,(0x80000000+(4*loop)) );
+		global_return = 0; // FALSE
+		return;
+	}
+}
+if (INFO_PRINT)  GEL_TextOut("--->>> Memory successfully verified \n");
+global_return = 1; // TRUE
+return;
+
+}
+
+hotmenu run_schmoo_on_both_emif(){
+
+int ID_CODE	  = *(int*)0x4A002204;
+    
+silicon_release = (ID_CODE & 0xF0000000) >> 28;
+
+GEL_TextOut("\n\n--------------------------------------------\n");	
+GEL_TextOut("---      Launching EMIF#1 analysis       ---\n");	
+GEL_TextOut("--------------------------------------------\n");	
+
+
+if (silicon_release == 1)
+{
+				// Force LPDDR2 IO keeper mode & Reset DDR PHYs
+				force_keeper();
+}                
+				
+				// DMM configuration to disable EMIF#2 & disable interleaved mode
+				*(int*) 0x4E000040 = 0x80500100; 
+				// GEL_TextOut("--->>> EMIF4D#1 only <<<---\n");
+
+
+				Automated_schmoo();				
+	
+GEL_TextOut("\n\n--------------------------------------------\n");	
+GEL_TextOut("---      Launching EMIF#2 analysis       ---\n");	
+GEL_TextOut("--------------------------------------------\n");	
+
+if (silicon_release == 1)
+{
+				// Force LPDDR2 IO keeper mode & Reset DDR PHYs
+				force_keeper();
+}
+
+				// DMM configuration to disable EMIF#1 & disable interleaved mode
+				*(int*) 0x4E000040 = 0x80500200; 
+
+				Automated_schmoo();	
+
+
+}

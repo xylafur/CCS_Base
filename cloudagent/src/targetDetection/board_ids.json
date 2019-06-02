@@ -1,0 +1,87 @@
+{
+	"L100": {
+		"id": "LAUNCHXL-CC2650",
+		"name": "CC2650 LaunchPad rev 1.0",
+		"deviceXml": "cc2650f128"
+	},
+	"L200": {
+		"id": "LAUNCHXL-CC1310",
+		"name": "CC1310 LaunchPad",
+		"deviceXml": "cc1310f128"
+	},
+	"L300":{
+		"id": "CC-DEVPACK-DEBUG",
+		"name": "Debug DevPack rev 1.3",
+		"deviceXml": "cc2650f128"
+	},
+	"M432": {
+		"id": "MSP-EXP432P401R",
+		"name": "MSP-EXP432P401R LaunchPad rev 2.0",
+		"deviceXml": "msp432p401r"
+	},
+	"D123": {
+		"id": "DRAGON",
+		"name": "dragon",
+		"deviceXml": "???"
+	},
+	"MEDU": {
+		"id": "TI-INNOVATOR",
+		"name": "EdTech TI Innovator (based on MSP432)",
+		"deviceXml": "msp432p401r"
+	},
+	"E700": {
+		"id": "CC3220SF-LAUNCHXL",
+		"name": "CC3220SFLaunchPad",
+		"deviceXml": "CC3220SF"
+	},
+	"E007": {
+		"id": "CC3220SF-LAUNCHXL",
+		"name": "CC3220SF LaunchPad",
+		"deviceXml": "CC3220SF"
+	},
+	"E008": {
+		"id": "CC3220S-LAUNCHXL",
+		"name": "CC3220S LaunchPad",
+		"deviceXml": "CC3220S"
+	},
+	"E009": {
+		"id": "CC3220R-LAUNCHXL",
+		"name": "CC3220R LaunchPad",
+		"deviceXml": "?"
+	},
+	"L500": {
+		"id": "LAUNCHXL-CC2640R2",
+		"name": "CC2640R2 LaunchPad",
+		"deviceXml": "cc2640r2f"
+	},
+	"L401": {
+		"id": "LAUNCHXL-CC1350",
+		"name": "CC1350 LaunchPad - 433 MHz",
+		"deviceXml": "cc1350f128"
+	},
+	"L201": {
+		"id": "LAUNCHXL-CC1310",
+		"name": "CC1310-CC1190 LaunchPad",
+		"deviceXml": "cc1310f128"
+	},
+	"L400": {
+		"id": "LAUNCHXL-CC1350",
+		"name": "CC1350 LaunchPad (Dual band 868MHz and 2.4GHz)",
+		"deviceXml": "cc1310f128"
+	},
+	"M411": {
+		"id": "MSP-EXP432P4111",
+		"name": "MSP-EXP432P4111 LaunchPad rev 1.0",
+		"deviceXml": "msp432p401r"
+	},
+	"L110": {
+		"id": "LAUNCHXL-CC26X2R1",
+		"name": "CC26x2R1 LaunchPad",
+		"deviceXml": "cc2652r1f"
+	},
+	"L410": {
+		"id": "LAUNCHXL-CC1352R1",
+		"name": "CC1352R1 LaunchPad (Dual band 868MHz and 2.4GHz)",
+		"deviceXml": "cc1352r1f3"
+	}
+}

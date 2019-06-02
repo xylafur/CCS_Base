@@ -1,0 +1,39 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* OMAP4430 cortexA9 reset config  		     					   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+menuitem "RESET"
+/**********************************************************************
+ *
+ *  FUNCTIONS
+ *
+ **********************************************************************/
+hotmenu reset_ducati_cortexM3_SIMCOP()
+{
+	int register1;
+    
+    //GEL_TextOut(">> Functionality disabled until L3 access from CortexM3 will be ready \n");
+	
+   GEL_TextOut(">> START reset_ducati_cortexM3_SIMCOP \n");
+        
+   // Release Ducati CortexM3 SIMCOP
+   *(int*)0x4A306910 = 0x00000000;
+
+   // wait Ducati CortexM3 SIMCOP reset applied
+   while (((*(int*)0x4A306914) & 0x2)& ~0x2);
+   
+   // Clear reset status
+   *(int*)0x4A306914 = 0x00000002;
+   
+   // test that module is fully functional 
+   // while (((*(int*)0x4A008920) & 0x30000)& 0x30000);
+    
+   GEL_TextOut(">> END reset_ducati_cortexM3_SIMCOP \n");
+}

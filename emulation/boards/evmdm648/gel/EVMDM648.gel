@@ -1,0 +1,5529 @@
+/***************************************************************************
+ *
+ *
+ *         **   **    **  ******  ********  ********  ********  **    **
+ *        **    **   **  **   ** ********  ********  ********  **    **
+ *       **     *****   **   **    **     **        **        **    **
+ *      **       **    ******     **     ****      **        ********
+ *     **       **    **  **     **     **        **        **    **
+ *    *******  **    **   **    **     ********  ********  **    **
+ *   *******  **    **    **   **     ********  ********  **    **
+ *
+ *            L Y R T E C H   S I G N A L   P R O C E S S I N G
+ *
+ ***************************************************************************
+ *
+ *  Project     : Texas Instruments - DM648 EVM
+ *  File        : EVMDM648.gel
+ *  Description : Configure the Code Composer Studio development environment.
+ *                This GEL file is designed to be used in conjunction with
+ *                CCStudio 3.3 and the TMS320DM648 based EVM.
+ *
+ *                    Copyright (c) Lyrtech inc. 2007
+ *
+ ***************************************************************************
+ *
+ * "$Revision: 1.32 $"
+ * "$Date: 2009/05/29 19:27:46 $"
+ *
+ ***************************************************************************/
+
+
+// Global Register and constant definitions
+
+//*****************************************************
+// Power definitions
+#define PSC_BASE            0x02046000
+#define PSC_PTCMD           *( unsigned int* )( PSC_BASE+0x120 )
+#define PSC_PTSTAT          *( unsigned int* )( PSC_BASE+0x128 )
+#define PSC_MDSTAT_BASE     ( PSC_BASE+0x800 )
+#define PSC_MDCTL_BASE      ( PSC_BASE+0xA00 )
+
+/*PSC Module Related Values*/
+#define LPSC_TPCC   (0)
+#define LPSC_TSIP0  (5)
+#define LPSC_TSIP1  (6)
+#define LPSC_DDR2   (7)
+#define LPSC_UHPI   (8)
+#define LPSC_VLYNQ  (9)
+#define LPSC_GPIO   (10)
+#define LPSC_TIMER0 (11)
+#define LPSC_TIMER1 (12)
+#define LPSC_SPI    (17)
+#define LPSC_I2C    (18)
+#define LPSC_PCI    (19)
+#define LPSC_VP0    (20)
+#define LPSC_VP1    (21)
+#define LPSC_VP2    (22)
+#define LPSC_VP3    (23)
+#define LPSC_VP4    (24)
+#define LPSC_EMIFB  (25)
+#define LPSC_TIMER2 (26)
+#define LPSC_TIMER3 (27)
+#define LPSC_VIC    (28)
+#define LPSC_McASP  (29)
+#define LPSC_UART   (30)
+#define LPSC_IMCOP  (31)
+#define LPSC_CHIP_R (32)
+#define LPSC_GEM    (33)
+#define LPSC_E3PSW  (34)    // WARNING: ESS is on PD1 & rest of LPSCs on PD0
+#define PD0         (0)     // Power Domain-0
+#define PD1         (1)     // Power Domain-1
+#define PSC_SYNCRESET (0x1)
+#define PSC_DISABLE   (0x2)
+#define PSC_ENABLE    (0x3)
+
+//*****************************************************
+// BOOT and CONFIG dsp system modules Definitions
+#define SYS_CFG         (0x02049000)
+#define PINMUX0         *(unsigned int*)(SYS_CFG + 0x00)
+#define BOOTCFG         *(unsigned int*)(SYS_CFG + 0x14)
+#define KEY             *(unsigned int*)(SYS_CFG + 0x54)
+
+#define KEYUNLOCK       0xADDDECAF
+
+/* Pinmux values for dsp config */
+#define MUX_VP0_EN          (0x00200000u) // bits 21:20 -> value 10b
+#define MUX_VP0_MASK        (0x00300000u) // bits 21:20
+#define MUX_VP1_EN          (0x00030000u) // bits 17:16 -> value 11b
+#define MUX_VP1_MASK        (0x00030000u) // bits 17:16
+#define MUX_VP3_4_EN        (0x0000c000u) // bits 15:14 -> value 11b
+#define MUX_EMIFA_EN        (0x00008000u) // bits 15:14 -> value 10b
+#define MUX_VP3_4_MASK      (0x0000c000u) // bits 15:14
+#define MUX_SPI_EN          (0x00001000u) // bits 13:12 -> value 01b
+#define MUX_UART_EN         (0x00002000u) // bits 13:12 -> value 10b
+#define MUX_SPIUART_MASK    (0x00003000u) // bits 13:12
+#define MUX_MCASP_EN        (0x00000200u) // bits 9:8   -> value 10b
+#define MUX_MCASP_MASK      (0x00000300u) // bits 9:8
+#define MUX_VP2_EN          (0x00000020u) // bits 5:4   -> value 10b
+#define MUX_VLYNQ_EN        (0x00000030u) // bits 5:4   -> value 11b
+#define MUX_VP2_MASK        (0x00000030u) // bits 5:4
+#define MUX_TMR_EN          (0x00000001u) // bits 0     -> value 1b
+#define MUX_TMR_MASK        (0x00000001u) // bits 0
+
+// BOOTCFG Bit definitions
+#define HPIEN 0x00020000
+
+//*****************************************************
+// Timeout definitions
+int _GEL_Global_Timeout1 = 0;
+
+#define TIMEOUT_ID 10
+
+//*****************************************************
+// I2C Comm definitions
+
+// I2C desired setup
+// Master dsp own I2C address
+#define I2C_MASTER_ADDR     0x00
+// Clock values for pll1 = 891MHz down till 561 MHz (i2c 98.4 -> 62 KHz)
+#define I2C_CLOCK_PRESCALAR 0x0c
+#define I2C_CLOCK_CLKL      0x35
+#define I2C_CLOCK_CLKH      0x35
+// Interrupt
+#define I2C_DISABLE_INTR    0x00
+// Based mode: free running, master, tx, 7 bits addr, non repeat, reset, 8 bits data
+#define I2C_MODE_RST        0x00004600
+#define I2C_MODE            0x00004620
+#define I2C_MODE_STT        0x00006620
+#define I2C_MODE_STT_STP    0x00006E20
+#define I2C_MODE_RX_STT_STP 0x00006C20
+#define I2C_MODE_RM_STT     0x000066A0
+#define I2C_MODE_RM_STP     0x00004EA0
+// Extended mode:
+#define I2C_EXTMODE         0x00000000
+
+// I2C peripheral registers definitions
+#define I2C_BASE_ADDR 0x02047c00
+#define ICMDR   *( unsigned int* )( I2C_BASE_ADDR+0x24 )
+#define ICEMDR  *( unsigned int* )( I2C_BASE_ADDR+0x2c )
+#define ICOAR   *( unsigned int* )( I2C_BASE_ADDR+0x00 )
+#define ICIMR   *( unsigned int* )( I2C_BASE_ADDR+0x04 )
+#define ICPSC   *( unsigned int* )( I2C_BASE_ADDR+0x30 )
+#define ICCLKL  *( unsigned int* )( I2C_BASE_ADDR+0x0c )
+#define ICCLKH  *( unsigned int* )( I2C_BASE_ADDR+0x10 )
+#define ICSAR   *( unsigned int* )( I2C_BASE_ADDR+0x1C )
+#define ICCNT   *( unsigned int* )( I2C_BASE_ADDR+0x14 )
+#define ICSTR   *( unsigned int* )( I2C_BASE_ADDR+0x08 )
+#define ICDXR   *( unsigned int* )( I2C_BASE_ADDR+0x20 )
+#define ICDRR   *( unsigned int* )( I2C_BASE_ADDR+0x18 )
+
+// ICSTR bits definitions
+#define BB     0x00001000
+#define ICXRDY 0x00000010
+#define NACK   0x00000002
+#define ICRRDY 0x00000008
+#define ARDY   0x00000004
+
+//*****************************************************
+// I2C EVM648 slave addr definitions table
+#define AIC33CH12 0x18
+#define AIC33CH34 0x19
+#define AIC33CH56 0x1a
+#define AIC33CH78 0x1b
+#define S8200 0x20
+#define A7105 0x44
+#define P7000 0x5c
+#define P5154CH14 0x5f
+#define P5154CH58 0x5e
+#define MSP430 0x70
+
+//*****************************************************
+// A7105 definitions
+#define MON_SENSE_MODE 0x1B
+#define TVP_ACT        0x00
+
+//*****************************************************
+// EPC definitions
+#define PCBREV(par1) (par1 & 0x7)
+#define FIRMREV(par1) ((par1 & 0xF8)>>3)
+
+#define COMMAND_REG  0x00
+#define STATUS_REG   0x01
+#define RESET_REG    0x03
+#define  PERRST      0x04
+#define  NOPERRST    0x00
+#define PCI_CONFIG   0x04
+#define  PCI_PLUGN   0x01
+#define REVREGISTER  0x05
+#define VPORTCTL     0x06
+#define  EMIF_CODEC  0x24
+#define LEDREGISTER  0x07
+#define  LED2 0x10
+#define  LED3 0x20
+#define  LED4 0x40
+#define  LED5 0x80
+#define USWREGISTER  0x07
+#define  USW1 0x01
+#define  USW2 0x02
+#define  USW3 0x04
+#define  USW4 0x08
+#define DCC_IO_CTRL  0x08
+#define   IO_MASK    0x3F
+#define DCC_IO_STATE 0x09
+#define UART_SPIREG  0x10
+#define UARTMODE     0x01
+#define VIDEO_STATUS 0x11
+#define  NTSC        0x01
+#define  TVD         0x02
+#define MCASPCTL     0x13
+#define  MCASP_SPDIFOFF 0x01
+
+#define CUSTOMCLKREG 0x24
+#define  CLK74_250   0x0
+#define  CLK25_125   0x1
+#define  CLK27_000   0x2
+#define  CLK31_500   0x3
+#define  CLK36_000   0x4
+#define  CLK40_000   0x5
+#define  CLK49_500   0x6
+#define  CLK50_000   0x7
+#define  CLK56_250   0x8
+#define  CLK65_000   0x9
+#define  CLK74_250   0xA
+#define  CLK75_000   0xB
+#define  CLK108_000  0xC
+
+// Address of last ECP registers with matching ecp firmware rev
+#define MAX_ECP_REGB_FIRM1 5
+#define MAX_ECP_REGB1      0x26
+
+#define MAX_ECP_REGB_FIRM2 7
+#define MAX_ECP_REGB2      0x27
+
+#define MAX_ECP_REGB_FIRM3 8
+#define MAX_ECP_REGB3      0x28
+
+#define MAX_ECP_REGB_FIRM4 11
+#define MAX_ECP_REGB4      0x2A
+
+
+//*****************************************************
+// PCI definitions
+#define PCISLVCNTRL    *( unsigned int* )( 0x02048580 )
+#define PCICFGDONE     *( unsigned int* )( 0x020487AC )
+
+//*****************************************************
+// Emif definitions
+#define EMIFB_BASECTRL_ADDR (0x70000000)
+
+#define EMIFB_CE2CFG   (*(int*)(EMIFB_BASECTRL_ADDR + 0x00000080))
+#define EMIFB_CE3CFG   (*(int*)(EMIFB_BASECTRL_ADDR + 0x00000084))
+#define EMIFB_AWCC     (*(int*)(EMIFB_BASECTRL_ADDR + 0x000000A0))
+
+//*****************************************************
+// DDR2 definitions
+#define DDR_BASE_ADDR (0x78000000)
+
+#define DDR_MIDR     (*(int*)(DDR_BASE_ADDR + 0x00000000))
+#define DDR_SDCFG    (*(int*)(DDR_BASE_ADDR + 0x00000008))
+#define DDR_SDRFC    (*(int*)(DDR_BASE_ADDR + 0x0000000C))
+#define DDR_SDTIM1   (*(int*)(DDR_BASE_ADDR + 0x00000010))
+#define DDR_SDTIM2   (*(int*)(DDR_BASE_ADDR + 0x00000014))
+#define DDR_BPRIO    (*(int*)(DDR_BASE_ADDR + 0x00000020))
+#define DDR_DMCCTL   (*(int*)(DDR_BASE_ADDR + 0x000000E4))
+
+#define BOOT_UNLOCK    0x00800000
+#define TIMUNLOCK      0x00008000
+//*****************************************************
+// PLL 1 definitions (DSP clk and subsystems)
+#define PLL1_BASE           0x020E0000
+#define PLL1_PLLCTL         (PLL1_BASE + 0x100)   // PLL1 Control
+#define PLL1_PLLM           (PLL1_BASE + 0x110)   // PLL1 Multiplier
+#define PLL1_DIV2           (PLL1_BASE + 0x11C)   // DIV2 divider
+#define PLL1_CMD            (PLL1_BASE + 0x138)   // CMD control
+#define PLL1_STAT           (PLL1_BASE + 0x13C)   // STAT control
+#define PLL1_DIV4           (PLL1_BASE + 0x160)   // DIV4 divider
+
+//*****************************************************
+// MAC address definitions
+#define MAC_ADDR_R0 (*(unsigned int*)(0x020490C4))
+#define MAC_ADDR_R1 (*(unsigned int*)(0x020490C8))
+
+//*****************************************************
+// CACHE definitions
+#define CACHE_BASE          0x01840000
+#define CACHE_L2CFG         *( unsigned int* )( CACHE_BASE )
+#define CACHE_L1PCFG        *( unsigned int* )( CACHE_BASE + 0x0020 )
+#define CACHE_L1DCFG        *( unsigned int* )( CACHE_BASE + 0x0040 )
+#define L2WBINV             (CACHE_BASE + 0x5004) // L2WBINV Control
+#define L2INV               (CACHE_BASE + 0x5008) // L2INV Control
+#define L1PINV              (CACHE_BASE + 0x5028) // L1PINV Control
+#define L1DWBINV            (CACHE_BASE + 0x5044) // L1DWBINV Control
+#define L1DINV              (CACHE_BASE + 0x5048) // L1DINV Control
+#define MAR224              (CACHE_BASE + 0x8380) // MAR224 Control
+#define NMAR_AT_DDR2        0x10                  // Number of MAR reg for DDR
+
+
+//*****************************************************
+// EDMA3 definitions
+#define EDMA3_TPCC_BASE     0x02A00000
+#define IERH                (EDMA3_TPCC_BASE + 0x1054) // IERH Control
+#define EERH                (EDMA3_TPCC_BASE + 0x1024) // EERH Control
+#define ICRH                (EDMA3_TPCC_BASE + 0x1074) // ICRH Control
+#define ECRH                (EDMA3_TPCC_BASE + 0x100C) // ECRH Control
+#define IER                 (EDMA3_TPCC_BASE + 0x1050) // IER Control
+#define EER                 (EDMA3_TPCC_BASE + 0x1020) // EER Control
+#define ICR                 (EDMA3_TPCC_BASE + 0x1070) // ICR Control
+#define ECR                 (EDMA3_TPCC_BASE + 0x1008) // ECR Control
+#define IECRH               (EDMA3_TPCC_BASE + 0x105C) // IECRH Control
+#define IECR                (EDMA3_TPCC_BASE + 0x1058) // IECR Control
+#define EECRH               (EDMA3_TPCC_BASE + 0x102C) // EECRH Control
+#define EECR                (EDMA3_TPCC_BASE + 0x1028) // EECR Control
+
+
+/****************************************************************************
+ *
+ * NAME
+ *      StartUp
+ *
+ * PURPOSE:
+ *      Perform CCS Memory Map configuration.
+ *      This function is called each time CCS is started.
+ *
+ * USAGE
+ *      This routine is a callback routine and called by CCS only.
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+StartUp( )
+{
+    Setup_Memory_Map( );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      OnTargetConnect
+ *
+ * PURPOSE:
+ *      Setup almost everything ready for a new debug session:
+ *      DSP modules and EVM board modules, at target connection.
+ *      Do nothing if target is in realtime mode.
+ *      This routine is called when you connect to the target board.
+ *
+ *      IMPORTANT: this routine won't attempt to connect to the target
+ *      if the target is not in real-time mode and that the dsp boot
+ *      mode switches are not set in emulation boot mode
+ *      (SW2-1, SW2-2, SW2-3, SW2-4 all OFF).
+ *
+ * USAGE
+ *      This routine is a callback routine and called by CCS only.
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+OnTargetConnect( )
+{
+    int err=0;
+
+    GEL_TextOut( "\nConnecting Target...\n" );
+ 
+    // Check if target is not in real-time mode. If it is in stop mode,
+    // initialize everything. In real-time mode, do nothing to connect
+    // unobtrusively...
+    if (!GEL_IsInRealtimeMode())
+    {
+        // Validates if emulation boot mode
+        if (BOOTCFG & 0x0000000F)
+        {
+            // Indicates connect not possible
+            err=1;
+
+            // Displays actual wrong boot mode
+            GEL_TextOut( "\n");
+            Boot_Mode_Info();
+            GEL_TextOut( "  *************************************************************\n\n" );
+            
+            GEL_TextOut( "THE SYSTEM IS NOT IN EMULATION BOOTMODE!  GEL SETUP WILL NOT RUN!\n",,2,,,);
+            GEL_TextOut( "If you plan on loading software via the JTAG connector, you should\n",,2,,,);
+            GEL_TextOut( "disconnect, turn off the device, and set the bootmode switches to\n",,2,,,);
+            GEL_TextOut( "emulation bootmode (SW2-1, SW2-2, SW2-3, SW2-4 all OFF). Then power\n",,2,,,);
+            GEL_TextOut( "on the device and try to reconnect.\n\n",,2,,,);
+        }
+        else
+        {
+            // Comment the following line at production application test
+            // when the application need to initialize everything, but not the
+            // GEL file.
+            Global_Default_Setup_Silent();
+        }
+    }
+
+    GEL_TextOut( "Connecting Target... " );
+
+    // Displays target connect status
+    if (!err)
+        GEL_TextOut( "Done.\n\n" );
+    else
+        GEL_TextOut( "Not Possible!\n\n",,2,,,);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      OnReset
+ *
+ * PURPOSE:
+ *      Called by CCS when you do in menu Debug->Reset.
+ *
+ * USAGE
+ *      This routine is a callback routine and called by CCS only.
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+OnReset( int nErrorCode )
+{
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      OnPreFileLoaded
+ *
+ * PURPOSE:
+ *      Called by CCS when you do in menu File->LoadProgram, File->LoadSymbols,
+ *      etc, before loading anything.
+ *
+ * USAGE
+ *      This routine is a callback routine and called by CCS only.
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+OnPreFileLoaded()
+{
+    // Purge all the cache
+    Invalidate_Cache();
+
+    // Is used to be sure dsp is ready to load a file
+    // Can be comment out if not needed...
+    GEL_TextOut( "DSP Reset CPU...\n" );
+    GEL_Reset();
+    GEL_TextOut( "DSP Reset CPU... Done.\n" );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      OnFileLoaded
+ *
+ * PURPOSE:
+ *      Called by CCS when you do in menu File->LoadProgram, File->LoadSymbols,
+ *      etc, after loading completed.
+ *
+ * USAGE
+ *      This routine is a callback routine and called by CCS only.
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+OnFileLoaded(int nErrorCode, int bSymbolsOnly)
+{
+    // Check for errors in loading program
+    if (nErrorCode)
+    {
+        GEL_TextOut("OnFileLoaded: error occured while loading a file code %d\n",,2,,,nErrorCode);
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      OnHalt
+ *
+ * PURPOSE:
+ *      Called by CCS each time the cpu is halted.
+ *      You may use it to do specific custom action each the cpu is halted
+ *      (Displays some info with GEL_TextOut, etc).
+ *
+ * USAGE
+ *      This routine is a callback routine and called by CCS only.
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+OnHalt()
+{
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      OnRestart
+ *
+ * PURPOSE:
+ *      Called by CCS each time you do Debug->Restart.
+ *      Put the C6X in  known good state in relation to cache, EDMA, IRQ
+ *
+ * USAGE
+ *      This routine is a callback routine and called by CCS only.
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+OnRestart( int nErrorCode )
+{
+    // Disable EDMA3 events and interrupts and clear any pending events.                                      */
+    GEL_TextOut("Disable all EDMA3 interrupts and events.\n");
+    *(int*)IECRH = 0xFFFFFFFF;  // IECRH (disable high interrupts enable)
+    *(int*)EECRH = 0xFFFFFFFF;  // EECRH (disable high events enable)
+    *(int*)ICRH  = 0xFFFFFFFF;  // ICRH  (clear high interrupts pending)
+    *(int*)ECRH  = 0xFFFFFFFF;  // ECRH  (clear high events pending)
+
+    *(int*)IECR  = 0xFFFFFFFF;  // IECR  (disable low interrupts enable)
+    *(int*)EECR  = 0xFFFFFFFF;  // EECR  (disable low events enable)
+    *(int*)ICR   = 0xFFFFFFFF;  // ICR   (clear low interrupts pending)
+    *(int*)ECR   = 0xFFFFFFFF;  // ECR   (clear low events pending)
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_BEmif
+ *
+ * PURPOSE:
+ *      Setup Async EMIF to Max Wait cycles and specified bus width.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_BEmif(bus_width)
+ *
+ *      bus_width - (i) 8 or 16 (8 or 16 bits bus width)
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Set_BEmif( int bus_width )
+{
+    GEL_TextOut( "EMIFB setup ( %d bits bus )... \n",,,,, bus_width );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Gives power to emif3b just in case
+        Set_PSC_State(PD0, LPSC_EMIFB, PSC_ENABLE);
+
+        if (bus_width == 8)
+        {
+            // Configure async EMIF 8 bits, max wait cycles
+            EMIFB_CE2CFG = 0x0FFFFFFC;
+            EMIFB_CE3CFG = 0x0FFFFFFC;
+        }
+        else
+        {
+            // Configure async EMIF 16 bits, max wait cycles
+            EMIFB_CE2CFG = 0x00310181;
+            EMIFB_CE3CFG = 0x0FFFFFFD;
+        }
+
+        // Adjust TA for flash mem
+        EMIFB_AWCC = 0x40000380;
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+    }
+
+    GEL_TextOut( "EMIFB setup... Done.\n" );
+}
+
+
+menuitem "EVMDM648 Init Functions";
+
+/****************************************************************************
+ *
+ * NAME
+ *      Init_Functions_Help
+ *
+ * PURPOSE:
+ *      Prints the help for the init functions menu.
+ *
+ * USAGE
+ *
+ *      Called from GEL menu only
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Init_Functions_Help()
+{
+    GEL_TextOut("\n\n");
+    GEL_TextOut("                  INIT FUNCTIONS MENU HELP\n");
+    GEL_TextOut("                  ------------------------\n\n");
+    GEL_TextOut("This menu is to do EVM & DSP initialization.\n\n");
+    GEL_TextOut("Global_Default_Setup: same function as when connecting to target. Will do:\n");
+    GEL_TextOut("                      Set_DSP_Cache, Set_Pll1_891_MHz, Set_Psc_All_On, Set_DDR2_265_9_MHz,\n");
+    GEL_TextOut("                      Set_Pin_Board_Mux, Set_BEmif_xxBit_Bus (as dip switch), Set_SD_Clock,\n");
+    GEL_TextOut("                      ConfigurePCI, Set_Board_Peripherals.\n");
+    GEL_TextOut("Set_DSP_Cache: setup DSP default cache settings (for L1P, L1D, L2).\n");
+    GEL_TextOut("Set_Pll1_xxx_MHz: setup DSP speed (PLL1) to specified MHz.\n");
+    GEL_TextOut("Set_Psc_All_On: power-on all DSP peripherals modules.\n");
+    GEL_TextOut("Set_DDR2_265_9_MHz: setup DDR timings for speed of 265_9 MHz (ext clk*10).\n");
+    GEL_TextOut("Set_Pin_Board_Mux: setup all DSP muxes for muxed pins and also EVM muxes to default\n");
+    GEL_TextOut("                   (will call Set_Muxes_5VideoPorts_SDCapt, Set_Muxes_For_Audio,\n");
+    GEL_TextOut("                    and also adjust UART/SPI according boot switch).\n");
+    GEL_TextOut("Set_BEmif_xxBit_Bus: setup DSP EMIFB to 16 bits (default) or 8 bit bus width.\n");
+    GEL_TextOut("ConfigurePCI: configure PCI if needed so it can be used.\n");
+    GEL_TextOut("Set_Board_Peripherals: setup all EVM peripherals to default values.\n");
+    GEL_TextOut("Set_Muxes_5VideoPorts_SDCapt: setup EVM & DSP muxes all 5 video ports active,\n");
+    GEL_TextOut("                              with SD video capture on TVP5154.\n");
+    GEL_TextOut("Set_Muxes_5VideoPorts_HDCapt: setup EVM & DSP muxes all 5 video ports active,\n");
+    GEL_TextOut("                              with HD video capture on TVP7000.\n");
+    GEL_TextOut("Set_Muxes_5VideoPorts_VP34_Dcc: setup EVM & DSP muxes all 5 video ports active,\n");
+    GEL_TextOut("                                with TVP5154 (SD video CH1-4) connected to VP0 & VP2,\n");
+    GEL_TextOut("                                and VP3 & VP4 configured to external daugther card connector.\n");
+    GEL_TextOut("Set_Muxes_For_EMIF: setup EVM & DSP muxes for EMIFB access (internal flash memory).\n");
+    GEL_TextOut("Set_Muxes_EMIF_Dcc: setup EVM & DSP muxes for EMIFB access (external daugther card connector).\n");
+    GEL_TextOut("Set_Muxes_EmifVlynq_Dcc: setup EVM & DSP muxes for EMIFB and Vlynq access (external daugther card connector).\n");
+    GEL_TextOut("Set_Muxes_For_Audio: setup EVM & DSP muxes for audio codecs access and SPDIF.\n");
+    GEL_TextOut("Set_Muxes_For_Mcasp_Dcc: setup EVM & DSP muxes for Mcasp on daugther card connector.\n");
+    GEL_TextOut("Set_HD_Clock: setup THS8200/TVP7000 video clock for HD component only (74.25MHz).\n");
+    GEL_TextOut("Set_SD_Clock: setup THS8200/TVP7000/SAA7105 video clock for SD video (27MHz).\n");
+    GEL_TextOut("Set_VideoClk_xx_xxxMHz: setup THS8200/TVP7000 video clock for specified frequency.\n\n");
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Global_Default_Setup
+ *
+ * PURPOSE:
+ *      Setup almost everything ready for a new debug session:
+ *      DSP modules and EVM board modules.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Global_Default_Setup()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Global_Default_Setup()
+{
+    GEL_TextOut( "Global Default Setup...\n" );
+    Global_Default_Setup_Silent();
+    GEL_TextOut( "Global Default Setup... Done.\n" );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Global_Default_Setup_Silent
+ *
+ * PURPOSE:
+ *      Setup almost everything ready for a new debug session:
+ *      DSP modules and EVM board modules.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Global_Default_Setup_Silent()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Global_Default_Setup_Silent()
+{
+    // Set DSP cache to pre defined values...
+    Set_DSP_Cache();
+
+    // Setup Pll1 DSP @ 891 MHz (VCore 1.20V)
+    Set_Pll1_891_MHz();
+
+    // Setup all Power Domains on
+    Set_Psc_All_On( );
+
+    // Setup DDR timing @ 265.9 MHz (External Clk * 10)
+    Set_DDR2(265909070);
+
+    // Setup DSP Pin Mux and EVM board muxes
+    Set_Pin_Board_Mux( );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Setup emif default size according to boot switch
+        if (BOOTCFG & 0x10000)
+        {
+            // Setup Async EMIF with 16-bits bus
+            Set_BEmif_16Bit_Bus();
+        }
+        else
+        {
+            // Setup Async EMIF with 8-bits bus
+            Set_BEmif_8Bit_Bus();
+        }
+
+        // Setup desired THS8200/TVP7000/SAA7105 video clock speed
+        Set_SD_Clock();
+        //Set_HD_Clock();
+
+        // Check and setup PCI if necessary
+        ConfigurePCI();
+
+        // Setup evm board peripherals to default setup
+        Set_Board_Peripherals();
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_DSP_Cache
+ *
+ * PURPOSE:
+ *      Setup the DSP caches with predefined cache size.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_DSP_Cache()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_DSP_Cache( )
+{
+    int l1p, l1d, l2;
+
+    GEL_TextOut( "Setup Cache... \n");
+
+    // Modify for the desired cache settings needed
+    CACHE_L1PCFG = 7;           // L1P on, MAX size
+    CACHE_L1DCFG = 7;           // L1D on, MAX size
+    CACHE_L2CFG  = 0;           // L2 off, use as RAM
+
+    l1p = CACHE_L1PCFG;
+
+    if ( l1p == 0 )
+    {
+        GEL_TextOut( "L1P = 0K   " );
+    }
+    if ( l1p == 1 )
+    {
+        GEL_TextOut( "L1P = 4K   " );
+    }
+    if ( l1p == 2 )
+    {
+        GEL_TextOut( "L1P = 8K   " );
+    }
+    if ( l1p == 3 )
+    {
+        GEL_TextOut( "L1P = 16K   " );
+    }
+    if ( l1p >= 4 )
+    {
+        GEL_TextOut( "L1P = 32K   " );
+    }
+
+    l1d = CACHE_L1DCFG;
+    if ( l1d == 0 )
+    {
+        GEL_TextOut( "L1D = 0K   " );
+    }
+    if ( l1d == 1 )
+    {
+        GEL_TextOut( "L1D = 4K   " );
+    }
+    if ( l1d == 2 )
+    {
+        GEL_TextOut( "L1D = 8K   " );
+    }
+    if ( l1d == 3 )
+    {
+        GEL_TextOut( "L1D = 16K   " );
+    }
+    if ( l1d >= 4 )
+    {
+        GEL_TextOut( "L1D = 32K   " );
+    }
+
+    l2 = CACHE_L2CFG;
+    if ( l2 == 0 )
+    {
+        GEL_TextOut( "L2 = ALL SRAM   " );
+    }
+    if ( l2 == 1 )
+    {
+        GEL_TextOut( "L2 = 31/32 SRAM   " );
+    }
+    if ( l2 == 2 )
+    {
+        GEL_TextOut( "L2 = 15/16 SRAM   " );
+    }
+    if ( l2 == 3 )
+    {
+        GEL_TextOut( "L2 = 7/8 SRAM   " );
+    }
+    if ( l2 == 7 )
+    {
+        GEL_TextOut( "L2 = 3/4 SRAM   " );
+    }
+
+    GEL_TextOut( "\nSetup Cache... Done.\n");
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Wait_Soft
+ *
+ * PURPOSE:
+ *      Wait for a specified delay in number of empty loop.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Wait_Soft(nloop)
+ *
+ *      nloop - (i) number of empty loop to do for delay
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Wait_Soft( int nloop )
+{
+    int i;
+
+    // 1 sec ~ 40000 loop on P4 3.4GHz
+    for( i = 0 ; i < nloop ; i++ )
+    {
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Pll1
+ *
+ * PURPOSE:
+ *      Setup PLL 1 for DSP clock to external clock source with the specified
+ *      clock multiplier. The Frequency is based on an external 33 MHz clock.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Pll1(pll_multiplier)
+ *
+ *      pll_multiplier - (i) DSP Freq = 33 MHz * (pll_multiplier)
+ *                           (For a base ext. clock in of 33 MHz only)
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Set_Pll1( int pll_multiplier )
+{
+    unsigned int* pll_ctl       = ( unsigned int* )PLL1_PLLCTL;
+    unsigned int* pll_mult      = ( unsigned int* )PLL1_PLLM;
+    unsigned int i;
+    unsigned int div2=3, div4=6;
+    unsigned int* pll_div2      = ( unsigned int* )PLL1_DIV2;
+    unsigned int* pll_div4      = ( unsigned int* )PLL1_DIV4;
+    unsigned int* pll_cmd       = ( unsigned int* )PLL1_CMD;
+    unsigned int* pll_stat      = ( unsigned int* )PLL1_STAT;
+
+    int dsp_freq;
+
+    dsp_freq = 33 * pll_multiplier;
+
+    // Verify if multiplier is ok...
+    if (pll_multiplier>=13 && pll_multiplier<=32)
+    {
+        // Print message info...
+        GEL_TextOut( "PLL1 Setup... \n" );
+
+
+        //  Step 1: Set PLL to BYPASS mode
+        *pll_ctl &= 0xFFFFFFDF;             // Set PLL to Bypass mode
+        *pll_ctl &= 0xFFFFFFFE;
+
+        // Wait Bypass mode switch
+        // Bypass sw time is 4 clkin cycles = (1/33000000) * 4 ~0.12 usec
+        // The following delay is much more than necessary...
+        Wait_Soft(150);
+
+
+        //  Step 2: Configure and stabilize PLL
+        *pll_ctl |= 0x8;                    // Reset PLL
+
+        // Verify if pll is in power down
+        if ((*pll_ctl & 0x00000002) !=0 )
+        {
+            *pll_ctl |= 0x00000010;         // Disable PLL
+            *pll_ctl &= 0xFFFFFFFD;         // Power up PLL
+            *pll_ctl &= 0xFFFFFFEF;         // Enable PLL
+
+            // Wait PLL Stabilization time
+            // that is 150 usec
+            // The following delay is much more than necessary and provide stable PLL...
+            Wait_Soft(5000);
+        }
+        else
+        {
+            *pll_ctl &= 0xFFFFFFEF;         // Enable PLL
+        }
+
+        // Step 3: Set PLL multiplier register (minus 1 desired mult value)
+        *pll_mult = (pll_multiplier-1);       // Set PLL multipler
+
+        // Step 4. Set PLL post dividers if needed
+        //*pll_div2 = (0x8000) | (div2 - 1);
+        //*pll_div4 = (0x8000) | (div4 - 1);
+        *pll_cmd |= 0x00000001;
+
+        // Wait for phase alignment
+        Set_Timeout(1000);
+        while( Get_Timeout() && (*pll_stat & 0x01) !=0 );
+
+        // Check if we got timeout error while waiting
+        if (!Get_Timeout())
+        {
+            GEL_TextOut( "PLL1 Setup... Timeout Error #01!\n",,2,,,);
+        }
+        Kill_Timeout();
+
+
+        // Step 5: Wait for PLL to lock
+
+        // Wait for PLL to Reset
+        // Reset time =128C (For 33 MHz, C=30.303) ~3879 nsec = 3.879 usec
+        Wait_Soft(160);
+        *pll_ctl &= 0xFFFFFFF7;             // Release PLL from Reset
+
+        // Wait for PLL to LOCK
+        // Lock time =2000C (For 33 MHz, C=30.303) ~60606 nsec = 60.6 usec
+        Wait_Soft(2500);
+        *pll_ctl |= 0x00000001;             // Set PLL to PLL mode
+
+        div2 = (*pll_div2 & 0x1f) +1;
+        div4 = (*pll_div4 & 0x1f) +1;
+
+        // Print freq info...
+        GEL_TextOut( "PLL1 Setup for DSP @ %d MHz, SYSCLK2 = %f MHz, SYSCLK4 = %f MHz.\n",,,,, dsp_freq, ((float)(dsp_freq)/div2), ((float)(dsp_freq)/div4));
+        GEL_TextOut( "PLL1 Setup... Done.\n" );
+    }
+    else
+    {
+
+        GEL_TextOut( "PLL1 Setup... ERROR: multiplier is outside allowed range!\n",,2,,);
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Pll1_561_MHz
+ *
+ * PURPOSE:
+ *      Setup PLL 1 DSP @ 561 MHz with External clock
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Pll1_561_MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Pll1_561_MHz( )
+{
+    Set_Pll1( 17 );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Pll1_627_MHz
+ *
+ * PURPOSE:
+ *      Setup PLL 1 DSP @ 627 MHz with External clock
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Pll1_627_MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Pll1_627_MHz( )
+{
+    Set_Pll1( 19 );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Pll1_693_MHz
+ *
+ * PURPOSE:
+ *      Setup PLL 1 DSP @ 693 MHz with External clock
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Pll1_693_MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Pll1_693_MHz( )
+{
+    Set_Pll1( 21 );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Pll1_726_MHz
+ *
+ * PURPOSE:
+ *      Setup PLL 1 DSP @ 726 MHz with External clock
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Pll1_726_MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Pll1_726_MHz( )
+{
+    Set_Pll1( 22 );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Pll1_759_MHz
+ *
+ * PURPOSE:
+ *      Setup PLL 1 DSP @ 759 MHz with External clock
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Pll1_759_MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Pll1_759_MHz( )
+{
+    Set_Pll1( 23 );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Pll1_825_MHz
+ *
+ * PURPOSE:
+ *      Setup PLL 1 DSP @ 825 MHz with External clock
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Pll1_825_MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Pll1_825_MHz( )
+{
+    Set_Pll1( 25 );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Pll1_858_MHz
+ *
+ * PURPOSE:
+ *      Setup PLL 1 DSP @ 858 MHz with External clock
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Pll1_858_MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Pll1_858_MHz( )
+{
+    Set_Pll1( 26 );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Pll1_891_MHz
+ *
+ * PURPOSE:
+ *      Setup PLL 1 DSP @ 891 MHz with External clock
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Pll1_891_MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Pll1_891_MHz( )
+{
+    Set_Pll1( 27 );
+}
+
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Psc_All_On
+ *
+ * PURPOSE:
+ *      Enable all PSC modules and DSP power domains on ALWAYSON, and wait
+ *      for these power transitions to complete.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Psc_All_On()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Psc_All_On( )
+{
+    unsigned int i=0;
+
+    GEL_TextOut( "Power on all PSC modules and DSP domains... \n");
+
+    if( BOOTCFG & 0x40000)
+    {
+        GEL_TextOut( "In DVR mode. \n" );
+        Set_PSC_State(PD0, LPSC_TPCC, PSC_ENABLE);
+
+        for(i=5; i<12; i++)
+        {
+            // Check if boot with hpi mode
+            if(BOOTCFG & HPIEN)
+            {
+                if(i==LPSC_UHPI)
+                {
+                    Set_PSC_State(PD0, i, PSC_ENABLE);
+                }
+            }
+            else
+            {
+                if(i!=LPSC_UHPI)
+                {
+                    Set_PSC_State(PD0, i, PSC_ENABLE);
+                }
+            }
+        }
+
+        for(i=17; i<31; i++)
+        {
+            // Check if boot with hpi mode
+            if(BOOTCFG & HPIEN )
+            {
+                // Cannot have PCI in HPI boot mode
+                if(i!=LPSC_PCI)
+                {
+                    Set_PSC_State(PD0, i, PSC_ENABLE);
+                }
+            }
+            else
+            {
+                Set_PSC_State(PD0, i, PSC_ENABLE);
+            }
+        }
+        Set_PSC_State(PD1, LPSC_E3PSW, PSC_ENABLE);
+    }
+    else
+    {
+        GEL_TextOut( "In NON DVR mode... \n" );
+        Set_PSC_State(PD0, LPSC_TIMER2, PSC_ENABLE);
+        Set_PSC_State(PD0, LPSC_TIMER3, PSC_ENABLE);
+        Set_PSC_State(PD0, LPSC_UHPI, PSC_ENABLE);
+        Set_PSC_State(PD0, LPSC_VLYNQ, PSC_ENABLE);
+        Set_PSC_State(PD0, LPSC_TSIP0, PSC_ENABLE);
+        Set_PSC_State(PD0, LPSC_TSIP1, PSC_ENABLE);
+        Set_PSC_State(PD0, LPSC_GPIO, PSC_ENABLE);
+        Set_PSC_State(PD0, LPSC_IMCOP, PSC_ENABLE);
+        Set_PSC_State(PD1, LPSC_E3PSW, PSC_ENABLE);
+
+        Set_PSC_State(PD0, LPSC_DDR2, PSC_ENABLE);
+        Set_PSC_State(PD0, LPSC_TIMER0, PSC_ENABLE);
+        Set_PSC_State(PD0, LPSC_TIMER1, PSC_ENABLE);
+        Set_PSC_State(PD0, LPSC_TPCC, PSC_ENABLE);
+    }
+
+    GEL_TextOut( "Power on all PSC modules and DSP domains... Done.\n" );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_PSC_State
+ *
+ * PURPOSE:
+ *      Set a new power state for the specified domain id in a power controler
+ *      domain. Wait for the power transition to complete.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_PSC_State(unsigned int pd,unsigned int id,unsigned int state)
+ *
+ *      pd    - (i) power domain.
+ *
+ *      id    - (i) domain id to use for the specified power domain
+ *
+ *      state - (i) new state value to set
+ *                  0 = RESET
+ *                  1 = SYNC RESET
+ *                  2 = DISABLE
+ *                  3 = ENABLE
+ *
+ * RETURN VALUE
+ *      0 if ok, !=0 for error
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Set_PSC_State(unsigned int pd,unsigned int id,unsigned int state)
+{
+    unsigned int* mdctl;
+    unsigned int* mdstat;
+    int ret=0;
+
+    mdctl = ( unsigned int* )(PSC_MDCTL_BASE + ( 4 * id ));
+    mdstat = ( unsigned int* )( PSC_MDSTAT_BASE + ( 4 * id ));
+
+    // If state is already set, do nothing
+    if ( ( *mdstat & 0x1f ) == state )
+    {
+        return(0);
+    }
+
+    // Wait for GOSTAT to clear
+    Set_Timeout(1000);
+    while( Get_Timeout() && (PSC_PTSTAT & (0x1 << pd)) != 0 );
+
+    // Check if we got timeout error while waiting
+    if (!Get_Timeout())
+    {
+        GEL_TextOut( "Set_PSC_State... Timeout Error #01!\n",,2,,,);
+        ret=1;
+    }
+    else
+    {
+        // Set MDCTL NEXT to new state
+        *mdctl = ((*mdctl) & ~(0x1f)) | state;
+
+        // Start power transition by setting PTCMD GO to 1
+        PSC_PTCMD = 0x1<<pd;
+
+        // Wait for PTSTAT GOSTAT to clear
+        Set_Timeout(1000);
+        while( Get_Timeout() && (PSC_PTSTAT & (0x1 << pd)) != 0 );
+
+        // Check if we got timeout error while waiting
+        if (!Get_Timeout())
+        {
+            GEL_TextOut( "Set_PSC_State... Timeout Error #02!\n",,2,,,);
+            ret=2;
+        }
+        else
+        {
+            // Verify state changed
+            Set_Timeout(1000);
+            while(Get_Timeout() && ( *mdstat & 0x1f ) != state );
+
+            // Check if we got timeout error while waiting
+            if (!Get_Timeout())
+            {
+                GEL_TextOut( "Set_PSC_State... Timeout Error #03!\n",,2,,,);
+                ret=3;
+            }
+        }
+    }
+
+    // Kill the currently running timeout
+    Kill_Timeout();
+
+    return(ret);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_DDR2_265_9_MHz
+ *
+ * PURPOSE:
+ *      Setup DDR2 timings @ 265.9 MHz (External clock * 10)
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_DDR2_265_9_MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_DDR2_265_9_MHz( )
+{
+    // Setup DDR timing @ 265.9 MHz (External Clk * 10: fix pll ratio)
+    Set_DDR2(265909070);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_DDR2
+ *
+ * PURPOSE:
+ *      Configure DDR2 to run at specified frequency on a 32 bits bus.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_DDR2(ddr2_freq)
+ *
+ *      ddr2_freq - (i) Running desired frequency in Hz for DDR2 memory.
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Set_DDR2( int ddr2_freq )
+{
+    int iSdcfg,iCas, iSdtim1, iSdtim2, iTemp;
+    int ddr2_freM,ddr2_freD;
+    double fFreq,fTemp;
+
+    // ************************************************************************
+    // DDR2 Memory timing info
+    // Config 8 banks, page size=1Kword, (Clk>200 MHz CAS=4, Clk<=200 MHz CAS=3)
+    //        32 bits data bus
+
+    int    i8Banks_Flg=1;
+    double Trfc = 127.5e-9;
+    double Trp  = 15.0e-9;
+    double Trcd = 15.0e-9;
+    double Twr  = 15.0e-9;
+    double Tras = 45.0e-9;
+    double Trc  = 60.0e-9;
+    double Trrd = 10.0e-9;
+    double Twtr = 7.5e-9;
+
+    int Taond = 2;
+    double Txsnr = 137.5e-9;
+    int Txsrd = 200;
+    double Trtp = 7.5e-9;
+    int Tcke = 3;
+
+    // Adjust CAS latency/SDCFG depending of clock speed around 200 MHz
+    if (ddr2_freq>200000000)
+    {
+        // CAS 4 and config for CAS4
+        iCas = 4;
+        iSdcfg = 0x00000832;
+    }
+    else
+    {
+        // CAS 3 and config for CAS3
+        iCas = 3;
+        iSdcfg = 0x00000632;
+    }
+    // Typical setup for 265.9 MHz DDR (CAS4)
+    //DDR_SDCFG    = 0x00000832;
+    //DDR_SDRFC    = 0x0000081A;
+    //DDR_SDTIM1   = 0x42DB5BD9;
+    //DDR_SDRIM2   = 0x00A4C722;
+    //DDR_DMCCTL   = 0x50006405;
+
+    // ************************************************************************
+
+
+    // Displayed ddr frequency to setup
+    // DDR2 freq in MHz
+    ddr2_freM = ddr2_freq / 1000000;
+
+    // DDR2 freq first decimal if freq expressed in MHz
+    ddr2_freD = (((ddr2_freq / 10000) - ddr2_freM * 100) + 5) / 10;
+
+    // Add roundup unit to MHz displayed and reajust decimal value if necessary...
+    if (ddr2_freD > 9)
+    {
+       ddr2_freD = ddr2_freD - 10;
+       ddr2_freM = ddr2_freM + 1;
+    }
+    GEL_TextOut( "DDR2 Setup for 32 bits DDR @ %d.%d MHz... \n",,,,, ddr2_freM, ddr2_freD );
+
+    // Gives power to ddr2 just in case
+    Set_PSC_State(PD0, LPSC_DDR2, PSC_ENABLE);
+
+    //  *******************************************************
+    // 1- DDR2 Module Initialization
+    DDR_SDCFG    = (iSdcfg | TIMUNLOCK);
+
+    // Refresh Rate - Freq (Hz) * 7.8e-6 (sec)
+    fFreq = ddr2_freq * 7.8e-6;
+    DDR_SDRFC   = fFreq;
+
+    // Compute and sets SDTIM1 register timing from memory specs
+    // Tras must >= Trcd
+    if (Tras<Trcd)
+       Tras = Trcd;
+
+    iSdtim1 =  TimeToField(Twtr, ddr2_freq, 0);
+
+    // Adjust T_RRD with correct formula for 8 banks type mem or not...
+    if (i8Banks_Flg)
+    {
+        // T_RRD = ((4.0 * Trrd + 2.0 * Tck)/ (4.0 * Tck)) - 1
+        // Simplified to (with Tck = 1/ddr2_freq)
+        // T_RRD = (Trrd * ddr2_freq) - 0.5 (value must be rounded to higher int)
+        fTemp = 0.5;
+        fFreq = (Trrd * ddr2_freq) - fTemp;
+        iSdtim1 |= ClckToField(RoundToHigherInt(fFreq)+1, 3);
+    }
+    else
+        iSdtim1 |= TimeToField(Trrd, ddr2_freq, 3);
+    iSdtim1 |= TimeToField(Trc,  ddr2_freq, 6);
+    iSdtim1 |= TimeToField(Tras, ddr2_freq, 11);
+    iSdtim1 |= TimeToField(Twr,  ddr2_freq, 16);
+    iSdtim1 |= TimeToField(Trcd, ddr2_freq, 19);
+    iSdtim1 |= TimeToField(Trp,  ddr2_freq, 22);
+    iSdtim1 |= TimeToField(Trfc, ddr2_freq, 25);
+    DDR_SDTIM1   = iSdtim1;
+
+    // Compute and sets SDTIM2 register timing from memory specs
+    iSdtim2 =  ClckToField(Tcke, 0);
+    iSdtim2 |= TimeToField(Trtp, ddr2_freq, 5);
+    iSdtim2 |= ClckToField(Txsrd,8);
+    iSdtim2 |= TimeToField(Txsnr, ddr2_freq, 16);
+    iSdtim2 |= ClckToField((iCas-Taond), 23);
+    DDR_SDTIM2   = iSdtim2;
+
+    // Lock DDR Bank timing
+    DDR_SDCFG    = iSdcfg;
+
+    // ReadLatency = CAS +1 with default bits
+    DDR_DMCCTL  = 0x50006400 | ( iCas + 1);
+
+    Wait_Soft( 1500 );
+
+    GEL_TextOut( "DDR2 Setup... Done.\n" );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      RoundToHigherInt
+ *
+ * PURPOSE:
+ *      This routine will round a float value to higher int.
+ *      ex.: RoundToHigherInt(7.1)=8, RoundToHigherInt(7.7)=8,
+ *           RoundToHigherInt(7.0)=7
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      RoundToHigherInt(fValue)
+ *
+ *      fValue - (i) float value to be converted.
+ *
+ * RETURN VALUE
+ *      Converted int value.
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+RoundToHigherInt(fValue)
+{
+    int iResult,iTemp;
+    double fTemp, fSTolP, fSTolN, fPar, fZero;
+
+    fSTolP =  1.0e-7;
+    fSTolN = -1.0e-7;
+    fPar = fValue;
+    fZero = 0.0;
+
+    // Compute a truncated value for fValue
+    iTemp = fPar;
+
+    // Convert int value to double floating point
+    fTemp = iTemp;
+
+    // Compute difference between truncated int and value to be converted
+    fTemp = fPar - fTemp;
+
+    // If value to be converted is positive
+    if (fPar >= fZero)
+    {
+        // Verify equality by allowing single precision least digit tolerance 1e-7
+        // to catch (int + fSTolP) like exact int value
+        if ((fTemp >= fZero) && (fTemp < fSTolP))
+            // Do not adjust int because wright on it
+            iResult = iTemp;
+        else
+            // adjust to upper int
+            iResult = iTemp + 1;
+    }
+    else
+    {
+        fTemp = 1 - fTemp;
+        // Negative converted value
+        // Verify equality by allowing single precision least digit tolerance 1e-7
+        // to catch (int + fSTolP) like exact int value
+        if (((fTemp >= fZero) && (fTemp < fSTolP)))
+            // adjust to lower int cause we missed it
+            iResult = iTemp - 1;
+        else
+            // Do not adjust int because wright on it
+            iResult = iTemp;
+    }
+
+    //GEL_TextOut("ceil value:%f, int:%d\n",,,,,fValue, iResult);
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      TimeToField
+ *
+ * PURPOSE:
+ *      This routine will convert a ddr timing value in sec to a field integer
+ *      value for the ddr timing registers.
+ *      Does not validate register filed overflow!
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      TimeToField(fValue, freq, position)
+ *
+ *      fValue   - (i) float timing value in sec (to be converted).
+ *
+ *      freq     - (i) ddr frequency value in Hz.
+ *
+ *      position - (i) position of field within register.
+ *
+ * RETURN VALUE
+ *      Converted int ddr field value at correct position.
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+TimeToField(fValue, freq, position)
+{
+    int iResult;
+
+    double fTemp;
+
+    // Convert to double float
+    fTemp = fValue;
+
+    iResult = RoundToHigherInt((fTemp * freq)-1);
+    iResult = iResult << position;
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      ClckToField
+ *
+ * PURPOSE:
+ *      This routine will convert a ddr timing value in clock period unit to
+ *      a field integer value for the ddr timing registers.
+ *      Does not validate register field overflow!
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      ClckToField(value, position)
+ *
+ *      value    - (i) timing value in clock unit (to be converted).
+ *
+ *      position - (i) position of field within register.
+ *
+ * RETURN VALUE
+ *      Converted int ddr field value at correct position.
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+ClckToField(value, position)
+{
+    int iResult;
+
+    iResult = (value - 1) << position;
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Pin_Board_Mux
+ *
+ * PURPOSE:
+ *      Configure DSP pin mux and board mux for normal operation
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Pin_Board_Mux()
+ *
+ * RETURN VALUE
+ *      =1 SUCCESS, =0 FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Pin_Board_Mux( )
+{
+    int iResult=1,iData;
+
+    GEL_TextOut( "Set Board and DSP Pin Mux... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Set key value to enable pinmux changes
+        KEY = KEYUNLOCK;
+        Wait_Soft(1);
+
+        // DSP PINMUX settings for Timer, and VP1
+        // GPIO_EN  (BIT 21-20)   : =00  (All VP0 port DISABLE)
+        // VP1_EN   (BIT 17-16)   : =11  (All VP1 port ENABLE)
+        // VLYNQ_EN (BIT 05-04)   : =00  (All VP2 port DISABLE)
+        // VP34_EN  (BIT 15-14)   : =00  (VP3 and VP4 DISABLE)
+        // TIMER_EN (BIT 00)      : =1   (TIMER ENABLE)
+        // SPI_UART_EN (BIT 13-12): =00  (UART/SPI DISABLE)
+        // MCASP_EN (BIT 09-08)   : =00  (MCASP DISABLE)
+        // Bits
+        // 3322 2222 2222 1111 1111 1100 0000 0000
+        // 1098 7654 3210 9876 5432 1098 7654 3210
+        //
+        // 0000 0000 0000 0011 0000 0000 0000 0001
+        PINMUX0 = 0x00030001;
+
+        // Only one between video and emif is possible...
+        iResult &= Set_Muxes_5VideoPorts_SDCapt();
+        // iResult &= Set_Muxes_For_EMIF();
+
+        // Set muxes for audio and spdif
+        iResult &= Set_Muxes_For_Audio();
+
+        // Configure Uart mode according sw bootmode
+        // Read current uart/spi mode sets from the SW
+        if ((iData=Write_Read_I2C_Cfg(MSP430,1,UART_SPIREG))!=-1)
+        {
+            // Verify if sw in uart mode
+            if (iData & UARTMODE)
+            {
+                GEL_TextOut( "Set EVM mux for UART mode.\n" );
+
+               // Set key value to enable pinmux changes
+               KEY = KEYUNLOCK;
+               Wait_Soft(1);
+               PINMUX0 &= ~MUX_SPIUART_MASK;
+               PINMUX0 |= MUX_UART_EN;
+            }
+            else
+            {
+                GEL_TextOut( "Set EVM mux for SPI mode.\n" );
+
+               // Set key value to enable pinmux changes
+               KEY = KEYUNLOCK;
+               Wait_Soft(1);
+               PINMUX0 &= ~MUX_SPIUART_MASK;
+               PINMUX0 |= MUX_SPI_EN;
+            }
+        }
+        else
+        {
+            iResult = 0;
+        }
+    }
+    else
+    {
+        // Set key value to enable pinmux changes
+        KEY = KEYUNLOCK;
+        Wait_Soft(1);
+
+        // DSP PINMUX settings for Timer, and VP1
+        // GPIO_EN  (BIT 21-20)   : =00  (All VP0 port DISABLE)
+        // VP1_EN   (BIT 17-16)   : =00  (All VP1 port ENABLE)
+        // VLYNQ_EN (BIT 05-04)   : =00  (All VP2 port DISABLE)
+        // VP34_EN  (BIT 15-14)   : =00  (VP3 and VP4 DISABLE)
+        // TIMER_EN (BIT 00)      : =1   (TIMER ENABLE)
+        // SPI_UART_EN (BIT 13-12): =00  (UART/SPI DISABLE)
+        // MCASP_EN (BIT 09-08)   : =00  (MCASP DISABLE)
+        // Bits
+        // 3322 2222 2222 1111 1111 1100 0000 0000
+        // 1098 7654 3210 9876 5432 1098 7654 3210
+        //
+        // 0000 0000 0000 0000 0000 0000 0000 0001
+        PINMUX0 = 0x00000001;
+    }
+
+    // Checks if we got an error
+    if (iResult)
+        GEL_TextOut( "Set Board and DSP Pin Mux... Done.\n" );
+    else
+        GEL_TextOut( "Set Board and DSP Pin Mux... ERROR!\n",,2,, );
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_BEmif_8Bit_Bus
+ *
+ * PURPOSE:
+ *      Configure EMIFB for 8 bits wide bus access.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_BEmif_8Bit_Bus()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_BEmif_8Bit_Bus( )
+{
+    Set_BEmif( 8 );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_BEmif_16Bit_Bus
+ *
+ * PURPOSE:
+ *      Configure EMIFB for 16 bits wide bus access.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_BEmif_16Bit_Bus()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_BEmif_16Bit_Bus( )
+{
+    Set_BEmif( 16 );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      ConfigurePCI
+ *
+ * PURPOSE:
+ *      Check if PCI is active in boot option and configure it.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      ConfigurePCI()
+ *
+ * RETURN VALUE
+ *      =1 SUCCESS, =0 FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu ConfigurePCI( )
+{
+    int iBValue;
+
+    GEL_TextOut( "Configure PCI... \n");
+
+    iBValue=BOOTCFG;
+
+    if( iBValue & 0x40000)
+    {
+        // Check if HPI is disable (meaning PCI instead)?
+        if (( iBValue & HPIEN ) == 0 )
+        {
+            PCICFGDONE |= 1;
+            PCISLVCNTRL |= 1;
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+    }
+
+    GEL_TextOut( "Configure PCI... Done.\n");
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Board_Peripherals
+ *
+ * PURPOSE:
+ *      Setup all evm on board peripherals to a default value (poweron state).
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Board_Peripherals()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Board_Peripherals( )
+{
+    int iResult=0;
+    int iRev=0;
+
+    GEL_TextOut( "Setup Board Peripherals... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Checks if alpha board and do not configure because not implemented
+        // peripheral rst in alpha
+        if ((iRev=Get_Board_Rev())>=0)
+        {
+            // Alpha is pcb rev 0
+            if (PCBREV(iRev)!=0)
+            {
+                // Resets all peripheral to poweron default
+                if (Write_I2CECP_Cfg(MSP430,2,RESET_REG,PERRST))
+                {
+                    // Minimum peripheral needed reset time
+                    Set_Wait(100);
+
+                    if (Write_I2CECP(MSP430,2,RESET_REG,NOPERRST))
+                    {
+                        // Stabilization time
+                        Set_Wait(100);
+
+                        iResult=1;
+                    }
+                }
+            }
+            else
+            {
+                GEL_TextOut( "ALPHA Board. \n" );
+                iResult=1;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error
+    if (iResult==0)
+    {
+        GEL_TextOut( "Setup Board Peripherals... ERROR!\n" ,,2,,);
+    }
+    else
+    {
+        GEL_TextOut( "Setup Board Peripherals... Done.\n" );
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Muxes_5VideoPorts_SDCapt
+ *
+ * PURPOSE:
+ *      Setup EVM and DSP muxes to use the DSP 5 video ports with SD video
+ *      capture on TVP5154.
+ *      While doing this, VLYNQ is not available, neither EMIFB (flash memory),
+ *      also video ports won't be available on Daughter Card Connectors.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Muxes_5VideoPorts_SDCapt()
+ *
+ * RETURN VALUE
+ *      1 if OK, 0 in case of problem
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Muxes_5VideoPorts_SDCapt()
+{
+    unsigned int iResult=0;
+
+    GEL_TextOut( "Set EVM muxes for 5 video ports SD capture... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        if (Write_I2CECP_Cfg(MSP430,2,VPORTCTL,0x44))
+        {
+            // Successfull
+            iResult=1;
+        }
+
+        // Set key value to enable pinmux changes
+        // Do not wait long because keylock effective only 10000 cycles
+        KEY = KEYUNLOCK;
+        Wait_Soft(1);
+
+        // Perform DSP pin muxing
+        PINMUX0 &= ~MUX_VP0_MASK;
+        PINMUX0 |= MUX_VP0_EN;
+
+        PINMUX0 &= ~MUX_VP1_MASK;
+        PINMUX0 |= MUX_VP1_EN;
+
+        PINMUX0 &= ~MUX_VP2_MASK;
+        PINMUX0 |= MUX_VP2_EN;
+
+        PINMUX0 &= ~MUX_VP3_4_MASK;
+        PINMUX0 |= MUX_VP3_4_EN;
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    GEL_TextOut( "Set EVM muxes for 5 video ports SD capture... Done.\n" );
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Muxes_5VideoPorts_HDCapt
+ *
+ * PURPOSE:
+ *      Setup EVM and DSP muxes to use the DSP 5 video ports with HD video
+ *      capture on TVP7000.
+ *      While doing this, VLYNQ is not available, neither EMIFB (flash memory),
+ *      also video ports won't be available on Daughter Card Connectors.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Muxes_5VideoPorts_HDCapt()
+ *
+ * RETURN VALUE
+ *      1 if OK, 0 in case of problem
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Muxes_5VideoPorts_HDCapt()
+{
+    unsigned int iResult=0;
+
+    GEL_TextOut( "Set EVM muxes for 5 video ports HD capture... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        if (Write_I2CECP_Cfg(MSP430,2,VPORTCTL,0x48))
+        {
+            /* Configure TVP7000 to Generate 74.25MHz by default */
+            if (Write_I2CECP(P7000,2,0x0F,0x2E))
+            {
+                if (Write_I2CECP(P7000,2,0x2B,0x00))
+                {
+                    if (Write_I2CECP(P7000,2,0x01,0x89))
+                    {
+                        if (Write_I2CECP(P7000,2,0x02,0x80))
+                        {
+                            if (Write_I2CECP(P7000,2,0x03,0xA8))
+                            {
+                                if (Write_I2CECP(P7000,2,0x04,0xA0))
+                                {
+                                    if (Write_I2CECP(P7000,2,0x16,0x2D))
+                                    {
+                                        if (Write_I2CECP(P7000,2,0x10,0x6D))
+                                        {
+                                            if (Write_I2CECP(P7000,2,0x2E,0x80))
+                                            {
+                                                // Successfull
+                                                iResult=1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Set key value to enable pinmux changes
+        // Do not wait long because keylock effective only 10000 cycles
+        KEY = KEYUNLOCK;
+        Wait_Soft(1);
+
+        // Perform DSP pin muxing
+        PINMUX0 &= ~MUX_VP0_MASK;
+        PINMUX0 |= MUX_VP0_EN;
+
+        PINMUX0 &= ~MUX_VP1_MASK;
+        PINMUX0 |= MUX_VP1_EN;
+
+        PINMUX0 &= ~MUX_VP2_MASK;
+        PINMUX0 |= MUX_VP2_EN;
+
+        PINMUX0 &= ~MUX_VP3_4_MASK;
+        PINMUX0 |= MUX_VP3_4_EN;
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    GEL_TextOut( "Set EVM muxes for 5 video ports HD capture... Done.\n" );
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Muxes_5VideoPorts_VP34_Dcc
+ *
+ * PURPOSE:
+ *      Setup EVM and DSP muxes to use the DSP 5 video ports with video port
+ *      VP3 and VP4 connected to Daughter Card Connectors, VP0 and VP2 are
+ *      connected to TVP5154 (SD video CH1-4), VP1 pinmux is configured for video.
+ *      While doing this, TVP7000 (HD capture) and VLYNQ are not available,
+ *      neither EMIFB (flash memory).
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Muxes_5VideoPorts_VP34_Dcc()
+ *
+ * RETURN VALUE
+ *      1 if OK, 0 in case of problem
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Muxes_5VideoPorts_VP34_Dcc()
+{
+    unsigned int iResult=0;
+
+    GEL_TextOut( "Set EVM muxes for 5 video ports with VP3 & VP4 to daughter card connector...\n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // VP3 and VP4 connected to DCC, VP0 and VP2 connected to TVP5154
+        if (Write_I2CECP_Cfg(MSP430,2,VPORTCTL,0xA4))
+        {
+            // Successfull
+            iResult=1;
+        }
+
+        // Set key value to enable pinmux changes
+        // Do not wait long because keylock effective only 10000 cycles
+        KEY = KEYUNLOCK;
+        Wait_Soft(1);
+
+        // Perform DSP pin muxing
+        PINMUX0 &= ~MUX_VP0_MASK;
+        PINMUX0 |= MUX_VP0_EN;
+
+        PINMUX0 &= ~MUX_VP1_MASK;
+        PINMUX0 |= MUX_VP1_EN;
+
+        PINMUX0 &= ~MUX_VP2_MASK;
+        PINMUX0 |= MUX_VP2_EN;
+
+        PINMUX0 &= ~MUX_VP3_4_MASK;
+        PINMUX0 |= MUX_VP3_4_EN;
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    GEL_TextOut( "Set EVM muxes for 5 video ports with VP3 & VP4 to daughter card connector... Done.\n" );
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Muxes_For_EMIF
+ *
+ * PURPOSE:
+ *      Setup EVM muxes for EMIFB access (internal flash memory).
+ *      While doing this, Video port 3 and video port 4 are not available.
+ *      Optionnaly, in this setting, video port 0 and 2 have also be made
+ *      also unavailable (but is not mandatory to access EMIFB).
+ *      Also video ports/EMIFB won't be available on Daughter Card Connectors.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Muxes_For_EMIF()
+ *
+ * RETURN VALUE
+ *      1 if OK, 0 in case of problem
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Muxes_For_EMIF()
+{
+    unsigned int iResult=0;
+
+    GEL_TextOut( "Set EVM muxes for EMIFB (Flash memory)... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        if (Write_I2CECP_Cfg(MSP430,2,VPORTCTL,0x20))
+        {
+            // Successfull
+            iResult=1;
+        }
+
+        // Set key value to enable pinmux changes
+        // Do not wait long because keylock effective only 10000 cycles
+        KEY = KEYUNLOCK;
+        Wait_Soft(1);
+
+        // Perform DSP pin muxing
+        PINMUX0 &= ~MUX_VP0_MASK;
+
+        PINMUX0 &= ~MUX_VP2_MASK;
+
+        PINMUX0 &= ~MUX_VP3_4_MASK;
+        PINMUX0 |= MUX_EMIFA_EN;
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    GEL_TextOut( "Set EVM muxes for EMIFB (Flash memory)... Done.\n" );
+
+    return(iResult);
+}
+
+/**************************************************************************** 
+ *
+ * NAME  
+ *      Set_Muxes_EMIF_Dcc
+ *
+ * PURPOSE:
+ *      Setup EVM muxes for EMIFB access (external daugther card connector).
+ *      While doing this, Video port 3 and video port 4 are not available.
+ *      Optionnaly, in this setting, video port 0 and 2 have also be made
+ *      also unavailable (but is not mandatory to access EMIFB).
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Muxes_EMIF_Dcc()
+ *
+ * RETURN VALUE
+ *      1 if OK, 0 in case of problem
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Muxes_EMIF_Dcc()
+{
+    unsigned int iResult=0;
+
+    GEL_TextOut( "Set EVM muxes for EMIFB (daughter card connector)... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        if (Write_I2CECP_Cfg(MSP430,2,VPORTCTL,0xA0))
+        {
+            // Successfull
+            iResult=1;
+        }
+
+        // Set key value to enable pinmux changes
+        // Do not wait long because keylock effective only 10000 cycles
+        KEY = KEYUNLOCK;
+        Wait_Soft(1);
+
+        // Perform DSP pin muxing
+        PINMUX0 &= ~MUX_VP0_MASK;
+
+        PINMUX0 &= ~MUX_VP2_MASK;
+
+        PINMUX0 &= ~MUX_VP3_4_MASK;
+        PINMUX0 |= MUX_EMIFA_EN;
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+ 
+    GEL_TextOut( "Set EVM muxes for EMIFB (daughter card connector)... Done.\n" );
+
+    return(iResult);
+}
+
+/**************************************************************************** 
+ *
+ * NAME  
+ *      Set_Muxes_EmifVlynq_Dcc
+ *
+ * PURPOSE:
+ *      Setup EVM muxes for EMIFB access (external daugther card connector).
+ *      While doing this, Video port 3 and video port 4 are not available.
+ *      Optionnaly, in this setting, video port 0 and 2 have also be made
+ *      also unavailable (but is not mandatory to access EMIFB).
+ *      Vlynq is available also on vp2 daughter card connector.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Muxes_EmifVlynq_Dcc()
+ *
+ * RETURN VALUE
+ *      1 if OK, 0 in case of problem
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Muxes_EmifVlynq_Dcc()
+{
+    unsigned int iResult=0;
+
+    GEL_TextOut( "Set EVM muxes for EMIFB/VLYNQ (daughter card connector)... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        if (Write_I2CECP_Cfg(MSP430,2,VPORTCTL,0xA8))
+        {
+            // Successfull
+            iResult=1;
+        }
+
+        // Set key value to enable pinmux changes
+        // Do not wait long because keylock effective only 10000 cycles
+        KEY = KEYUNLOCK;
+        Wait_Soft(1);
+
+        // Perform DSP pin muxing
+        PINMUX0 &= ~MUX_VP0_MASK;
+
+        PINMUX0 &= ~MUX_VP2_MASK;
+        PINMUX0 |= MUX_VLYNQ_EN;
+
+        PINMUX0 &= ~MUX_VP3_4_MASK;
+        PINMUX0 |= MUX_EMIFA_EN;
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+ 
+    GEL_TextOut( "Set EVM muxes for EMIFB/VLYNQ (daughter card connector)... Done.\n" );
+
+    return(iResult);
+}
+
+/**************************************************************************** 
+ *
+ * NAME  
+ *      Set_Muxes_For_Audio
+ *
+ * PURPOSE:
+ *      Setup EVM muxes for audio access.
+ *      While doing this, MCASP won't be available on Daughter Card Connectors.
+ *      Both SPDIF outputs are also available (optical and coax).
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Muxes_For_Audio()
+ *
+ * RETURN VALUE
+ *      1 if OK, 0 in case of problem
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Muxes_For_Audio( )
+{
+    unsigned int iResult=0;
+
+    GEL_TextOut( "Set EVM muxes for McASP to AIC access... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        if (Write_I2CECP_Cfg(MSP430,2,MCASPCTL,0x19))
+        {
+            // Successfull
+            iResult=1;
+        }
+
+        // Set key value to enable pinmux changes
+        // Do not wait long because keylock effective only 10000 cycles
+        KEY = KEYUNLOCK;
+        Wait_Soft(1);
+
+        // Perform DSP pin muxing
+        PINMUX0 &= ~MUX_MCASP_MASK;
+        PINMUX0 |= MUX_MCASP_EN;
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    GEL_TextOut( "Set EVM muxes for McASP to AIC access... Done.\n" );
+
+    return(iResult);
+}
+
+/**************************************************************************** 
+ *
+ * NAME  
+ *      Set_Muxes_For_Mcasp_Dcc
+ *
+ * PURPOSE:
+ *      Setup EVM muxes for Mcasp on daugther card connector.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Muxes_For_Mcasp_Dcc()
+ *
+ * RETURN VALUE
+ *      1 if OK, 0 in case of problem
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_Muxes_For_Mcasp_Dcc( )
+{
+    unsigned int iResult=0;
+
+    GEL_TextOut( "Set EVM muxes for McASP on daughter card connector... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        if (Write_I2CECP_Cfg(MSP430,2,MCASPCTL,0x02))
+        {
+            // Successfull
+            iResult=1;
+        }
+
+        // Set key value to enable pinmux changes
+        // Do not wait long because keylock effective only 10000 cycles
+        KEY = KEYUNLOCK;
+        Wait_Soft(1);
+
+        // Perform DSP pin muxing
+        PINMUX0 &= ~MUX_MCASP_MASK;
+        PINMUX0 |= MUX_MCASP_EN;
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+ 
+    GEL_TextOut( "Set EVM muxes for McASP on daughter card connector... Done.\n" );
+
+    return(iResult);
+}
+
+/**************************************************************************** 
+ *
+ * NAME  
+ *      Set_HD_Clock
+ *
+ * PURPOSE:
+ *      Set the video clk for THS8200, TVP7000 to HD resolution video clk.
+ *      With the clock in this mode, SAA7105 SD video on J13 cannot be used.
+ *      Only component video output on J14 is available.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_HD_Clock()
+ *
+ * RETURN VALUE
+ *      1 if OK, 0 in case of problem
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_HD_Clock()
+{
+    unsigned int iResult=0;
+
+    GEL_TextOut( "Set 74.25 MHz clock for HD component output/capture... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        if (Write_I2CECP_Cfg(MSP430,2,COMMAND_REG,0x06))
+        {
+            // Successfull
+            iResult=1;
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    GEL_TextOut( "Set 74.25 MHz clock for HD component output/capture... Done.\n" );
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_SD_Clock
+ *
+ * PURPOSE:
+ *      Set the video clk for THS8200, TVP7000, SAA7105 to SD resolution video clk.
+ *      With the clock in this mode, SAA7105 SD video on J13 can be used for
+ *      S-video and composite video output.
+ *      Component video output on J14 is also available.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_SD_Clock()
+ *
+ * RETURN VALUE
+ *      1 if OK, 0 in case of problem
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_SD_Clock()
+{
+    unsigned int iResult=0;
+
+    GEL_TextOut( "Set 27 MHz clock for SD video output/capture... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        if (Write_I2CECP_Cfg(MSP430,2,COMMAND_REG,0x08))
+        {
+            // Successfull
+            iResult=1;
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    GEL_TextOut( "Set 27 MHz clock for SD video output/capture... Done.\n" );
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_VideoClk_25_125MHz
+ *
+ * PURPOSE:
+ *      Setup a custom video clock of 25.125MHz.
+ *      Set the video clk for THS8200, TVP7000 to specified video clk.
+ *      With the clock in this mode, SAA7105 SD video on J13 cannot be used.
+ *      Only component or RGBVH video output on J14 is available.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_VideoClk_25_125MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_VideoClk_25_125MHz( )
+{
+    int iResult=0;
+    int iRev=0;
+
+    GEL_TextOut( "Set_VideoClk_25_125MHz... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Checks if alpha board and do not configure because not implemented
+        if ((iRev=Get_Board_Rev())>=0)
+        {
+            if (FIRMREV(iRev)>3 || PCBREV(iRev)!=0)
+            {
+                // Set the specified video clk
+                if (Write_I2CECP_Cfg(MSP430,2,CUSTOMCLKREG,CLK25_125))
+                {
+                    iResult=1;
+                }
+            }
+            else
+            {
+                GEL_TextOut( "Not available in ALPHA Board. \n" );
+                iResult=1;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+         iResult=1;
+    }
+
+    // Check if we got any error
+    if (iResult==0)
+    {
+        GEL_TextOut( "Set_VideoClk_25_125MHz... ERROR!\n" ,,2,,);
+    }
+    else
+    {
+        GEL_TextOut( "Set_VideoClk_25_125MHz... Done.\n" );
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_VideoClk_31_500MHz
+ *
+ * PURPOSE:
+ *      Setup a custom video clock of 31.500MHz.
+ *      Set the video clk for THS8200, TVP7000 to specified video clk.
+ *      With the clock in this mode, SAA7105 SD video on J13 cannot be used.
+ *      Only component or RGBVH video output on J14 is available.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_VideoClk_31_500MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_VideoClk_31_500MHz( )
+{
+    int iResult=0;
+    int iRev=0;
+
+    GEL_TextOut( "Set_VideoClk_31_500MHz... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Checks if alpha board and do not configure because not implemented
+        if ((iRev=Get_Board_Rev())>=0)
+        {
+            if (FIRMREV(iRev)>3 || PCBREV(iRev)!=0)
+            {
+                // Set the specified video clk
+                if (Write_I2CECP_Cfg(MSP430,2,CUSTOMCLKREG,CLK31_500))
+                {
+                    iResult=1;
+                }
+            }
+            else
+            {
+                GEL_TextOut( "Not available in ALPHA Board. \n" );
+                iResult=1;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error
+    if (iResult==0)
+    {
+        GEL_TextOut( "Set_VideoClk_31_500MHz... ERROR!\n" ,,2,,);
+    }
+    else
+    {
+        GEL_TextOut( "Set_VideoClk_31_500MHz... Done.\n" );
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_VideoClk_36_000MHz
+ *
+ * PURPOSE:
+ *      Setup a custom video clock of 36.000MHz.
+ *      Set the video clk for THS8200, TVP7000 to specified video clk.
+ *      With the clock in this mode, SAA7105 SD video on J13 cannot be used.
+ *      Only component or RGBVH video output on J14 is available.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_VideoClk_36_000MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_VideoClk_36_000MHz( )
+{
+    int iResult=0;
+    int iRev=0;
+
+    GEL_TextOut( "Set_VideoClk_36_000MHz... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Checks if alpha board and do not configure because not implemented
+        if ((iRev=Get_Board_Rev())>=0)
+        {
+            if (FIRMREV(iRev)>3 || PCBREV(iRev)!=0)
+            {
+                // Set the specified video clk
+                if (Write_I2CECP_Cfg(MSP430,2,CUSTOMCLKREG,CLK36_000))
+                {
+                    iResult=1;
+                }
+            }
+            else
+            {
+                GEL_TextOut( "Not available in ALPHA Board. \n" );
+                iResult=1;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error
+    if (iResult==0)
+    {
+        GEL_TextOut( "Set_VideoClk_36_000MHz... ERROR!\n" ,,2,,);
+    }
+    else
+    {
+        GEL_TextOut( "Set_VideoClk_36_000MHz... Done.\n" );
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_VideoClk_40_000MHz
+ *
+ * PURPOSE:
+ *      Setup a custom video clock of 40.000MHz.
+ *      Set the video clk for THS8200, TVP7000 to specified video clk.
+ *      With the clock in this mode, SAA7105 SD video on J13 cannot be used.
+ *      Only component or RGBVH video output on J14 is available.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_VideoClk_40_000MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_VideoClk_40_000MHz( )
+{
+    int iResult=0;
+    int iRev=0;
+
+    GEL_TextOut( "Set_VideoClk_40_000MHz... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Checks if alpha board and do not configure because not implemented
+        if ((iRev=Get_Board_Rev())>=0)
+        {
+            if (FIRMREV(iRev)>3 || PCBREV(iRev)!=0)
+            {
+                // Set the specified video clk
+                if (Write_I2CECP_Cfg(MSP430,2,CUSTOMCLKREG,CLK40_000))
+                {
+                    iResult=1;
+                }
+            }
+            else
+            {
+                GEL_TextOut( "Not available in ALPHA Board. \n" );
+                iResult=1;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error
+    if (iResult==0)
+    {
+        GEL_TextOut( "Set_VideoClk_40_000MHz... ERROR!\n" ,,2,,);
+    }
+    else
+    {
+        GEL_TextOut( "Set_VideoClk_40_000MHz... Done.\n" );
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_VideoClk_49_500MHz
+ *
+ * PURPOSE:
+ *      Setup a custom video clock of 49.500MHz.
+ *      Set the video clk for THS8200, TVP7000 to specified video clk.
+ *      With the clock in this mode, SAA7105 SD video on J13 cannot be used.
+ *      Only component or RGBVH video output on J14 is available.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_VideoClk_49_500MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_VideoClk_49_500MHz( )
+{
+    int iResult=0;
+    int iRev=0;
+
+    GEL_TextOut( "Set_VideoClk_49_500MHz... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Checks if alpha board and do not configure because not implemented
+        if ((iRev=Get_Board_Rev())>=0)
+        {
+            if (FIRMREV(iRev)>3 || PCBREV(iRev)!=0)
+            {
+                // Set the specified video clk
+                if (Write_I2CECP_Cfg(MSP430,2,CUSTOMCLKREG,CLK49_500))
+                {
+                    iResult=1;
+                }
+            }
+            else
+            {
+                GEL_TextOut( "Not available in ALPHA Board. \n" );
+                iResult=1;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error
+    if (iResult==0)
+    {
+        GEL_TextOut( "Set_VideoClk_49_500MHz... ERROR!\n" ,,2,,);
+    }
+    else
+    {
+        GEL_TextOut( "Set_VideoClk_49_500MHz... Done.\n" );
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_VideoClk_50_000MHz
+ *
+ * PURPOSE:
+ *      Setup a custom video clock of 36.000MHz.
+ *      Set the video clk for THS8200, TVP7000 to specified video clk.
+ *      With the clock in this mode, SAA7105 SD video on J13 cannot be used.
+ *      Only component or RGBVH video output on J14 is available.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_VideoClk_50_000MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_VideoClk_50_000MHz( )
+{
+    int iResult=0;
+    int iRev=0;
+
+    GEL_TextOut( "Set_VideoClk_50_000MHz... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Checks if alpha board and do not configure because not implemented
+        if ((iRev=Get_Board_Rev())>=0)
+        {
+            if (FIRMREV(iRev)>3 || PCBREV(iRev)!=0)
+            {
+                // Set the specified video clk
+                if (Write_I2CECP_Cfg(MSP430,2,CUSTOMCLKREG,CLK50_000))
+                {
+                    iResult=1;
+                }
+            }
+            else
+            {
+                GEL_TextOut( "Not available in ALPHA Board. \n" );
+                iResult=1;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error
+    if (iResult==0)
+    {
+        GEL_TextOut( "Set_VideoClk_50_000MHz... ERROR!\n" ,,2,,);
+    }
+    else
+    {
+        GEL_TextOut( "Set_VideoClk_50_000MHz... Done.\n" );
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_VideoClk_56_250MHz
+ *
+ * PURPOSE:
+ *      Setup a custom video clock of 56.250MHz.
+ *      Set the video clk for THS8200, TVP7000 to specified video clk.
+ *      With the clock in this mode, SAA7105 SD video on J13 cannot be used.
+ *      Only component or RGBVH video output on J14 is available.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_VideoClk_56_250MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_VideoClk_56_250MHz( )
+{
+    int iResult=0;
+    int iRev=0;
+
+    GEL_TextOut( "Set_VideoClk_56_250MHz... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Checks if alpha board and do not configure because not implemented
+        if ((iRev=Get_Board_Rev())>=0)
+        {
+            if (FIRMREV(iRev)>3 || PCBREV(iRev)!=0)
+            {
+                // Set the specified video clk
+                if (Write_I2CECP_Cfg(MSP430,2,CUSTOMCLKREG,CLK56_250))
+                {
+                    iResult=1;
+                }
+            }
+            else
+            {
+                GEL_TextOut( "Not available in ALPHA Board. \n" );
+                iResult=1;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error
+    if (iResult==0)
+    {
+        GEL_TextOut( "Set_VideoClk_56_250MHz... ERROR!\n" ,,2,,);
+    }
+    else
+    {
+        GEL_TextOut( "Set_VideoClk_56_250MHz... Done.\n" );
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_VideoClk_65_000MHz
+ *
+ * PURPOSE:
+ *      Setup a custom video clock of 65.000MHz.
+ *      Set the video clk for THS8200, TVP7000 to specified video clk.
+ *      With the clock in this mode, SAA7105 SD video on J13 cannot be used.
+ *      Only component or RGBVH video output on J14 is available.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_VideoClk_65_000MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_VideoClk_65_000MHz( )
+{
+    int iResult=0;
+    int iRev=0;
+
+    GEL_TextOut( "Set_VideoClk_65_000MHz... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Checks if alpha board and do not configure because not implemented
+        if ((iRev=Get_Board_Rev())>=0)
+        {
+            if (FIRMREV(iRev)>3 || PCBREV(iRev)!=0)
+            {
+                // Set the specified video clk
+                if (Write_I2CECP_Cfg(MSP430,2,CUSTOMCLKREG,CLK65_000))
+                {
+                    iResult=1;
+                }
+            }
+            else
+            {
+                GEL_TextOut( "Not available in ALPHA Board. \n" );
+                iResult=1;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error
+    if (iResult==0)
+    {
+        GEL_TextOut( "Set_VideoClk_65_000MHz... ERROR!\n" ,,2,,);
+    }
+    else
+    {
+        GEL_TextOut( "Set_VideoClk_65_000MHz... Done.\n" );
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_VideoClk_75_000MHz
+ *
+ * PURPOSE:
+ *      Setup a custom video clock of 75.000MHz.
+ *      Set the video clk for THS8200, TVP7000 to specified video clk.
+ *      With the clock in this mode, SAA7105 SD video on J13 cannot be used.
+ *      Only component or RGBVH video output on J14 is available.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_VideoClk_75_000MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_VideoClk_75_000MHz( )
+{
+    int iResult=0;
+    int iRev=0;
+
+    GEL_TextOut( "Set_VideoClk_75_000MHz... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Checks if alpha board and do not configure because not implemented
+        if ((iRev=Get_Board_Rev())>=0)
+        {
+            if (FIRMREV(iRev)>3 || PCBREV(iRev)!=0)
+            {
+                // Set the specified video clk
+                if (Write_I2CECP_Cfg(MSP430,2,CUSTOMCLKREG,CLK75_000))
+                {
+                    iResult=1;
+                }
+            }
+            else
+            {
+                GEL_TextOut( "Not available in ALPHA Board. \n" );
+                iResult=1;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error
+    if (iResult==0)
+    {
+        GEL_TextOut( "Set_VideoClk_75_000MHz... ERROR!\n" ,,2,,);
+    }
+    else
+    {
+        GEL_TextOut( "Set_VideoClk_75_000MHz... Done.\n" );
+    }
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_VideoClk_108_000MHz
+ *
+ * PURPOSE:
+ *      Setup a custom video clock of 108.000MHz.
+ *      Set the video clk for THS8200, TVP7000 to specified video clk.
+ *      With the clock in this mode, SAA7105 SD video on J13 cannot be used.
+ *      Only component or RGBVH video output on J14 is available.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_VideoClk_108_000MHz()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Set_VideoClk_108_000MHz( )
+{
+    int iResult=0;
+    int iRev=0;
+
+    GEL_TextOut( "Set_VideoClk_108_000MHz... \n" );
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Checks if alpha board and do not configure because not implemented
+        if ((iRev=Get_Board_Rev())>=0)
+        {
+            if (FIRMREV(iRev)>3 || PCBREV(iRev)!=0)
+            {
+                // Set the specified video clk
+                if (Write_I2CECP_Cfg(MSP430,2,CUSTOMCLKREG,CLK108_000))
+                {
+                    iResult=1;
+                }
+            }
+            else
+            {
+                GEL_TextOut( "Not available in ALPHA Board. \n" );
+                iResult=1;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error
+    if (iResult==0)
+    {
+        GEL_TextOut( "Set_VideoClk_108_000MHz... ERROR!\n" ,,2,,);
+    }
+    else
+    {
+        GEL_TextOut( "Set_VideoClk_108_000MHz... Done.\n" );
+    }
+}
+
+
+menuitem "EVMDM648 Debug Tools";
+
+/****************************************************************************
+ *
+ * NAME
+ *      Debug_Tools_Help
+ *
+ * PURPOSE:
+ *      Prints the help for the debug tools menu.
+ *
+ * USAGE
+ *
+ *      Called from GEL menu only
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Debug_Tools_Help()
+{
+    GEL_TextOut("\n\n");
+    GEL_TextOut("                  DEBUG TOOLS MENU HELP\n");
+    GEL_TextOut("                  ---------------------\n\n");
+    GEL_TextOut("This menu is to do some specifics debug functions on EVM, or to get\n");
+    GEL_TextOut(" some debug informations.\n\n");
+    GEL_TextOut("Invalidate_Cache: allows to purge all DSP cache (destroy L1P, L1D, L2).\n");
+    GEL_TextOut("Flush_Cache: allows to flush all DSP cache (L1P, L1D, L2) to lower\n");
+    GEL_TextOut("             memory and then invalidates the cache contents.\n");
+    GEL_TextOut("Boot_Mode_Info: displays the DSP boot mode info as specified from EVM boot SW.\n");
+    GEL_TextOut("Read_Mac_address: reads and displays DSP silicon MAC address.\n");
+    GEL_TextOut("Quick_Test: does EVM quick test which rotate user leds, read user sw,\n");
+    GEL_TextOut("            reads PCB and ECP revisions.\n");
+    GEL_TextOut("Read_UserSW: reads user dip switches.\n");
+    GEL_TextOut("Write_UserLeds: allows to write to user LEDS.\n");
+    GEL_TextOut("Read_DCC_IO: reads Daughter Card Connectors user IO.\n");
+    GEL_TextOut("Write_DCC_IO: writes Daughter Card Connectors user IO.\n");
+    GEL_TextOut("Sets_Dir_DCC_IO: configure which Daughter Card Connectors user IO is input/ouput.\n");
+    GEL_TextOut("Get_Video_Status: Gets video status from SAA7105. Will tell the current NTSC/PAL\n");
+    GEL_TextOut("                  mode from JP4, and displays TV detect status from J13,\n");
+    GEL_TextOut("                  (TV detect status needs SAA7105 configuration first).\n");
+    GEL_TextOut("Get_PCI_Status: indicates if the EVM is plugged in PC PCI slot or not.\n");
+    GEL_TextOut("Dump_ECP_Registers: displays a list of all ECP internal registers values.\n\n");
+
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Invalidate_Cache
+ *
+ * PURPOSE:
+ *      Invalidate L1P, L1D and L2 cache (purge all cache contents).
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Invalidate_Cache()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Invalidate_Cache()
+{
+    GEL_TextOut( "Invalidate All Cache...\n" );
+
+    /* Invalidate L1P cache */
+    *(int*)L1PINV = 1;
+
+    // Wait for cache operation to finish
+    // Set timeout before polling...
+    Set_Timeout(1000);
+
+    // Wait for transition to finish for max timeout time...
+    while( Get_Timeout() && ( *(int*)L1PINV & 0x0001 ) );
+
+    // Check if we got timeout error while waiting
+    if (!Get_Timeout())
+    {
+        GEL_TextOut( "Invalidate All Cache... Timeout Error #01!\n",,2,,,);
+    }
+
+    /* Invalidate L1D cache */
+    *(int*)L1DINV = 1;
+
+    // Wait for cache operation to finish
+    // Set timeout before polling...
+    Set_Timeout(1000);
+
+    // Wait for transition to finish for max timeout time...
+    while( Get_Timeout() && ( *(int*)L1DINV & 0x0001 ) );
+
+    // Check if we got timeout error while waiting
+    if (!Get_Timeout())
+    {
+        GEL_TextOut( "Invalidate All Cache... Timeout Error #02!\n",,2,,,);
+    }
+
+    /* Invalidate L2 cache */
+    *(int*)L2INV = 1;
+
+    // Wait for cache operation to finish
+    // Set timeout before polling...
+    Set_Timeout(1000);
+
+    // Wait for transition to finish for max timeout time...
+    while( Get_Timeout() && ( *(int*)L2INV & 0x0001 ) );
+
+    // Check if we got timeout error while waiting
+    if (!Get_Timeout())
+    {
+        GEL_TextOut( "Invalidate All Cache... Timeout Error #03!\n",,2,,,);
+    }
+
+    Kill_Timeout();
+
+    GEL_TextOut( "Invalidate All Cache... Done.\n" );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Flush_Cache
+ *
+ * PURPOSE:
+ *      Invalidate L1P, FLUSH L1D and L2 cache (writeback dirty lines to
+ *      lower memory and invalidates cache content).
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Flush_Cache()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Flush_Cache()
+{
+    GEL_TextOut( "Flush All Cache...\n" );
+
+    /* Invalidate L1P cache */
+    *(int*)L1PINV = 1;
+
+    // Wait for cache operation to finish
+    // Set timeout before polling...
+    Set_Timeout(1000);
+
+    // Wait for transition to finish for max timeout time...
+    while( Get_Timeout() && ( *(int*)L1PINV & 0x0001 ) );
+
+    // Check if we got timeout error while waiting
+    if (!Get_Timeout())
+    {
+        GEL_TextOut( "Flush All Cache... Timeout Error #01!\n",,2,,,);
+    }
+
+    /* Flush L1D cache (writeback dirty lines to lower memory and invalidate all) */
+    *(int*)L1DWBINV = 1;
+
+    // Wait for cache operation to finish
+    // Set timeout before polling...
+    Set_Timeout(1000);
+
+    // Wait for transition to finish for max timeout time...
+    while( Get_Timeout() && ( *(int*)L1DWBINV & 0x0001 ) );
+
+    // Check if we got timeout error while waiting
+    if (!Get_Timeout())
+    {
+        GEL_TextOut( "Flush All Cache... Timeout Error #02!\n",,2,,,);
+    }
+
+    /* Flush L2 cache (writeback dirty lines to lower memory and invalidate all) */
+    *(int*)L2WBINV = 1;
+
+    // Wait for cache operation to finish
+    // Set timeout before polling...
+    Set_Timeout(1000);
+
+    // Wait for transition to finish for max timeout time...
+    while( Get_Timeout() && ( *(int*)L2WBINV & 0x0001 ) );
+
+    // Check if we got timeout error while waiting
+    if (!Get_Timeout())
+    {
+        GEL_TextOut( "Flush All Cache... Timeout Error #03!\n",,2,,,);
+    }
+
+    Kill_Timeout();
+
+    GEL_TextOut( "Flush All Cache... Done.\n" );
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Boot_Mode_Info
+ *
+ * PURPOSE:
+ *      Display on the screen information about the selected rom boot mode and
+ *      other boot options defined at startup.
+ *
+ * USAGE
+ *
+ *      Called from GEL menu only
+ *
+ * RETURN VALUE
+ *      1= SUCCESS, 0=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Boot_Mode_Info( )
+{
+    int endian;
+    int aeclkinsel;
+    int pci66;
+    int hpiwidth;
+    int fast_boot;
+    int hpien;
+    int emifb_bus_width;
+    int boot_mode;
+    int retcode = 1;
+
+    endian          = ( BOOTCFG >> 20 ) & 1;
+    aeclkinsel      = ( BOOTCFG >> 23 ) & 1;
+    pci66           = ( BOOTCFG >> 22 ) & 1;
+    hpiwidth        = ( BOOTCFG >> 21 ) & 1;
+    fast_boot       = ( BOOTCFG >> 19 ) & 1;
+
+    hpien           = ( BOOTCFG >> 17 ) & 1;
+    emifb_bus_width = ( BOOTCFG >> 16 ) & 1;
+    boot_mode       = ( BOOTCFG ) & 0xF;
+
+    GEL_TextOut( "  *********************** Boot Mode Info **********************\n" );
+
+    // Displays rom bootmode selected
+    if ( boot_mode == 0 )
+    {
+        GEL_TextOut( "  > [BOOTMODE]  : Master Mode - Emulation Boot\n" );
+    }
+    else
+        if ( boot_mode == 1 )
+        {
+            if ( hpien == 1 )
+                GEL_TextOut( "  > [BOOTMODE]  : Slave Mode - HPI Boot\n" );
+            else
+                if ( fast_boot==1 )
+                    GEL_TextOut( "  > [BOOTMODE]  : Slave Mode - PCI Boot No Auto Init\n" );
+                else
+                {
+                    GEL_TextOut( "  > [BOOTMODE]  : Invalid PCI Bootmode DUHPIEN=0, FASTBOOT=0\n" );
+                    retcode = 0;
+                }
+        }
+        else
+            if ( boot_mode == 2 )
+            {
+                if ( hpien == 1 )
+                    GEL_TextOut( "  > [BOOTMODE]  : Slave Mode - HPI Boot\n" );
+                else
+                    if ( fast_boot==1 )
+                        GEL_TextOut( "  > [BOOTMODE]  : Slave Mode - PCI Boot With Auto Init\n" );
+                    else
+                    {
+                        GEL_TextOut( "  > [BOOTMODE]  : Invalid PCI Bootmode DUHPIEN=0, FASTBOOT=0\n" );
+                        retcode = 0;
+                    }
+            }
+            else
+                if ( boot_mode == 4 )
+                {
+                    if ( fast_boot == 0 )
+                        GEL_TextOut( "  > [BOOTMODE]  : Master Mode - EMIFB ROM Direct Boot\n" );
+                    else
+                        GEL_TextOut( "  > [BOOTMODE]  : Master Mode - EMIFB ROM Fast Boot\n" );
+                }
+                else
+                    if ( boot_mode == 5 )
+                        GEL_TextOut( "  > [BOOTMODE]  : Master Mode - I2C Boot\n" );
+                    else
+                        if ( boot_mode == 6 )
+                            GEL_TextOut( "  > [BOOTMODE]  : Master Mode - SPI Boot\n" );
+                        else
+                            if ( boot_mode == 8 )
+                                GEL_TextOut( "  > [BOOTMODE]  : Master Mode - Ethernet SGMII0\n" );
+                            else
+                                if ( boot_mode == 9 )
+                                {
+                                    GEL_TextOut( "  > [BOOTMODE]  : Master Mode - Ethernet SGMII0, SGMII1 PF\n" );
+                                }
+                                else
+                                    if ( boot_mode == 14 )
+                                        GEL_TextOut( "  > [BOOTMODE]  : Master Mode - UART Boot With Flow Control\n" );
+                                    else
+                                        if ( boot_mode == 3 )
+                                        {
+                                            GEL_TextOut( "  > [BOOTMODE]  : Master Mode - UART Boot Without Flow Control\n" );
+                                        }
+                                        else
+                                            if ( boot_mode == 10 )
+                                            {
+                                                GEL_TextOut( "  > [BOOTMODE]  : Master Mode - Ethernet SGMII1, SGMII0 PF\n" );
+                                            }
+                                            else
+                                            {
+                                                GEL_TextOut( "  > [BOOTMODE]  : ERROR Boot Option Not Supported!\n" ,,2,,);
+                                                retcode = 0; 
+                                            }
+
+    if ( aeclkinsel==1 )
+        GEL_TextOut( "  > [AECLKINSEL]: EMIF3B Clocked From Internal SYSCLK\n" );
+    else
+        GEL_TextOut( "  > [AECLKINSEL]: EMIF3B Clocked From Outside AECLKIN\n" );
+
+    if ( pci66 ==0)
+        GEL_TextOut( "  > [PCI66]     : No (33 MHz)\n" );
+    else
+        GEL_TextOut( "  > [PCI66]     : Yes (66 MHz)\n" );
+
+    if ( hpiwidth ==0)
+        GEL_TextOut( "  > [HPIWIDTH]  : 16 Bits\n" );
+    else
+        GEL_TextOut( "  > [HPIWIDTH]  : 32 Bits\n" );
+
+    if ( fast_boot == 0 )
+        GEL_TextOut( "  > [FASTBOOT]  : No\n" );
+    else
+        GEL_TextOut( "  > [FASTBOOT]  : Yes\n" );
+
+    if ( emifb_bus_width == 0 )
+        GEL_TextOut( "  > [EMIFBWIDTH]: 8 bits\n" );
+    else
+        GEL_TextOut( "  > [EMIFBWIDTH]: 16 bits\n" );
+
+    if ( hpien == 1 )
+        GEL_TextOut( "  > [PCI]       : OFF\n" );
+    if ( hpien == 0 )
+        GEL_TextOut( "  > [PCI]       : ON\n" );
+
+    if ( endian == 0 )
+        GEL_TextOut( "  > [ENDIAN]    : Big Endian\n" );
+    else
+        GEL_TextOut( "  > [ENDIAN]    : Little Endian\n" );
+
+    return(retcode);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Read_Mac_Address
+ *
+ * PURPOSE:
+ *      Display on the screen information about the ethernet MAC address
+ *      of the silicon device.
+ *
+ * USAGE
+ *
+ *      Called from GEL menu only
+ *
+ * RETURN VALUE
+ *      1= SUCCESS, 0=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Read_Mac_Address( )
+{
+   GEL_TextOut("Read MAC Address...\n");
+
+   GEL_TextOut("MAC#1:%x  MAC#2:%x\n",,,,,MAC_ADDR_R0,MAC_ADDR_R1);
+   GEL_TextOut("Read MAC Address... Done.\n");
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Quick_Test
+ *
+ * PURPOSE:
+ *      Do a quick test of EVM: rotate user leds, read user sw, pcb and
+ *      ecp firm revision of EVM. Displays the result/error messages on
+ *      output window.
+ *
+ * USAGE
+ *      This routine can be called from GEL menu:
+ *
+ *      Quick_Test()
+ *
+ * RETURN VALUE
+ *      0=SUCCESS, -1=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Quick_Test()
+{
+    int iRev=0,iSw=0;
+    int iResult=-1;
+
+    GEL_TextOut("Quick Test...\n");
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Rotate all user leds in sequence
+        if (LED_Demo())
+        {
+            if ((iRev=Get_Board_Rev())>=0)
+            {
+                if ((iSw=Get_Switches())>=0)
+                {
+                    GEL_TextOut("User Switches:%x  Board Revision:%d  ECP Firmware Revision:%d\n",,,,, iSw, PCBREV(iRev), FIRMREV(iRev));
+                    iResult=0;
+                }
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error while doing test...
+    if (iResult==-1)
+    {
+        GEL_TextOut("Quick Test... Failed!\n",,2,,);
+    }
+    else
+    {
+        GEL_TextOut("Quick Test... Successfull!\n");
+    }
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Read_UserSW
+ *
+ * PURPOSE:
+ *      Read user sw on EVM.
+ *      Displays the result/error messages on output window.
+ *
+ * USAGE
+ *      This routine can be called from GEL menu:
+ *
+ *      Read_UserSW()
+ *
+ * RETURN VALUE
+ *      0=SUCCESS, -1=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Read_UserSW()
+{
+    int iSw=0;
+    int iResult=-1;
+
+    GEL_TextOut("SW Reading...\n",,);
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        if ((iSw=Get_Switches())>=0)
+        {
+            GEL_TextOut("Switches:%x\n",,,,, iSw);
+            iResult=0;
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error while doing test...
+    if (iResult==-1)
+    {
+        GEL_TextOut("SW Reading... Failed!\n",,2,,);
+    }
+    else
+    {
+        GEL_TextOut("SW Reading... Successfull!\n",,);
+    }
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Write_UserLeds
+ *
+ * PURPOSE:
+ *      Read user sw on EVM.
+ *      Displays the result/error messages on output window.
+ *
+ * USAGE
+ *      This routine can be called from GEL menu.
+ *
+ * RETURN VALUE
+ *      0=SUCCESS, -1=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+dialog Write_UserLeds(value "Leds Value 0-15 (8 = LED5 ON, LED4-2 OFF)")
+{
+    int iLed,iOld;
+    int iResult=-1;
+
+    GEL_TextOut("LEDS Writing...\n",,);
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Read LED register
+        if ((iOld=Write_Read_I2C_Cfg(MSP430,1,LEDREGISTER))!=-1)
+        {
+            iLed=iOld&~(LED2|LED3|LED4|LED5);
+
+            // Turn On Desired LED
+            if (Write_I2CECP(MSP430,2,LEDREGISTER,(iLed|((value&0x0f)<<4))))
+            {
+                iResult=0;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error while doing test...
+    if (iResult==-1)
+    {
+        GEL_TextOut("LEDS Writing... Failed!\n",,2,,);
+    }
+    else
+    {
+        GEL_TextOut("LEDS Writing... Successfull!\n",,);
+    }
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Read_DCC_IO
+ *
+ * PURPOSE:
+ *      Read Daugter Card Connector user IO pins state.
+ *
+ * USAGE
+ *      This routine can be called from GEL menu:
+ *
+ *      Read_DCC_IO()
+ *
+ * RETURN VALUE
+ *      >=0 SUCCESS (with read value returned), -1=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Read_DCC_IO()
+{
+    int iOld;
+    int iResult=-1;
+
+    GEL_TextOut("Read_DCC_IO...\n",,);
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Read DCC IO state register
+        if ((iOld=Write_Read_I2C_Cfg(MSP430,1,DCC_IO_STATE))!=-1)
+        {
+            iResult=iOld & IO_MASK;
+
+            GEL_TextOut("DCC IO:%x\n",,,,, iResult);
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error while doing test...
+    if (iResult==-1)
+    {
+        GEL_TextOut("Read_DCC_IO... Failed!\n",,2,,);
+    }
+    else
+    {
+        GEL_TextOut("Read_DCC_IO... Successfull!\n",,);
+    }
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Write_DCC_IO
+ *
+ * PURPOSE:
+ *      Write Daugter Card Connector user IO pins.
+ *
+ * USAGE
+ *      This routine can be called from GEL menu:
+ *
+ * RETURN VALUE
+ *      1=SUCCESS, 0=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+dialog Write_DCC_IO(value "IO Written Value 0-63 (GPIOO5 to GPIO00)")
+{
+    int iResult=0;
+
+    GEL_TextOut("Write_DCC_IO...\n",,);
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Write DCC IO values in state register
+        if (Write_I2CECP_Cfg(MSP430,2,DCC_IO_STATE,value & IO_MASK))
+        {
+            iResult=1;
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error while doing test...
+    if (iResult==0)
+    {
+        GEL_TextOut("Write_DCC_IO... Failed!\n",,2,,);
+    }
+    else
+    {
+        GEL_TextOut("Write_DCC_IO... Successfull!\n",,);
+    }
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Sets_Dir_DCC_IO
+ *
+ * PURPOSE:
+ *      Sets Daugter Card Connector user IO pins directions (input/output).
+ *      A 1 at a bit position means this io is output.
+ *
+ * USAGE
+ *      This routine can be called from GEL menu:
+ *
+ * RETURN VALUE
+ *      1=SUCCESS, 0=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+dialog Sets_Dir_DCC_IO(iodir "IO Dir (GPIO5-0) (bit 1=out, 0=in) value 0-63")
+{
+    int iResult=0;
+
+    GEL_TextOut("Sets_Dir_DCC_IO...\n",,);
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Write DCC IO directions for each bit in ctrl register
+        if (Write_I2CECP_Cfg(MSP430,2,DCC_IO_CTRL,iodir & IO_MASK))
+        {
+            iResult=1;
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error while doing test...
+    if (iResult==0)
+    {
+        GEL_TextOut("Sets_Dir_DCC_IO... Failed!\n",,2,,);
+    }
+    else
+    {
+        GEL_TextOut("Sets_Dir_DCC_IO... Successfull!\n",,);
+    }
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Get_Video_Status
+ *
+ * PURPOSE:
+ *      Read video status (video mode).
+ *
+ * USAGE
+ *      This routine can be called from GEL menu:
+ *
+ *      Get_Video_Status()
+ *
+ * RETURN VALUE
+ *      >=0 SUCCESS (with read value returned), -1=FAIL
+ *
+ * REFERENCE
+ *      see saa7105 datasheet (requiered MSOE=0)
+ *
+ ****************************************************************************/
+hotmenu Get_Video_Status()
+{
+    int iOld;
+    int iResult=-1;
+
+    GEL_TextOut("Get_Video_Status...\n",,);
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Read video status register
+        if ((iOld=Write_Read_I2C_Cfg(MSP430,1,VIDEO_STATUS))!=-1)
+        {
+            iResult=iOld & (TVD|NTSC);
+
+            if (iResult & TVD)
+                GEL_TextOut("TV Detect:Y  Mode:");
+            else
+                GEL_TextOut("TV Detect:N  Mode:");
+
+            if (iResult & NTSC)
+                GEL_TextOut("NTSC\n");
+            else
+                GEL_TextOut("PAL\n");
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error...
+    if (iResult==-1)
+    {
+        GEL_TextOut("Get_Video_Status... Failed!\n",,2,,);
+    }
+    else
+    {
+        GEL_TextOut("Get_Video_Status... Successfull!\n",,);
+    }
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Get_PCI_Status
+ *
+ * PURPOSE:
+ *      Indicates if the card is plugged on the PC pci bus or not.
+ *
+ * USAGE
+ *      This routine can be called from GEL menu:
+ *
+ *      Get_PCI_Status()
+ *
+ * RETURN VALUE
+ *      >=0 SUCCESS (with read value returned), -1=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Get_PCI_Status()
+{
+    int iOld;
+    int iResult=-1;
+
+    GEL_TextOut("Get_PCI_Status...\n",,);
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Read DCC IO state register
+        if ((iOld=Write_Read_I2C_Cfg(MSP430,1,PCI_CONFIG))!=-1)
+        {
+            iResult=iOld & 1;
+
+            if (iResult==0)
+                GEL_TextOut("EVM is installed in PC PCI slot.\n");
+            else
+                GEL_TextOut("EVM is not installed in PC PCI slot.\n");
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error while doing test...
+    if (iResult==-1)
+    {
+        GEL_TextOut("Get_PCI_Status... Failed!\n",,2,,);
+    }
+    else
+    {
+        GEL_TextOut("Get_PCI_Status... Successfull!\n",,);
+    }
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Dump_ECP_Registers
+ *
+ * PURPOSE:
+ *      This routine will dump all ECP registers value on the console.
+ *
+ * USAGE
+ *      This routine can be called from GEL menu:
+ *
+ *      Dump_ECP_Registers()
+ *
+ * RETURN VALUE
+ *      >=0 SUCCESS (with read value returned), -1=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Dump_ECP_Registers()
+{
+    int iOld;
+    int iResult=-1;
+    int iLoop=0;
+    int iRev=0;
+    int iToRead=MAX_ECP_REGB1;
+
+    GEL_TextOut("Dump_ECP_Registers...\n",,);
+
+    // Only in DVR mode
+    if( BOOTCFG & 0x40000)
+    {
+        // Checks if mimimum firmware version to achieve this function
+        if ((iRev=Get_Board_Rev())>=0)
+        {
+            // Validates with mimimum compatible firm rev
+            if (FIRMREV(iRev)>=MAX_ECP_REGB_FIRM1)
+            {
+                // Adjust number of register to read according to firmware version
+                if (FIRMREV(iRev)==MAX_ECP_REGB_FIRM2)
+                {
+                    iToRead=MAX_ECP_REGB2;
+                }
+                else
+                {
+                    if (FIRMREV(iRev)>=MAX_ECP_REGB_FIRM3 && FIRMREV(iRev)<MAX_ECP_REGB_FIRM4)
+                    {
+                        iToRead=MAX_ECP_REGB3;
+                    }
+                    else
+                    {
+                        if (FIRMREV(iRev)>=MAX_ECP_REGB_FIRM4)
+                        {
+                            iToRead=MAX_ECP_REGB4;
+                        }
+                    }
+                }
+
+                // Read all ECP registers and displays
+                for (iLoop=0;iLoop<=iToRead;iLoop++)
+                {
+                    if ((iOld=Write_Read_I2C(MSP430,1,iLoop))!=-1)
+                    {
+                        // First register
+                        GEL_TextOut("ECP addr=%x, value=%x.\n",,,,,iLoop,iOld);
+                    }
+                    else
+                        break;
+                }
+                // Check if we got any error while reading...
+                if (iOld!=-1)
+                    iResult=0;
+            }
+            else
+            {
+                // The board firm version is not compatible
+                GEL_TextOut( "Function not available for this board version.\n" );
+                iResult=1;
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Not available in non DVR mode. \n" );
+        iResult=1;
+    }
+
+    // Check if we got any error while doing test...
+    if (iResult==-1)
+    {
+        GEL_TextOut("Dump_ECP_Registers... Failed!\n",,2,,);
+    }
+    else
+    {
+        GEL_TextOut("Dump_ECP_Registers... Successfull!\n",,);
+    }
+
+    return(iResult);
+}
+
+menuitem "Memory Map";
+
+/****************************************************************************
+ *
+ * NAME
+ *      Memory_Map_Help
+ *
+ * PURPOSE:
+ *      Prints the help for the memory map menu.
+ *
+ * USAGE
+ *
+ *      Called from GEL menu only
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Memory_Map_Help()
+{
+    GEL_TextOut("\n\n");
+    GEL_TextOut("                  MEMORY MAP MENU HELP\n");
+    GEL_TextOut("                  --------------------\n\n");
+    GEL_TextOut("This menu is to do CCS memory map configuration for DSP.\n\n");
+    GEL_TextOut("Setup_Memory_Map: Configure CCS memory map to match DSP memory map (called at GEL init.).\n");
+    GEL_TextOut("Clear_Memory_Map: Clears (disables) CCS memory map configuration.\n\n");
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Setup_Memory_Map
+ *
+ * PURPOSE:
+ *      Setup the Memory Map for EVMDM648.
+ *      Defined memory location avoid debugger access outside these locations.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Setup_Memory_Map()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *      Based on DM648 datasheet.
+ *
+ ****************************************************************************/
+hotmenu Setup_Memory_Map( )
+{
+    GEL_MapOn( );
+    GEL_MapReset( );
+
+    GEL_MapAddStr( 0x00100000, 0, 0x00020000, "R|W|AS4", 0 );   // VICP
+    GEL_MapAddStr( 0x00800000, 0, 0x000C0000, "R|AS4", 0 );     // Internal ROM
+    GEL_MapAddStr( 0x00A00000, 0, 0x00080000, "R|W|AS4", 0 );   // L2 SRAM
+    GEL_MapAddStr( 0x00E00000, 0, 0x00008000, "R|W|AS4", 0 );   // L1P SRAM
+    GEL_MapAddStr( 0x00F00000, 0, 0x00008000, "R|W|AS4", 0 );   // L1D SRAM
+    GEL_MapAddStr( 0x01800000, 0, 0x00010000, "R|W|AS4", 0 );   // SYS Interrupt Controller
+    GEL_MapAddStr( 0x01810000, 0, 0x00001000, "R|W|AS4", 0 );   // SYS Power down Control
+    GEL_MapAddStr( 0x01811000, 0, 0x00001000, "R|W|AS4", 0 );   // SYS Security ID
+    GEL_MapAddStr( 0x01812000, 0, 0x00001000, "R|W|AS4", 0 );   // SYS Revision ID
+    GEL_MapAddStr( 0x01820000, 0, 0x00000410, "R|W|AS4", 0 );   // EMC Registers
+    GEL_MapAddStr( 0x01840000, 0, 0x00010000, "R|W|AS4", 0 );   // L1/L2 Control
+    GEL_MapAddStr( 0x01BC0000, 0, 0x00010000, "R|W|AS4", 0 );   // Emulation
+    GEL_MapAddStr( 0x02000000, 0, 0x00000080, "R|W|AS4", 0 );   // HPI Control
+    GEL_MapAddStr( 0x02040000, 0, 0x00004000, "R|W|AS4", 0 );   // McASP Control
+    GEL_MapAddStr( 0x02044000, 0, 0x00000400, "R|W|AS4", 0 );   // McASP Data
+    GEL_MapAddStr( 0x02044400, 0, 0x00000400, "R|W|AS4", 0 );   // Timer0
+    GEL_MapAddStr( 0x02044800, 0, 0x00000400, "R|W|AS4", 0 );   // Timer1
+    GEL_MapAddStr( 0x02044C00, 0, 0x00000400, "R|W|AS4", 0 );   // Timer2
+    GEL_MapAddStr( 0x02045000, 0, 0x00000400, "R|W|AS4", 0 );   // Timer3
+    GEL_MapAddStr( 0x02046000, 0, 0x00001000, "R|W|AS4", 0 );   // PSC
+    GEL_MapAddStr( 0x02047000, 0, 0x00000400, "R|W|AS4", 0 );   // UART
+    GEL_MapAddStr( 0x02047400, 0, 0x00000400, "R|W|AS4", 0 );   // VIC Control
+    GEL_MapAddStr( 0x02047800, 0, 0x00000400, "R|W|AS4", 0 );   // SPI
+    GEL_MapAddStr( 0x02047C00, 0, 0x00000400, "R|W|AS4", 0 );   // I2C
+    GEL_MapAddStr( 0x02048000, 0, 0x00000400, "R|W|AS4", 0 );   // GPIO
+    GEL_MapAddStr( 0x02048400, 0, 0x00000400, "R|W|AS4", 0 );   // PCI Control
+    GEL_MapAddStr( 0x02049000, 0, 0x00001000, "R|W|AS4", 0 );   // Chip-Level Registers
+    GEL_MapAddStr( 0x02080000, 0, 0x00020000, "R|W|AS4", 0 );   // IMCOP Cfg
+    GEL_MapAddStr( 0x020E0000, 0, 0x00000200, "R|W|AS4", 0 );   // PLL Controller 1
+    GEL_MapAddStr( 0x02120000, 0, 0x00000200, "R|W|AS4", 0 );   // PLL Controller 2
+    GEL_MapAddStr( 0x02A00000, 0, 0x00008000, "R|W|AS4", 0 );   // EDMA3 - TPCC
+    GEL_MapAddStr( 0x02A20000, 0, 0x00008000, "R|W|AS4", 0 );   // EDMA3 - TPTC0
+    GEL_MapAddStr( 0x02A28000, 0, 0x00008000, "R|W|AS4", 0 );   // EDMA3 - TPTC1
+    GEL_MapAddStr( 0x02A30000, 0, 0x00008000, "R|W|AS4", 0 );   // EDMA3 - TPTC2
+    GEL_MapAddStr( 0x02A38000, 0, 0x00008000, "R|W|AS4", 0 );   // EDMA3 - TPTC3
+    GEL_MapAddStr( 0x02C00000, 0, 0x00004000, "R|W|AS4", 0 );   // VP0 Control
+    GEL_MapAddStr( 0x02C04000, 0, 0x00004000, "R|W|AS4", 0 );   // VP1 Control
+    GEL_MapAddStr( 0x02C08000, 0, 0x00004000, "R|W|AS4", 0 );   // VP2 Control
+    GEL_MapAddStr( 0x02C0C000, 0, 0x00004000, "R|W|AS4", 0 );   // VP3 Control
+    GEL_MapAddStr( 0x02C10000, 0, 0x00004000, "R|W|AS4", 0 );   // VP4 Control
+    GEL_MapAddStr( 0x02D00000, 0, 0x00002000, "R|W|AS4", 0 );   // Ethernet SS CPPI RAM
+    GEL_MapAddStr( 0x02D02000, 0, 0x00001000, "R|W|AS4", 0 );   // Ethernet SS Control
+    GEL_MapAddStr( 0x02D03000, 0, 0x00001000, "R|W|AS4", 0 );   // Ethernet SS 3PSW
+    GEL_MapAddStr( 0x02D04000, 0, 0x00000800, "R|W|AS4", 0 );   // Ethernet SS MDIO
+    GEL_MapAddStr( 0x02D04800, 0, 0x00000400, "R|W|AS4", 0 );   // Ethernet SS SGMII0
+    GEL_MapAddStr( 0x02D04C00, 0, 0x00000400, "R|W|AS4", 0 );   // Ethernet SS SGMII1
+    GEL_MapAddStr( 0x38000000, 0, 0x04000000, "R|W|AS4", 0 );   // VLYNQ
+    GEL_MapAddStr( 0x40000000, 0, 0x10000000, "R|W|AS4", 0 );   // PCI Data
+    GEL_MapAddStr( 0x50000000, 0, 0x02000000, "R|W|AS4", 0 );   // VP0 ChannelA Data
+    GEL_MapAddStr( 0x52000000, 0, 0x02000000, "R|W|AS4", 0 );   // VP0 ChannelB Data
+    GEL_MapAddStr( 0x54000000, 0, 0x02000000, "R|W|AS4", 0 );   // VP1 ChannelA Data
+    GEL_MapAddStr( 0x56000000, 0, 0x02000000, "R|W|AS4", 0 );   // VP1 ChannelB Data
+    GEL_MapAddStr( 0x58000000, 0, 0x02000000, "R|W|AS4", 0 );   // VP2 ChannelA Data
+    GEL_MapAddStr( 0x5A000000, 0, 0x02000000, "R|W|AS4", 0 );   // VP2 ChannelB Data
+    GEL_MapAddStr( 0x60000000, 0, 0x02000000, "R|W|AS4", 0 );   // VP3 ChannelA Data
+    GEL_MapAddStr( 0x62000000, 0, 0x02000000, "R|W|AS4", 0 );   // VP3 ChannelB Data
+    GEL_MapAddStr( 0x64000000, 0, 0x02000000, "R|W|AS4", 0 );   // VP4 ChannelA Data
+    GEL_MapAddStr( 0x66000000, 0, 0x02000000, "R|W|AS4", 0 );   // VP4 ChannelB Data
+    GEL_MapAddStr( 0x70000000, 0, 0x08000000, "R|W|AS4", 0 );   // EMIF3B (Sync/Asyn) Config
+    GEL_MapAddStr( 0x78000000, 0, 0x08000000, "R|W|AS4", 0 );   // EMIF3D (DDR2 EMIF) Config
+    GEL_MapAddStr( 0xA0000000, 0, 0x04000000, "R|W|AS4", 0 );   // EMIF3B CE2 - SBSRAM/Async
+    GEL_MapAddStr( 0xB0000000, 0, 0x04000000, "R|W|AS4", 0 );   // EMIF3B CE3 - SBSRAM/Async
+    GEL_MapAddStr( 0xE0000000, 0, 0x10000000, "R|W|AS4", 0 );   // EMIF3D CE0 - DDR2 SDRAM
+
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Clear_Memory_Map
+ *
+ * PURPOSE:
+ *      Clear the Memory Map in CCS.
+ *      All memory locations are not verified anymore by CCS.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Clear_Memory_Map()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+hotmenu Clear_Memory_Map( )
+{
+    GEL_MapOff( );
+    GEL_MapReset( );
+}
+
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Timeout
+ *
+ * PURPOSE:
+ *      Starts a timeout period of msec. The running timeout period can be
+ *      query with Get_Timeout. To kill a running timeout before the end,
+ *      call Kill_Timeout. Only one timeout period can be used at any time.
+ *      A timeout period can be used to measure a period of time while doing
+ *      anything else. Not accurate, sets timer at least as big as desired.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Timeout(msec)
+ *
+ *      msec - (i) timeout period in msec
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Set_Timeout(msec)
+{
+    // Cancel the current timer if not already expired
+    GEL_CancelTimer(TIMEOUT_ID);
+
+    // Starts the timeout period
+    _GEL_Global_Timeout1=1;
+
+    // Setup a callback routine with specified timeout
+    GEL_SetTimer(msec, TIMEOUT_ID, "_Timeout_Callback()");
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Get_Timeout
+ *
+ * PURPOSE:
+ *      Query the running state of a timeout period started by Set_Timeout.
+ *      (see Set_Timeout for more info).
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Get_Timeout()
+ *
+ * RETURN VALUE
+ *      0:expired, 1:running
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Get_Timeout()
+{
+    if (!_GEL_Global_Timeout1)
+    {
+        // Cancel the current timer
+        GEL_CancelTimer(TIMEOUT_ID);
+    }
+
+    // Return the global timeout status 1=running, 0=expired
+    return _GEL_Global_Timeout1;
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Set_Wait
+ *
+ * PURPOSE:
+ *      Wait for a specified delay in msec (min 19 msec).
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Set_Wait(msec)
+ *
+ *      msec - (i) delay period in msec
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Set_Wait(msec)
+{
+    // Temporary call a soft loop
+    // 1 sec ~ 40000 loop on P4 3.4GHz because of CCS 3.x Set_Timeout problem
+    Wait_Soft(msec*40);
+    //Set_Timeout(msec);
+    //while (Get_Timeout()==1);
+    //Kill_Timeout();
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Kill_Timeout
+ *
+ * PURPOSE:
+ *      Cancel a running timeout period before it expires
+ *      (see Set_Timeout for more info).
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Kill_Timeout()
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Kill_Timeout()
+{
+    // Cancel the current timer
+    GEL_CancelTimer(TIMEOUT_ID);
+
+    // The timeout period is expired
+    _GEL_Global_Timeout1=0;
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      _Timeout_Callback
+ *
+ * PURPOSE:
+ *      Internal Callback function used by Set_timeout
+ *      (see Set_Timeout for more info).
+ *
+ * USAGE
+ *      This routine must not be called by itself.
+ *
+ * RETURN VALUE
+ *      NONE
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+_Timeout_Callback()
+{
+    // The timeout period is expired
+    _GEL_Global_Timeout1=0;
+}
+
+
+/****************************************************************************
+ *
+ * NAME
+ *      Enable_I2C
+ *
+ * PURPOSE:
+ *      Enable I2C PSC module on ALWAYSON, and wait
+ *      for this power transition to complete.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Enable_I2C()
+ *
+ * RETURN VALUE
+ *      1= SUCCESS, 0= TIMEOUT
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Enable_I2C( )
+{
+    int ret;
+
+    // Prepare enable I2C power domains module
+    ret = Set_PSC_State(PD0, LPSC_I2C, PSC_ENABLE);
+
+    return(ret==0);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Setup_I2C
+ *
+ * PURPOSE:
+ *      Configure de I2C module for basic evmdm648 peripherals control.
+ *      This setup the I2C module as master with address I2C_MASTER_ADDR,
+ *      7 bits address mode, transmitter, free running, 8 bits.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Setup_I2C()
+ *
+ * RETURN VALUE
+ *      1=SUCCESS, 0=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Setup_I2C()
+{
+    int iResult=1;
+
+    // Makes sure the I2C module is powered-up
+    if ((iResult=Enable_I2C()))
+    {
+        // Set Based mode: free running, master, tx, 7 bits addr, non repeat, reset, 8 bits data
+        ICMDR = I2C_MODE_RST;
+
+        // set Backward Compatibility Mode
+        ICEMDR = I2C_EXTMODE;
+
+        // Set the own address of the given instance
+        ICOAR = I2C_MASTER_ADDR;
+
+        // The interrupt status is set into the interrupt enable register (All int disabled)
+        ICIMR = I2C_DISABLE_INTR;
+
+        // Set up the prescalar value
+        ICPSC = I2C_CLOCK_PRESCALAR;
+
+        // Set the clock low value
+        ICCLKL = I2C_CLOCK_CLKL;
+
+        // Set the clock high value
+        ICCLKH = I2C_CLOCK_CLKH;
+
+        // Set Based mode: based mode and get out of reset
+        ICMDR = I2C_MODE;
+    }
+    else
+    {
+        GEL_TextOut( "Enable_I2C ERROR: Module Powerup Timeout\n",,2,,);
+    }
+
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Write_I2CECP
+ *
+ * PURPOSE:
+ *      Write data (2 bytes) to I2C ECP.
+ *
+ *      I2C sequence used (only bytes are shown and start/stop conditions):
+ *      | Start | slaveadr W | data1 | data2 | data3 | data4 | Stop |
+ *                                  [------------------------]
+ *                                   Not use for datalen=1
+ *                                          [----------------]
+ *                                           Not use for datalen=2
+ *                                                  [--------]
+ *                                                   Not use for datalen=3
+ *      Note ECP must have datalen=2 to work correctly (reg offset, data)
+ *      data3, data4 are never use.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Write_I2CECP(slaveadr,datalen,data1,data2,data3,data4)
+ *
+ *      slaveadr - (i) ECP slave 7 bits I2C address
+ *      datalen  - (i) number of byte to send [2]
+ *      data1    - (i) data byte 1 to transmit (mandatory)
+ *      data2    - (i) data byte 2 to transmit (mandatory)
+ *      data3    - (i) data byte 3 to transmit (unused)
+ *      data4    - (i) data byte 4 to transmit (unused)
+ *
+ *      For datalen=2, will write the specified number of bytes.
+ *
+ * RETURN VALUE
+ *      1= SUCCESS, 0=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Write_I2CECP(slaveadr,datalen,data1,data2,data3,data4)
+{
+    int iResult=0;
+
+    // Writes I2C data
+    if (Write_I2C(slaveadr,datalen,data1,data2,data3,data4))
+    {
+        // Read status register to complete transaction
+        if (Write_Read_I2C(slaveadr,1,STATUS_REG)!=-1)
+        {
+            iResult=1;
+        }
+    }
+
+    return(iResult);
+}
+
+
+/****************************************************************************
+ *
+ * NAME
+ *      Write_I2C
+ *
+ * PURPOSE:
+ *      Write data (from 1 to 4 bytes) to I2C slave.
+ *
+ *      I2C sequence used (only bytes are shown and start/stop conditions):
+ *      | Start | slaveadr W | data1 | data2 | data3 | data4 | Stop |
+ *                                  [------------------------]
+ *                                   Not use for datalen=1
+ *                                          [----------------]
+ *                                           Not use for datalen=2
+ *                                                  [--------]
+ *                                                   Not use for datalen=3
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Write_I2C(slaveadr,datalen,data1,data2,data3,data4)
+ *
+ *      slaveadr - (i) slave 7 bits I2C address
+ *      datalen  - (i) number of byte to send [1-4]
+ *      data1    - (i) data byte 1 to transmit (mandatory)
+ *      data2    - (i) data byte 2 to transmit (optional)
+ *      data3    - (i) data byte 3 to transmit (optional)
+ *      data4    - (i) data byte 4 to transmit (optional)
+ *
+ *      For any 1<=datalen<=4, will write the specified number of bytes.
+ *
+ * RETURN VALUE
+ *      1= SUCCESS, 0=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Write_I2C(slaveadr,datalen,data1,data2,data3,data4)
+{
+    int iResult=1;
+    int iNack;
+    int iRStatus;
+
+    // Set slave adress
+    ICSAR = slaveadr;
+
+    // Set number of bytes to write
+    ICCNT = datalen;
+
+    // Prepare data1 if necessary
+    if (datalen>=1 && datalen<=4)
+    {
+        // Set timeout before polling tx rdy...
+        Set_Timeout(1000);
+
+        // Wait for tx rdy , Nack or timeout
+        do
+        {
+            iRStatus=ICSTR;
+            iNack=(iRStatus & NACK);
+        }while (Get_Timeout() && ((iRStatus & ICXRDY) ==0) && (iNack==0));
+
+
+        if (!Get_Timeout() || iNack)
+        {
+            GEL_TextOut( "Write_I2C ERROR#01: I2C Transmit Ready Timeout or NACK.\n",,2,,);
+            iResult=0;
+        }
+        else
+        {
+            // Put 1st byte in I2C tx buffer
+            ICDXR = (data1 & 0xff);
+
+            // Starts I2C transmission & Allow to Stop
+            ICMDR = I2C_MODE_STT_STP;
+
+            if (datalen>=2)
+            {
+                // Set timeout before polling tx rdy...
+                Set_Timeout(1000);
+
+                // Wait for tx rdy , Nack or timeout
+                do
+                {
+                    iRStatus=ICSTR;
+                    iNack=(iRStatus & NACK);
+                }while (Get_Timeout() && ((iRStatus & ICXRDY) ==0) && (iNack==0));
+
+
+                if (!Get_Timeout() || iNack)
+                {
+                    GEL_TextOut( "Write_I2C ERROR#02: I2C Transmit Ready Timeout or NACK.\n",,2,,);
+                    iResult=0;
+                }
+                else
+                {
+                    // Put 2nd byte in I2C tx buffer
+                    ICDXR = (data2 & 0xff);
+
+                    if (datalen>=3)
+                    {
+                        // Set timeout before polling tx rdy...
+                        Set_Timeout(1000);
+
+                        // Wait for tx rdy , Nack or timeout
+                        do
+                        {
+                            iRStatus=ICSTR;
+                            iNack=(iRStatus & NACK);
+                        }while (Get_Timeout() && ((iRStatus & ICXRDY) ==0) && (iNack==0));
+
+
+                        if (!Get_Timeout() || iNack)
+                        {
+                            GEL_TextOut( "Write_I2C ERROR#03: I2C Transmit Ready Timeout or NACK.\n",,2,,);
+                            iResult= 0;
+                        }
+                        else
+                        {
+                            // Put 3rd byte in I2C tx buffer
+                            ICDXR = (data3 & 0xff);
+
+                            if (datalen==4)
+                            {
+                                // Set timeout before polling tx rdy...
+                                Set_Timeout(1000);
+
+                                // Wait for tx rdy , Nack or timeout
+                                do
+                                {
+                                    iRStatus=ICSTR;
+                                    iNack=(iRStatus & NACK);
+                                }while (Get_Timeout() && ((iRStatus & ICXRDY) ==0) && (iNack==0));
+
+
+                                if (!Get_Timeout() || iNack)
+                                {
+                                    GEL_TextOut( "Write_I2C ERROR#04: I2C Transmit Ready Timeout or NACK.\n",,2,,);
+                                    iResult= 0;
+                                }
+                                else
+                                {
+                                    // Put 4th byte in I2C tx buffer
+                                    ICDXR = (data4 & 0xff);
+                                }
+                            }
+                            else
+                            {
+                                if (datalen>4)
+                                {
+                                    GEL_TextOut( "Write_I2C ERROR#05: Wrong datalen parameter (must be 1=< and <5).\n",,2,,);
+                                    iResult=0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        GEL_TextOut( "Write_I2C ERROR#06: Wrong datalen parameter.\n",,2,,);
+        iResult=0;
+    }
+
+    // If no error, waits I2C module to finish transmission
+    if (iResult)
+    {
+        // Set timeout before polling tx rdy...
+        Set_Timeout(1000);
+
+        // Wait for BB=0 , ICXRDY=1, Nack or timeout
+        do
+        {
+            iRStatus=ICSTR;
+            iNack=(iRStatus & NACK);
+        }while (Get_Timeout() && (((iRStatus & BB) !=0) || ((iRStatus & ICXRDY) ==0)) && (iNack==0));
+
+
+        if (!Get_Timeout() || iNack)
+        {
+            GEL_TextOut( "Write_I2C ERROR#07: I2C Bus Busy error or NACK.\n",,2,,);
+            iResult= 0;
+        }
+    }
+
+    Kill_Timeout();
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Read_I2C
+ *
+ * PURPOSE:
+ *      Read data from I2C slave.
+ *      Warning, this routine needs a Write_I2C to set subaddress usually
+ *      before being used. It is not a full implementation because a
+ *      stop condition will be issue between the write and read. May
+ *      cause problem with some peripherals... Ok for peripheral that
+ *      do not have subaddress.
+ *      Prints the read value on ccs stdout if necessary.
+ *
+ *      I2C sequence used (only bytes are shown and start/stop conditions):
+ *      | Start | slaveadr R | Read byte | Stop |
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Read_I2C(slaveadr,print)
+ *
+ *      slaveadr - (i) slave 7 bits I2C address
+ *      print    - (i) !=0 display the read value in stdout
+ *
+ * RETURN VALUE
+ *      >=0 SUCCESS (returned read value), -1=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Read_I2C(slaveadr,print)
+{
+    int iResult=0;
+    int iData;
+    int iRStatus;
+    int iNack;
+
+    // Set slave adress
+    ICSAR = slaveadr;
+
+    // Set number of bytes to read (speed of GEL script probably not
+    // allowing to read more than 1 byte without overflow of the
+    // receiver...)
+    ICCNT = 1;
+
+    // Set timeout before polling ICRRDY...
+    Set_Timeout(1000);
+
+    // Starts I2C receiving & Allow to Stop
+    ICMDR = I2C_MODE_RX_STT_STP;
+
+    // Wait for ICRRDY!=0 , Nack or timeout
+    do
+    {
+        iRStatus=ICSTR;
+        iNack=(iRStatus & NACK);
+    }while (Get_Timeout() && ((iRStatus & ICRRDY) ==0) && (iNack==0));
+
+
+    if (!Get_Timeout() || iNack)
+    {
+        GEL_TextOut( "Read_I2C ERROR#08: I2C Receive RDY error or NACK.\n",,2,,);
+        iResult= -1;
+    }
+    else
+    {
+        // Read the data byte
+        iData=ICDRR & 0xff;
+    }
+
+    // If no error, waits I2C module to finish receiving
+    if (iResult>=0)
+    {
+        // Set timeout before polling tx rdy...
+        Set_Timeout(1000);
+
+        // Wait for I2C BB=0 (bus not busy anymore)
+        do
+        {
+            iRStatus=ICSTR;
+        }while (Get_Timeout() && ((iRStatus & BB) !=0));
+
+        if (!Get_Timeout())
+        {
+            GEL_TextOut( "Read_I2C ERROR#09: I2C Bus Busy Timeout.\n",,2,,);
+            iResult=-1;
+        }
+        else
+        {
+            iResult=iData;
+            if (print)
+                GEL_TextOut( "Read value:%x\n",, 0,,,iData);
+        }
+    }
+
+    Kill_Timeout();
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Write_I2C_Cfg
+ *
+ * PURPOSE:
+ *      Configure I2C controler and write data (from 1 to 4 bytes) to I2C slave.
+ *
+ *      I2C sequence used (only bytes are shown and start/stop conditions):
+ *      | Start | slaveadr W | data1 | data2 | data3 | data4 | Stop |
+ *                                  [------------------------]
+ *                                   Not use for datalen=1
+ *                                          [----------------]
+ *                                           Not use for datalen=2
+ *                                                  [--------]
+ *                                                   Not use for datalen=3
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Write_I2C_Cfg(slaveadr,datalen,data1,data2,data3,data4)
+ *
+ *      slaveadr - (i) slave 7 bits I2C address
+ *      datalen  - (i) number of byte to send [1-4]
+ *      data1    - (i) data byte 1 to transmit (mandatory)
+ *      data2    - (i) data byte 2 to transmit (optional)
+ *      data3    - (i) data byte 3 to transmit (optional)
+ *      data4    - (i) data byte 4 to transmit (optional)
+ *
+ *      For any 1<=datalen<=4, will write the specified number of bytes.
+ *
+ * RETURN VALUE
+ *      1= SUCCESS, 0=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Write_I2C_Cfg(slaveadr,datalen,data1,data2,data3,data4)
+{
+    int iResult=0;
+
+    // Initialize I2C module
+    if (Setup_I2C())
+    {
+        // Writes I2C data
+        if (Write_I2C(slaveadr,datalen,data1,data2,data3,data4))
+        {
+            iResult=1;
+        }
+    }
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Write_I2CECP_Cfg
+ *
+ * PURPOSE:
+ *      Configure I2C controler and write data (2 bytes) to I2C ECP.
+ *
+ *      I2C sequence used (only bytes are shown and start/stop conditions):
+ *      | Start | slaveadr W | data1 | data2 | data3 | data4 | Stop |
+ *                                  [------------------------]
+ *                                   Not use for datalen=1
+ *                                          [----------------]
+ *                                           Not use for datalen=2
+ *                                                  [--------]
+ *                                                   Not use for datalen=3
+ *      Note ECP must have datalen=2 to work correctly (reg offset, data)
+ *      data3, data4 are never use.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Write_I2CECP_Cfg(slaveadr,datalen,data1,data2,data3,data4)
+ *
+ *      slaveadr - (i) ECP slave 7 bits I2C address
+ *      datalen  - (i) number of byte to send [2]
+ *      data1    - (i) data byte 1 to transmit (mandatory)
+ *      data2    - (i) data byte 2 to transmit (mandatory)
+ *      data3    - (i) data byte 3 to transmit (unused)
+ *      data4    - (i) data byte 4 to transmit (unused)
+ *
+ *      For datalen=2, will write the specified number of bytes.
+ *
+ * RETURN VALUE
+ *      1= SUCCESS, 0=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Write_I2CECP_Cfg(slaveadr,datalen,data1,data2,data3,data4)
+{
+    int iResult=0;
+
+    // Initialize I2C module
+    if (Setup_I2C())
+    {
+        // Writes I2C data
+        if (Write_I2CECP(slaveadr,datalen,data1,data2,data3,data4))
+        {
+            iResult=1;
+        }
+    }
+    return(iResult);
+}
+
+
+/****************************************************************************
+ *
+ * NAME
+ *      Read_I2C_Cfg
+ *
+ * PURPOSE:
+ *      Configure I2C controler and read data from I2C slave.
+ *      Warning, this routine needs a Write_I2C to set subaddress usually
+ *      before being used. It is not a full implementation because a
+ *      stop condition will be issue between the write and read. May
+ *      cause problem with some peripherals... Ok for peripheral that
+ *      do not have subaddress.
+ *      Prints the read value on ccs stdout if necessary.
+ *
+ *      I2C sequence used (only bytes are shown and start/stop conditions):
+ *      | Start | slaveadr R | Read byte | Stop |
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Read_I2C_Cfg(slaveadr,print)
+ *
+ *      slaveadr - (i) slave 7 bits I2C address
+ *      print    - (i) !=0 display the read value in stdout
+ *
+ * RETURN VALUE
+ *      >=0 SUCCESS (returned read value), -1=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Read_I2C_Cfg(slaveadr,print)
+{
+    int iResult=-1;
+
+    // Initialize I2C module
+    if (Setup_I2C())
+    {
+        // Reads I2C data
+        iResult=Read_I2C(slaveadr,print);
+    }
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Write_Read_I2C_Cfg
+ *
+ * PURPOSE:
+ *      Configure I2C controler and
+ *      write data (from 0 to 4 bytes) to I2C slave then read a byte from I2C.
+ *
+ *      I2C sequence used (only bytes are shown and start/stop conditions):
+ *      | Start | slaveadr W | data1 | data2 | data3 | data4 | Start | slaveadr R | Read byte | Stop |
+ *      [----------------------------------------------------]
+ *                   Not use for datalen=0
+ *                                  [------------------------]
+ *                                   Not use for datalen=1
+ *                                          [----------------]
+ *                                           Not use for datalen=2
+ *                                                  [--------]
+ *                                                   Not use for datalen=3
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Write_Read_I2C_Cfg(slaveadr,datalen,data1,data2,data3,data4)
+ *
+ *      slaveadr - (i) slave 7 bits I2C address
+ *      datalen  - (i) number of byte to send [0-4]
+ *      data1    - (i) data byte 1 to transmit (optional)
+ *      data2    - (i) data byte 2 to transmit (optional)
+ *      data3    - (i) data byte 3 to transmit (optional)
+ *      data4    - (i) data byte 4 to transmit (optional)
+ *
+ *      if datalen=0, will not write any byte, but will attempt to read
+ *      a byte only. For any other 1<=datalen<=4, will write the specified
+ *      number of bytes and then read 1 byte on the I2C bus from the same
+ *      device. It should be noted that the reading is done from the current
+ *      address ptr in the I2C slave device.
+ *
+ * RETURN VALUE
+ *      >=0 SUCCESS (returned read value), -1=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Write_Read_I2C_Cfg(slaveadr,datalen,data1,data2,data3,data4)
+{
+    int iResult=-1;
+
+    // Initialize I2C module
+    if (Setup_I2C())
+    {
+        // Writes I2C data and read a byte
+        iResult=Write_Read_I2C(slaveadr,datalen,data1,data2,data3,data4);
+    }
+    return(iResult);
+}
+
+
+/****************************************************************************
+ *
+ * NAME
+ *      Write_Read_I2C
+ *
+ * PURPOSE:
+ *      Write data (from 0 to 4 bytes) to I2C slave then read a byte from I2C.
+ *
+ *      I2C sequence used (only bytes are shown and start/stop conditions):
+ *      | Start | slaveadr W | data1 | data2 | data3 | data4 | Start | slaveadr R | Read byte | Stop |
+ *      [----------------------------------------------------]
+ *                   Not use for datalen=0
+ *                                  [------------------------]
+ *                                   Not use for datalen=1
+ *                                          [----------------]
+ *                                           Not use for datalen=2
+ *                                                  [--------]
+ *                                                   Not use for datalen=3
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Write_Read_I2C(slaveadr,datalen,data1,data2,data3,data4)
+ *
+ *      slaveadr - (i) slave 7 bits I2C address
+ *      datalen  - (i) number of byte to send [0-4]
+ *      data1    - (i) data byte 1 to transmit (optional)
+ *      data2    - (i) data byte 2 to transmit (optional)
+ *      data3    - (i) data byte 3 to transmit (optional)
+ *      data4    - (i) data byte 4 to transmit (optional)
+ *
+ *      if datalen=0, will not write any byte, but will attempt to read
+ *      a byte only. For any other 1<=datalen<=4, will write the specified
+ *      number of bytes and then read 1 byte on the I2C bus from the same
+ *      device. It should be noted that the reading is done from the current
+ *      address ptr in the I2C slave device.
+ *
+ * RETURN VALUE
+ *      >=0 SUCCESS (returned read value), -1=FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Write_Read_I2C(slaveadr,datalen,data1,data2,data3,data4)
+{
+    int iResult=0;
+    int iNack;
+    int iRStatus,iSendStop=0;
+
+    // Set slave adress
+    ICSAR = slaveadr;
+
+    // Prepare data1 if necessary
+    if (datalen>=1 && datalen<=4)
+    {
+        // Set timeout before polling tx rdy...
+        Set_Timeout(1000);
+
+        // Wait for tx rdy , Nack or timeout
+        do
+        {
+            iRStatus=ICSTR;
+            iNack=(iRStatus & NACK);
+        }while (Get_Timeout() && ((iRStatus & ICXRDY) ==0) && (iNack==0));
+
+
+        if (!Get_Timeout() || iNack)
+        {
+            GEL_TextOut( "Write_Read_I2C ERROR#01: I2C Transmit Ready Timeout or NACK.\n",,2,,);
+            iResult=-1;
+        }
+        else
+        {
+            // Put 1st byte in I2C tx buffer
+            ICDXR = (data1 & 0xff);
+
+            // Starts I2C transmission in repeat mode with no stop
+            // at the end of transmission (keeps bus busy waiting for read)
+            ICMDR = I2C_MODE_RM_STT;
+
+            if (datalen>=2)
+            {
+                // Set timeout before polling tx rdy...
+                Set_Timeout(1000);
+
+                // Wait for tx rdy , Nack or timeout
+                do
+                {
+                    iRStatus=ICSTR;
+                    iNack=(iRStatus & NACK);
+                }while (Get_Timeout() && ((iRStatus & ICXRDY) ==0) && (iNack==0));
+
+
+                if (!Get_Timeout() || iNack)
+                {
+                    GEL_TextOut( "Write_Read_I2C ERROR#02: I2C Transmit Ready Timeout or NACK.\n",,2,,);
+                    iResult=-1;
+                    iSendStop=1;
+                }
+                else
+                {
+                    // Put 2nd byte in I2C tx buffer
+                    ICDXR = (data2 & 0xff);
+
+                    if (datalen>=3)
+                    {
+                        // Set timeout before polling tx rdy...
+                        Set_Timeout(1000);
+
+                        // Wait for tx rdy , Nack or timeout
+                        do
+                        {
+                            iRStatus=ICSTR;
+                            iNack=(iRStatus & NACK);
+                        }while (Get_Timeout() && ((iRStatus & ICXRDY) ==0) && (iNack==0));
+
+
+                        if (!Get_Timeout() || iNack)
+                        {
+                            GEL_TextOut( "Write_Read_I2C ERROR#03: I2C Transmit Ready Timeout or NACK.\n",,2,,);
+                            iResult= -1;
+                            iSendStop=1;
+                        }
+                        else
+                        {
+                            // Put 3rd byte in I2C tx buffer
+                            ICDXR = (data3 & 0xff);
+
+                            if (datalen==4)
+                            {
+                                // Set timeout before polling tx rdy...
+                                Set_Timeout(1000);
+
+                                // Wait for tx rdy , Nack or timeout
+                                do
+                                {
+                                    iRStatus=ICSTR;
+                                    iNack=(iRStatus & NACK);
+                                }while (Get_Timeout() && ((iRStatus & ICXRDY) ==0) && (iNack==0));
+
+
+                                if (!Get_Timeout() || iNack)
+                                {
+                                    GEL_TextOut( "Write_Read_I2C ERROR#04: I2C Transmit Ready Timeout or NACK.\n",,2,,);
+                                    iResult= -1;
+                                    iSendStop=1;
+                                }
+                                else
+                                {
+                                    // Put 4th byte in I2C tx buffer
+                                    ICDXR = (data4 & 0xff);
+                                }
+                            }
+                            else
+                            {
+                                // Should not get there!
+                                if (datalen>4)
+                                {
+                                    GEL_TextOut( "Write_Read_I2C ERROR#05: Wrong datalen parameter.\n",,2,,);
+                                    iResult=-1;
+                                    iSendStop=1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        // Datalen=0 allow single read without writing first...
+        if (datalen!=0)
+        {
+            GEL_TextOut( "Write_Read_I2C ERROR#06: Wrong datalen parameter (must be 0=< and <5).\n",,2,,);
+            iResult=-1;
+        }
+    }
+
+    // If no error, read a byte on I2C
+    if (iResult>=0)
+    {
+        // Waits I2C module to finish transmission
+        // Set timeout before polling tx rdy...
+        Set_Timeout(1000);
+
+        // Wait for ICXRDY=1 and ARDY=1, BB=1 , Nack or timeout
+        // Indicating that nothing more to send to transmitter
+        // and also that transmitter shifter has finished sending...
+        do
+        {
+            iRStatus=ICSTR;
+            iNack=(iRStatus & NACK);
+        }while (Get_Timeout() && (((iRStatus & ICXRDY) ==0) || ((iRStatus & BB) ==0) || ((iRStatus & ARDY) ==0)) && (iNack==0));
+
+
+        if (!Get_Timeout() || iNack)
+        {
+            GEL_TextOut( "Write_Read_I2C ERROR#07: I2C end of TX error or NACK.\n",,2,,);
+            iResult= -1;
+        }
+
+        if (iResult>=0)
+        {
+            // The I2C bus is still busy and wait state are inserted (clk stays 0)
+            // Now reconfigure the I2C from scratch to allow reading a byte
+            // at the current address in the device. This reconfiguration process
+            // will artificially do an I2C restart condition to continue reading
+            // in non repeat mode for 1 byte than send I2C a stop condition
+            // with hardware control of I2C controler (to avoid read buffer overflow)
+            iResult=Read_I2C_Cfg(slaveadr,0);
+        }
+        else
+        {
+            iSendStop=1;
+        }
+    }
+
+    // If we send something and got an error, we need to send a stop
+    // condition so the I2C bus is not frozen!
+    // Stops I2C transmission in repeat mode.
+    if (iSendStop)
+    {
+        ICMDR = I2C_MODE_RM_STP;
+
+        // Waits for the I2C bus to send the I2C condition and be released
+        // Set timeout before polling tx rdy...
+        Set_Timeout(1000);
+
+        // Wait for BB=0 , Nack or timeout
+        do
+        {
+            iRStatus=ICSTR;
+            iNack=(iRStatus & NACK);
+        }while (Get_Timeout() && ((iRStatus & BB) !=0) && (iNack==0));
+
+        // Check if we got timeout or Nack (indicates problem)
+        if (!Get_Timeout() || iNack)
+        {
+            GEL_TextOut( "Write_Read_I2C ERROR#08: I2C Bus Busy error or NACK.\n",,2,,);
+            iResult= -1;
+        }
+    }
+
+    Kill_Timeout();
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      LED_Demo
+ *
+ * PURPOSE:
+ *      Light in rotation the 4 user leds, one after the other.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      LED_Demo()
+ *
+ * RETURN VALUE
+ *      1= SUCCESS, 0= FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+LED_Demo()
+{
+    int iLed,iOld;
+    int iResult=0;
+
+    // Read and backup current LED status
+    if ((iOld=Write_Read_I2C_Cfg(MSP430,1,LEDREGISTER))!=-1)
+    {
+        iLed=iOld&~(LED2|LED3|LED4|LED5);
+
+        // Turn On Led 2
+        if (Write_I2CECP(MSP430,2,LEDREGISTER,(iLed|LED2)))
+        {
+            Set_Wait(500);
+
+            // Turn On Led 3
+            if (Write_I2CECP(MSP430,2,LEDREGISTER,(iLed|LED3)))
+            {
+                Set_Wait(500);
+
+                // Turn On Led 4
+                if (Write_I2CECP(MSP430,2,LEDREGISTER,(iLed|LED4)))
+                {
+                    Set_Wait(500);
+
+                    // Turn On Led 5
+                    if (Write_I2CECP(MSP430,2,LEDREGISTER,(iLed|LED5)))
+                    {
+                        Set_Wait(500);
+
+                        // Turn back all LEDs to original status
+                        if (Write_I2CECP(MSP430,2,LEDREGISTER,iOld))
+                            iResult=1;
+                    }
+                }
+            }
+        }
+    }
+
+    return(iResult);
+}
+
+
+/****************************************************************************
+ *
+ * NAME
+ *      Get_Switches
+ *
+ * PURPOSE:
+ *      Read the state of the user dip sw positions.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Get_Switches()
+ *
+ * RETURN VALUE
+ *      >=0 Dip SW position (Bit0=USW1, Bit1=USW2, Bit2=USW3, Bit3=USW4), -1= FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Get_Switches()
+{
+    int iSw;
+    int iResult=-1;
+
+    // Read current SW status
+    if ((iSw=Write_Read_I2C_Cfg(MSP430,1,USWREGISTER))!=-1)
+    {
+        iResult=iSw & (USW1|USW2|USW3|USW4);
+    }
+    return(iResult);
+}
+
+/****************************************************************************
+ *
+ * NAME
+ *      Get_Board_Rev
+ *
+ * PURPOSE:
+ *      Read the state of board hardware revision and ECP firmware revision.
+ *
+ * USAGE
+ *      This routine can be called as:
+ *
+ *      Get_Board_Rev()
+ *
+ * RETURN VALUE
+ *      >=0 Rev info (Bit0-2: PCBREV, Bit3-7: FIRMREV), -1= FAIL
+ *
+ * REFERENCE
+ *
+ ****************************************************************************/
+Get_Board_Rev()
+{
+    int iRev;
+    int iResult=-1;
+
+    // Read current REV status
+    iResult=Write_Read_I2C_Cfg(MSP430,1,REVREGISTER);
+
+    return(iResult);
+}
+

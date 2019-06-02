@@ -1,0 +1,104 @@
+/*******************************************************************/ 
+
+/* This GEL file is loaded on the command line of Code Composer    */
+
+/* The StartUp() function is called every time you start           */
+
+/* Code Composer.  You can customize this function to              */
+
+/* initialize wait states or to perform other initialization.      */
+
+/*******************************************************************/
+
+
+
+StartUp()
+
+{
+
+    GEL_MapOff();
+
+    GEL_MapReset();
+
+    memorymap_init();
+
+    GEL_MapOn();
+
+}
+
+
+
+OnTargetConnect()
+
+{
+
+}
+
+
+
+menuitem "omap2420"
+
+
+
+hotmenu Branch_ZeroInstruction()
+
+{
+
+    *(int*)0x00000000 = 0xEAFFFFFE; 
+
+    GEL_TextOut(" Branch to zero instuction written to address 0x0 \n" );
+
+}
+
+
+
+memorymap_init()
+
+{
+
+    GEL_MapAddStr(0x00000000, 0, 0x00020000, "R|W"    , 0);  /* IVA RAM         */
+
+    GEL_MapAddStr(0x10000000, 0, 0x00008000, "R"      , 0);  /* IVA ROM         */
+
+    GEL_MapAddStr(0x20000000, 0, 0x00001000, "R|W"    , 0);  /* SYSC  register  */
+
+    GEL_MapAddStr(0x30000000, 0, 0x00001000, "R|W"    , 0);  /* REGS2 register  */
+
+    GEL_MapAddStr(0x40000000, 0, 0x00001000, "R|W"    , 0);  /* iINTC register  */
+
+
+
+    /*COPR Registers*/
+
+    GEL_MapAddStr(0x60000000, 0, 0x00002000, "R|W|AS2", 0);  /* IMG_BUF_A       */
+
+    GEL_MapAddStr(0x60002000, 0, 0x00002000, "R|W|AS2", 0);  /* IMG_BUF_B       */
+
+    GEL_MapAddStr(0x60008000, 0, 0x00000800, "R|W|AS2", 0);  /* VLCDS           */
+
+    GEL_MapAddStr(0x60009000, 0, 0x00002000, "R|W|AS2", 0);  /* IMX_COEF        */
+
+    GEL_MapAddStr(0x60011000, 0, 0x00001000, "R|W|AS2", 0);  /* IMX_CMD         */
+
+    GEL_MapAddStr(0x60013000, 0, 0x00000400, "R|W|AS2", 0);  /* VLCDQ           */
+
+    GEL_MapAddStr(0x60014000, 0, 0x00001000, "R|W|AS2", 0);  /* VLCDH           */
+
+    GEL_MapAddStr(0x60015000, 0, 0x00001000, "R|W|AS2", 0);  /* SEQ_CMD         */
+
+    GEL_MapAddStr(0x60016000, 0, 0x00000100, "R|W|AS2", 0);  /* IMX_REG         */
+
+    GEL_MapAddStr(0x60016100, 0, 0x00000100, "R|W|AS2", 0);  /* VLCD_REG        */
+
+    GEL_MapAddStr(0x60016200, 0, 0x00000100, "R|W|AS2", 0);  /* SEQ_REG         */
+
+    GEL_MapAddStr(0x60016300, 0, 0x00000100, "R|W|AS2", 0);  /* IMG_BUG_REG     */
+
+    GEL_MapAddStr(0x60016400, 0, 0x00000100, "R|W|AS2", 0);  /* SEQIRQ_REG      */
+
+
+
+    GEL_MapAddStr(0x80000000, 0, 0x80000000, "R|W"    , 0);  /* Virtual Space   */
+
+}
+

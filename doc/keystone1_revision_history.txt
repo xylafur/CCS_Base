@@ -1,0 +1,16 @@
+Keystone1 Device Support Files
+==============================
+1.0.13
+------
+DDR register view in CCS enabled for KS1 devices by adjusting .xmls for 36-bit physical addresses(EMUPACK-64).
+
+1.0.12
+------
+Addition of C6652/54 Gels, and C6652.xml.
+Updated C6657l gel DDR Write levelling and Gate levelling ratios as per PHY Calc V11.
+
+1.0.11
+------
+SDOCM00121448. C6657 GEL incorrect EDMA3 register definition overwrites the IER register.
+SDOCM00121449. C6657 GEL Incorrect Set_Psc_All_On() the power domain of VCP2-A.
+CATREQ-656. Inclusion of GEL file for low power variants of C665x.

@@ -1,0 +1,1792 @@
+#define DEBUG 				0 
+#define DELAY 				500
+#define USE_SILICON_MODEL	1
+
+#define MAIN_PSC_BASE       (0x00400000)
+#define PSC_PID                     (0x44827A00)
+#define M3_MCU_OFFSET               (0x20000000)
+#define M3_MAIN_OFFSET        (0x80000000)
+
+//PLL base addrs
+#define PLL_MMR0_CFG_BASE           0x40D00000
+#define PLL_MMR1_CFG_BASE           0x00680000
+#define MCU_PLL_BASE_ADDR           (PLL_MMR0_CFG_BASE + 0x0)
+#define MAIN_PLL_BASE_ADDR          (PLL_MMR1_CFG_BASE + 0x0)
+#define ARM0_PLL_BASE_ADDR          (PLL_MMR1_CFG_BASE + 0x6000)
+#define ARM1_PLL_BASE_ADDR          (PLL_MMR1_CFG_BASE + 0x7000)
+#define DDR_PLL_BASE_ADDR           (PLL_MMR1_CFG_BASE + 0x3000)
+#define PER0_PLL_BASE_ADDR          (PLL_MMR1_CFG_BASE + 0x1000)
+#define PER1_PLL_BASE_ADDR          (PLL_MMR1_CFG_BASE + 0x2000)
+#define CPSW_PLL_BASE_ADDR          (PLL_MMR0_CFG_BASE + 0x1000)
+#define DSS_PLL_BASE_ADDR           (PLL_MMR1_CFG_BASE + 0x4000)
+
+//PLL register offsets
+#define PLL_KICK0_OFFSET            0x0010   
+#define PLL_KICK1_OFFSET            0x0014   
+#define PLL_FREQ_CTRL0_OFFSET       0x0020   
+#define PLL_FREQ_CTRL1_OFFSET       0x0024   
+#define PLL_CLKDIV_OFFSET           0x0028   
+#define PLL_PROG_OFFSET             0x002C   
+#define PLL_CTRL_OFFSET             0x0030   
+#define PLL_STAT_OFFSET             0x0034   
+#define PLL_HSDIV_CLKDIV_OFFSET     0x0120   
+#define PLL_HSDIV_CTRL_OFFSET       0x0124   
+#define PLL_HSDIV_STAT_OFFSET       0x0128   
+
+//PLL controller base addrs
+#define PLLCTRL0_CFG_BASE           0x42010000
+#define PLLCTRL1_CFG_BASE           0x00410000
+#define MCU_WKUP_CTRL_BASE_ADDR     (PLLCTRL0_CFG_BASE + 0x0)
+#define MAIN_CTRL_BASE_ADDR         (PLLCTRL1_CFG_BASE + 0x0)
+
+//PLL controller register offsets
+#define PLL_CTRL_PLLCTL_OFFSET      0x0100 
+#define PLL_CTRL_OCSEL_OFFSET       0x0104 
+#define PLL_CTRL_PREDIV_OFFSET      0x0114 
+#define PLL_CTRL_PLLDIV1_OFFSET     0x0118 
+#define PLL_CTRL_PLLDIV2_OFFSET     0x011C 
+#define PLL_CTRL_PLLDIV3_OFFSET     0x0120 
+#define PLL_CTRL_OSCDIV1_OFFSET     0x0124 
+#define PLL_CTRL_POSTDIV_OFFSET     0x0128 
+#define PLL_CTRL_BPDIV_OFFSET       0x012C 
+#define PLL_CTRL_PLLCMD_OFFSET      0x0138 
+#define PLL_CTRL_PLLSTAT_OFFSET     0x013C 
+#define PLL_CTRL_ALNCTL_OFFSET      0x0140 
+#define PLL_CTRL_CKEN_OFFSET        0x0148 
+#define PLL_CTRL_CKSTAT_OFFSET      0x014C 
+#define PLL_CTRL_SYSTAT_OFFSET      0x0150 
+#define PLL_CTRL_PLLDIV4_OFFSET     0x0160 
+#define PLL_CTRL_PLLDIV5_OFFSET     0x0164 
+#define PLL_CTRL_PLLDIV6_OFFSET     0x0168 
+#define PLL_CTRL_PLLDIV7_OFFSET     0x016C 
+#define PLL_CTRL_PLLDIV8_OFFSET     0x0170 
+#define PLL_CTRL_PLLDIV9_OFFSET     0x0174 
+#define PLL_CTRL_PLLDIV10_OFFSET    0x0178 
+#define PLL_CTRL_PLLDIV11_OFFSET    0x017C 
+#define PLL_CTRL_PLLDIV12_OFFSET    0x0180 
+#define PLL_CTRL_PLLDIV13_OFFSET    0x0184 
+#define PLL_CTRL_PLLDIV14_OFFSET    0x0188 
+#define PLL_CTRL_PLLDIV15_OFFSET    0x018C 
+#define PLL_CTRL_PLLDIV16_OFFSET    0x0190 
+
+#define KICK0_UNLOCK                0x68EF3490
+#define KICK1_UNLOCK                0xD172BC5A
+#define KICK_LOCK                   0x00000000
+
+
+//PLL Index Numbers
+#define MCU_PLL_INDEX		  1
+#define MAIN_PLL_INDEX		2
+#define ARM0_PLL_INDEX		3
+#define ARM1_PLL_INDEX		4
+#define DDR_PLL_INDEX		  5
+#define PER0_PLL_INDEX		6
+#define PER1_PLL_INDEX		7
+#define CPSW_PLL_INDEX		8
+#define DSS_PLL_INDEX		  9
+
+
+//PLL GEL Utility
+#define MCU_PLL0_PLL_INDEX      MCU_PLL_INDEX
+#define MCU_PLL1_PLL_INDEX      CPSW_PLL_INDEX 
+#define MAIN_PLL0_PLL_INDEX     MAIN_PLL_INDEX
+#define MAIN_PLL6_PLL_INDEX     ARM0_PLL_INDEX
+#define MAIN_PLL7_PLL_INDEX     ARM1_PLL_INDEX
+#define MAIN_PLL3_PLL_INDEX     DDR_PLL_INDEX 
+#define MAIN_PLL1_PLL_INDEX     PER0_PLL_INDEX
+#define MAIN_PLL2_PLL_INDEX     PER1_PLL_INDEX
+#define MAIN_PLL4_PLL_INDEX     DSS_PLL_INDEX 
+
+//PLL Type
+#define PLL_TYPEOF_ADPLLM	  1
+#define PLL_TYPEOF_ADPLLLJM	0
+
+/************************MAIN PLL START************************/
+//MAIN PLL (MAIN_PLL0) ADPLLLJM
+#define MAIN_TYPE			    PLL_TYPEOF_ADPLLLJM
+#define MAIN_HSDIV_EXIST	1
+#define MAIN_CTRL_EXIST		1
+//Set to 100 MHz
+#define	MAIN_M_FRAC_MULT  	0
+#define	MAIN_SD_DIV  		    10
+#define	MAIN_M_INT_MULT 	  1000
+#define	MAIN_N_DIV 			    10-1
+#define	MAIN_M1_DIV			    1-1
+#define	MAIN_M2_DIV 		    25
+#define	MAIN_HSDIV4 		    25-1
+#define	MAIN_HSDIV3 		    10-1
+#define	MAIN_HSDIV2 		    50-1
+#define	MAIN_HSDIV1 		    5-1
+//Controller
+#define MAIN_CTRL_BPDIV  	0 //AUXCLK=BPCLK=REFCLK for controller
+#define MAIN_CTRL_OD1 		0 //OBSCLK=REFCLK for controller
+#define MAIN_CTRL_DIV1 		1-1 //500MHZ SYSCLK1 from HSDIV_CLKOUT1
+
+#define MAIN_CLKINP        25.0
+/************************MAIN PLL END**************************/
+
+/************************ARM0 PLL START************************/
+//ARM0 PLL (MAIN_PLL6) ADPLLM
+#define ARM0_TYPE			    PLL_TYPEOF_ADPLLM
+#define ARM0_HSDIV_EXIST	0
+#define ARM0_CTRL_EXIST		0
+//Set to 800 MHz
+#define ARM0_M_FRAC_MULT  	0
+#define ARM0_M_INT_MULT  	  320
+#define ARM0_N_DIV  		    10-1
+#define ARM0_M1_DIV  		    1-1
+#define ARM0_M2_DIV  		    1
+#define ARM0_M3_DIV  		    1
+
+#define ARM0_CLKINP         25.0
+/************************ARM0 PLL END**************************/
+
+/************************ARM1 PLL START************************/
+//ARM1 PLL (MAIN_PLL7) ADPLLM
+#define ARM1_TYPE			    PLL_TYPEOF_ADPLLM
+#define ARM1_HSDIV_EXIST	0
+#define ARM1_CTRL_EXIST		0
+//Set to 800 MHz
+#define ARM1_M_FRAC_MULT  0	
+#define ARM1_M_INT_MULT  	320  
+#define ARM1_N_DIV  		  10-1  
+#define ARM1_M1_DIV  		  1-1  
+#define ARM1_M2_DIV  		  1  
+#define ARM1_M3_DIV  		  1  
+
+#define ARM1_CLKINP       25.0
+/************************ARM1 PLL END**************************/
+
+/************************DDR PLL START*************************/
+//DDR PLL (MAIN_PLL3) ADPLLLJM
+#define DDR_TYPE			PLL_TYPEOF_ADPLLLJM
+#define DDR_HSDIV_EXIST		0
+#define DDR_CTRL_EXIST		0
+//Set to 400 MHz
+#define DDR_M_FRAC_MULT		0    
+
+//2133MT/s (1066.5MHZ (1066.5 MHz DDR)
+//#define DDR_M_INT_MULT      2133
+//#define DDR_N_DIV               25-1 
+//#define DDR_SD_DIV            9   
+//#define DDR_M2_DIV            4 
+
+//1866MT/s (933MHz DDR)
+//#define DDR_M_INT_MULT      933
+//#define DDR_N_DIV               25-1 
+//#define DDR_SD_DIV            4   
+//#define DDR_M2_DIV            2 
+
+//1800MT/s (900MHz DDR)
+//#define DDR_M_INT_MULT		360
+//#define DDR_N_DIV               10-1 
+//#define DDR_SD_DIV            4   
+//#define DDR_M2_DIV            2 
+
+//1700MT/s (850MHz DDR)
+//#define DDR_M_INT_MULT		340
+//#define DDR_N_DIV               10-1 
+//#define DDR_SD_DIV            4   
+//#define DDR_M2_DIV            2 
+
+//1600MT/s (800MHz DDR)
+#define DDR_M_INT_MULT		320
+#define DDR_N_DIV               10-1 
+#define DDR_SD_DIV            4   
+#define DDR_M2_DIV            2 
+
+//1500MT/s (750MHz DDR)
+//#define DDR_M_INT_MULT		300
+//#define DDR_N_DIV               10-1 
+//#define DDR_SD_DIV            3   
+//#define DDR_M2_DIV            2 
+
+//1400MT/s (700MHz DDR)
+//#define DDR_M_INT_MULT		280
+//#define DDR_N_DIV               10-1 
+//#define DDR_SD_DIV            3   
+//#define DDR_M2_DIV            2 
+
+//1333MT/s (666MHz DDR)
+//#define DDR_M_INT_MULT        640
+//#define DDR_N_DIV              12-1 
+//#define DDR_M2_DIV            4 
+//#define DDR_SD_DIV            6   
+
+
+#define DDR_M1_DIV			  1-1 
+
+#define DDR_CLKINP        25.0
+/************************DDR PLL END***************************/
+
+/************************PER0 PLL START************************/
+//PER0 PLL (MAIN_PLL1) ADPLLLJM
+#define PER0_TYPE			PLL_TYPEOF_ADPLLLJM
+#define PER0_HSDIV_EXIST	0
+#define PER0_CTRL_EXIST		0
+//Set to 960 MHz
+#define PER0_M_FRAC_MULT 	0
+#define PER0_SD_DIV 		  8
+#define PER0_M_INT_MULT 	768
+#define PER0_N_DIV 			  10-1
+#define PER0_M1_DIV 		  1-1
+#define PER0_M2_DIV 		  2
+
+#define PER0_CLKINP       25.0
+/************************PER0 PLL END**************************/
+
+/************************PER1 PLL Start************************/
+//PER1 PLL (MAIN_PLL2) ADPLLLJM
+#define PER1_TYPE			    PLL_TYPEOF_ADPLLLJM
+#define PER1_HSDIV_EXIST	1
+#define PER1_CTRL_EXIST		0
+//Set to 300 MHz
+#define PER1_M_FRAC_MULT	 0
+#define PER1_SD_DIV  		   8
+#define PER1_M_INT_MULT 	 720
+#define PER1_N_DIV  		   10-1
+#define PER1_M1_DIV			   1-1
+#define PER1_M2_DIV			   6
+#define PER1_HSDIV4			   4-1
+#define PER1_HSDIV3			   9-1
+#define PER1_HSDIV2			   18-1
+#define PER1_HSDIV1			   8-1
+
+#define PER1_CLKINP        25.0
+/************************PER1 PLL END**************************/
+
+/************************MCU PLL START************************/
+//MCU PLL (MCU_PLL0) ADPLLM
+#define MCU_TYPE          PLL_TYPEOF_ADPLLM
+#define MCU_HSDIV_EXIST   1
+#define MCU_CTRL_EXIST    1
+//Set to 400 MHz
+#define MCU_M_FRAC_MULT 0
+#define MCU_INT_MULT    480
+#define MCU_N_DIV       10-1
+#define MCU_M1_DIV      1-1
+#define MCU_M2_DIV      3
+#define MCU_M3_DIV      1
+#define MCU_HSDIV4      18-1
+#define MCU_HSDIV3      25-1
+#define MCU_HSDIV2      30-1
+#define MCU_HSDIV1      40-1
+//Controller
+#define MCU_CTRL_BPDIV  0 //AUXCLK=BPCLK=REFCLK for controller
+#define MCU_CTRL_OD1    0 //OBSCLK=REFCLK for controller
+#define MCU_CTRL_DIV1   1-1 //400MHZ SYSCLK1 from MCU PLL CLKOUT
+
+#define MCU_CLKINP      25.0
+/************************MCU PLL END**************************/
+
+/************************CPSW PLL START************************/
+//CPSW PLL (MCU_PLL1) ADPLLM
+#define CPSW_TYPE			    PLL_TYPEOF_ADPLLM
+#define CPSW_HSDIV_EXIST	1
+#define CPSW_CTRL_EXIST		0
+//Set to 250 MHz
+#define CPSW_M_FRAC_MULT 	0
+#define CPSW_M_INT_MULT 	400
+#define CPSW_N_DIV 			  10-1
+#define CPSW_M1_DIV 		  1-1
+#define CPSW_M2_DIV 		  4
+#define CPSW_M3_DIV 		  1
+#define CPSW_HSDIV4 		  10-1
+#define CPSW_HSDIV3 		  10-1
+#define CPSW_HSDIV2 		  10-1
+#define CPSW_HSDIV1 		  10-1
+
+#define CPSW_CLKINP       25.0
+/************************CPSW PLL END**************************/
+
+/************************DSS PLL START*************************/
+//DSS PLL (MAIN_PLL4) ADPLLLJM
+#define DSS_TYPE			    PLL_TYPEOF_ADPLLLJM
+#define DSS_HSDIV_EXIST		0
+#define DSS_CTRL_EXIST		0
+//Set to 1155 MHz
+#define DSS_M_FRAC_MULT   0
+#define DSS_SD_DIV     		10
+#define DSS_M_INT_MULT    924
+#define DSS_N_DIV     		10-1
+#define DSS_M1_DIV     		1-1
+#define DSS_M2_DIV     		2
+
+#define DSS_CLKINP       25.0
+/************************DSS PLL END*************************/
+
+//For 1039.5 MHz output for DPI (MODE 2)
+/************************DSS PLL START*************************/
+//DSS PLL (MAIN_PLL4) ADPLLLJM
+#define MODE2_DSS_TYPE          PLL_TYPEOF_ADPLLLJM
+#define MODE2_DSS_HSDIV_EXIST   0
+#define MODE2_DSS_CTRL_EXIST    0
+//Set to 1039.5 MHz
+#define MODE2_DSS_M_FRAC_MULT   0
+#define MODE2_DSS_SD_DIV        9
+#define MODE2_DSS_M_INT_MULT    2079
+#define MODE2_DSS_N_DIV         25-1
+#define MODE2_DSS_M1_DIV        1-1
+#define MODE2_DSS_M2_DIV        2
+
+#define MODE2_DSS_CLKINP          25.0
+/************************DSS PLL END*************************/
+
+//For 497.5 MHz output for OLDI (MODE 3)
+/************************DSS PLL START*************************/
+//DSS PLL (MAIN_PLL4) ADPLLLJM
+#define MODE3_DSS_TYPE          PLL_TYPEOF_ADPLLLJM
+#define MODE3_DSS_HSDIV_EXIST   0
+#define MODE3_DSS_CTRL_EXIST    0
+//Set to 497.5 MHz
+#define MODE3_DSS_M_FRAC_MULT   0 
+#define MODE3_DSS_SD_DIV        4
+#define MODE3_DSS_M_INT_MULT    995
+#define MODE3_DSS_N_DIV         25-1
+#define MODE3_DSS_M1_DIV        1-1
+#define MODE3_DSS_M2_DIV        2
+
+#define MODE3_DSS_CLKINP          25.0
+/************************DSS PLL END*************************/
+
+unsigned int address_offset = 0;
+
+SET_BITS(unsigned int BASE_ADDR, unsigned int REG_OFFSET, unsigned int VALUE, unsigned int WIDTH, unsigned int LSHIFT)
+{
+  unsigned int ONES_MASK;
+  unsigned int SELECT_BITS_MASK;
+  unsigned int VALUE_MASK;
+  unsigned int *REG;
+
+  //assign pointer to register memory address
+  REG = BASE_ADDR + REG_OFFSET;
+
+  //create mask of ones of width WIDTH
+  ONES_MASK = (1 << WIDTH)-1;//NQ
+
+  //Create mask to select bits in register by left shifting ONES_MASK
+  //LSHIFT should be the starting bit you wish to write to
+  //for instiance to write a value to bits 3 and 4 (WIDTH = 2), LSHIFT should equal 3
+  SELECT_BITS_MASK = ONES_MASK << LSHIFT;
+
+  //create mask of value
+  VALUE_MASK = VALUE & ONES_MASK;
+  VALUE_MASK = VALUE_MASK << LSHIFT;
+
+  //write vlaue into selected bits of register
+  //value at address REG = (clear bits in regiter) | (value mask)
+  *REG = (*REG & ~SELECT_BITS_MASK) | (VALUE_MASK);
+}
+
+READ_BITS(unsigned int BASE_ADDR, unsigned int REG_OFFSET, unsigned int WIDTH, unsigned int RSHIFT)
+{
+  unsigned int ONES_MASK;
+  unsigned int SELECT_BITS_MASK;
+  unsigned int VALUE_MASK;
+  unsigned int *REG;
+
+  //assign pointer to register memory address
+  REG = BASE_ADDR + REG_OFFSET;
+
+  //create mask of ones of width WIDTH
+  ONES_MASK = (1 << WIDTH)-1;
+
+  //Create mask to select bits in register by left shifting ONES_MASK
+  //RSHIFT should be the starting bit you wish to read from
+  //for instiance to read a value from bits 3 and 4 (WIDTH = 2), RSHIFT should equal 3
+  SELECT_BITS_MASK = ONES_MASK << RSHIFT;
+
+  //create mask of value
+  VALUE_MASK = *REG & SELECT_BITS_MASK;
+  VALUE_MASK = VALUE_MASK >> RSHIFT;
+
+  return VALUE_MASK;
+}
+
+///Enables the CLKOUTLDO and places it in bypass mode (ADPLLLJM)
+///Enables the CLKOUTX2 and CLKOUTHIF (ADPLLM)
+INIT_SETUP_PLL(unsigned int PLL_BASE_ADDR, unsigned int PLL_TYPE_ADPLLM, unsigned int debug_info, unsigned int delay, unsigned int silicon)
+{
+  unsigned int i;
+
+  if(debug_info)
+  {
+    GEL_TextOut("Initial Setup PLL\n",,,,,);
+  }
+
+  //enable PLL clocks
+  if(!PLL_TYPE_ADPLLM)
+  {
+    SET_BITS(PLL_BASE_ADDR, PLL_CTRL_OFFSET, 1, 1, 5); //bit 5 (CLKOUTLDO_EN) of PLL_CTRL set to 1
+    /*if(silicon)
+    {
+      i=0;
+      while(!READ_BITS(PLL_BASE_ADDR, PLL_STAT_OFFSET, 1, 5)) //poll bit 5 (CLKOUTLDO_EN_ACK) of PLL_STAT for 1
+      {
+        i++;
+        if(i > delay)
+        {
+          GEL_TextOut("ERROR: Polling CLKOUTLDO_EN_ACK not set. Break.\n",,,,,);
+          return 0;
+        }
+      }
+    }*/
+    if(debug_info)
+    {
+      GEL_TextOut("CLKOUTLDO on PLL enabled\n",,,,,);
+    }
+  }
+
+  SET_BITS(PLL_BASE_ADDR, PLL_CTRL_OFFSET, 1, 1, 0); //bit 0 (CLKOUTBYPASS_EN) of PLL_CTRL set to 1
+  if(silicon)
+  {
+    i = 0;
+    while(!READ_BITS(PLL_BASE_ADDR, PLL_STAT_OFFSET, 1, 0)) //poll bit 0 (CLKOUTBYPASS_EN_ACK) of PLL_STAT for 1
+    {
+      i++;
+      if(i > delay)
+      {
+        GEL_TextOut("ERROR: Polling CLKOUTBYPASS_EN_ACK not set. Break.\n",,,,,);
+        return 0;
+      }
+    }
+  }
+  if(debug_info)
+  {
+    GEL_TextOut("Enabled CLKOUTBYPASS on PLL\n",,,,,);
+  }
+
+  if(PLL_TYPE_ADPLLM)
+  {
+    SET_BITS(PLL_BASE_ADDR, PLL_CTRL_OFFSET, 1, 1, 2); //bit 2 (CLKOUTX2_EN) of PLL_CTRL set to 1
+    if(silicon)
+    {
+      i = 0;
+      while(!READ_BITS(PLL_BASE_ADDR, PLL_STAT_OFFSET, 1, 2)) //poll bit 2 (CLKOUTX2_EN_ACK) of PLL_STAT for 1
+      {
+        i++;
+        if(i > delay)
+        {
+          GEL_TextOut("ERROR: Polling CLKOUTX2_EN_ACK not set. Break.\n",,,,,);
+          return 0;
+        }
+      }
+    }
+    if(debug_info)
+    {
+      GEL_TextOut("Enabled CLKOUTx2 on ADPLLM\n",,,,,);
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_CTRL_OFFSET, 1, 1, 1); //bit 1 (CLKOUTHIF_EN) of PLL_CTRL set to 1
+    /*if(silicon)
+    {
+      i = 0;
+      while(!READ_BITS(PLL_BASE_ADDR, PLL_STAT_OFFSET, 1, 1)) //poll bit 1 (CLKOUTHIF_EN_ACK) of PLL_STAT for 1
+      {
+        i++;
+        if(i > delay)
+        {
+          GEL_TextOut("ERROR: Polling CLKOUTHIF_EN_ACK not set. Break.\n",,,,,);
+          return 0;
+        }
+      }
+    }*/
+    if(debug_info)
+    {
+      GEL_TextOut("Enabled CLKOUTHIF on ADPLLM\n",,,,,);
+    }
+  }
+  //Set the PLL clkout enable bit in the control MMR. 
+  SET_BITS(PLL_BASE_ADDR, PLL_CTRL_OFFSET, 1, 1, 3); //Bit 3 (CLKOUT_EN) of PLL set to 1
+  if(debug_info){
+    GEL_TextOut("Enabled CLKOUT on PLL.\n",,,,,);
+  }
+  //For the CPSW PLL, explicitly enable the DCO clock so the HSDIVs will work.
+  /* Set the CPSW DCO Clock Enable bit explicitly. I think bootROM actually
+   * sets most of the PLLs except for CPSW PLL. If that's the case then we 
+   * need to start including the ROM teardown GEL file as a part of no-boot 
+   * to clean Maxwell and put things on a clean slate. */
+  //Set DCO Clock
+  SET_BITS(PLL_BASE_ADDR, PLL_CTRL_OFFSET, 1, 1, 4); //Bit 4 (CLKDCOLDO_EN) of PLL set to 1
+  if(debug_info){
+    GEL_TextOut("Enabled DCO CLK on PLL.\n",,,,,);
+  }
+
+  if(debug_info)
+  {
+    GEL_TextOut("Completed Initial Setup PLL\n",,,,,);
+  }
+}
+
+INIT_SETUP_CTRL(unsigned int CTRL_BASE_ADDR, unsigned int debug_info, unsigned int delay, unsigned int silicon)
+{
+  unsigned int i;
+
+  if(debug_info)
+  {
+    GEL_TextOut("Initial Setup PLL Controller\n",,,,,);
+  }
+
+  //make sure PLL controller in reset for programming
+  SET_BITS(CTRL_BASE_ADDR, PLL_CTRL_PLLCTL_OFFSET, 1, 1, 3); //bit 3 PLLRST set to 1
+  if(silicon)
+  {
+    if(debug_info){
+      GEL_TextOut("Delay...\n",,,,,);
+    }
+    for(i = 0; i < delay; i++);
+  }
+  if(debug_info)
+  {
+    GEL_TextOut("PLL CTRL in Reset\n",,,,,);
+  }
+
+  //for bypass mode control
+  SET_BITS(CTRL_BASE_ADDR, PLL_CTRL_PLLCTL_OFFSET, 0, 1, 5); //bit 5 (PLLENSRC) of PLLCTL set to 0
+  if(debug_info)
+  {
+    GEL_TextOut("Allow registers to control bypass mode for PLL CTRL\n",,,,,);
+  }
+
+  //take ctrl out of 'bypass' mode (normal operation)
+  SET_BITS(CTRL_BASE_ADDR, PLL_CTRL_PLLCTL_OFFSET, 1, 1, 0); //bit 0 (PLLEN) of PLLCTL set to 1
+  if(silicon)
+  {
+    //delay 4 clock cyles of the slowest clocks (CLKIN, OSCIN, PLL_CLKOUT)?
+    if(debug_info){
+        GEL_TextOut("Delay...\n",,,,,);
+    }
+    for(i = 0; i < delay; i++);
+  }
+  if(debug_info)
+  {
+    GEL_TextOut("PLL CTRL out of Bypass\n",,,,,);
+  }
+  if(debug_info)
+  {
+    GEL_TextOut("Completed Initial Setup PLL Controller\n",,,,,);
+  }
+}
+
+SECONDARY_SETUP_PLL(unsigned int PLL_BASE_ADDR, unsigned int CTRL_BASE_ADDR, unsigned int HSDIV_EXIST, unsigned int CTRL_EXIST, unsigned int debug_info, unsigned int delay, unsigned int silicon)
+{
+  unsigned int i;
+
+  if(debug_info)
+  {
+    GEL_TextOut("Secondary Setup PLL\n",,,,,);
+  }
+
+  //put PLL (and PLL HSDIV if it exists) in bypass mode
+  SET_BITS(PLL_BASE_ADDR, PLL_CTRL_OFFSET, 1, 1, 7); //bit 7 (IDLE) of PLL_CTRL set to 1
+  if(silicon)
+  {
+    i = 0;
+    while(!READ_BITS(PLL_BASE_ADDR, PLL_STAT_OFFSET, 1, 7)) //poll bit 7 (BYPASS_ACK) of PLL_STAT for 1
+    {
+      i++;
+      if(i > delay)
+      {
+        GEL_TextOut("ERROR: Polling BYPASS_ACK not set. Break.\n",,,,,);
+        return 0;
+      }
+    }
+  }
+  if(debug_info)
+  {
+    GEL_TextOut("PLL/HSDIV in bypass mode\n",,,,,);
+  }
+
+  //put PLL controller in reset for programming if it exists
+  if(CTRL_EXIST)
+  {
+    SET_BITS(CTRL_BASE_ADDR, PLL_CTRL_PLLCTL_OFFSET, 1, 1, 3); //bit 3 PLLRST set to 1
+    if(silicon)
+    {
+      if(debug_info){
+          GEL_TextOut("Delay...\n",,,,,);
+      }
+      for(i = 0; i < delay; i++);
+    }
+    if(debug_info)
+    {
+      GEL_TextOut("PLL CTRL in Reset\n",,,,,);
+    }
+  }
+
+  //Set the PLL clkout enable bit in the control MMR. 
+  /* Why was this not set before? Because we depended on minmaa and DV code
+   * to initialize the PLL and set this bit in QT. */
+  SET_BITS(PLL_BASE_ADDR, PLL_CTRL_OFFSET, 1, 1, 3); //Bit 3 (CLKOUT_EN) of PLL set to 1
+  if(debug_info){
+    GEL_TextOut("Enabled CLKOUT on PLL.\n",,,,,);
+  }
+  //For the CPSW PLL, explicitly enable the DCO clock so the HSDIVs will work.
+  /* Set the CPSW DCO Clock Enable bit explicitly. I think bootROM actually
+   * sets most of the PLLs except for CPSW PLL. If that's the case then we 
+   * need to start including the ROM teardown GEL file as a part of no-boot 
+   * to clean Maxwell and put things on a clean slate. */
+  //Set DCO Clock
+  SET_BITS(PLL_BASE_ADDR, PLL_CTRL_OFFSET, 1, 1, 4); //Bit 4 (CLKDCOLDO_EN) of PLL set to 1
+  if(debug_info){
+    GEL_TextOut("Enabled DCO CLK on PLL.\n",,,,,);
+  }
+
+  if(debug_info)
+  {
+    GEL_TextOut("Completed Secondary Setup PLL\n",,,,,);
+  }
+}
+
+PROGRAM_PLL(unsigned int PLL_BASE_ADDR, unsigned int PLL_TYPE_ADPLLM, unsigned int HSDIV_EXIST, unsigned int index, unsigned int debug_info, unsigned int delay, unsigned int silicon, unsigned int DSS_PLL_mode)
+{
+  //declare variables
+  unsigned int i;
+  float temp2;
+  float CLKIN_val;
+
+  unsigned int SD_DIV_val;
+  unsigned int M_INT_MULT_val;
+  unsigned int M_FRAC_MULT_val;
+  unsigned int N_DIV_val;
+  unsigned int M1_DIV_val;
+  unsigned int M2_DIV_val;
+  unsigned int M3_DIV_val;
+  unsigned int PLLHSDIV4_val;
+  unsigned int PLLHSDIV3_val;
+  unsigned int PLLHSDIV2_val;
+  unsigned int PLLHSDIV1_val;
+
+  //initalize variables
+  //all clock values in MHz
+  //assume some dividers are implemented in reality as +1 (prevents dividing by zero)
+  CLKIN_val = 20; //20MHz input clock from HFOSC default
+
+  if(index==1) //MCU PLL
+  {
+    M_FRAC_MULT_val = MCU_M_FRAC_MULT;
+
+    M_INT_MULT_val = MCU_INT_MULT; 
+    N_DIV_val = MCU_N_DIV;
+
+    M1_DIV_val = MCU_M1_DIV;
+    M2_DIV_val = MCU_M2_DIV;  
+    M3_DIV_val = MCU_M3_DIV;
+    PLLHSDIV4_val = MCU_HSDIV4; 
+    PLLHSDIV3_val = MCU_HSDIV3; 
+    PLLHSDIV2_val = MCU_HSDIV2; 
+    PLLHSDIV1_val = MCU_HSDIV1; 
+
+    CLKIN_val = MCU_CLKINP;
+
+  }else if(index==2) //MAIN PLL
+  {
+    M_FRAC_MULT_val = MAIN_M_FRAC_MULT;
+    SD_DIV_val = MAIN_SD_DIV;
+
+    M_INT_MULT_val = MAIN_M_INT_MULT; 
+    N_DIV_val = MAIN_N_DIV;
+
+    M1_DIV_val = MAIN_M1_DIV;
+    M2_DIV_val = MAIN_M2_DIV; 
+    PLLHSDIV4_val = MAIN_HSDIV4; 
+    PLLHSDIV3_val = MAIN_HSDIV3; 
+    PLLHSDIV2_val = MAIN_HSDIV2; 
+    PLLHSDIV1_val = MAIN_HSDIV1; 
+
+    CLKIN_val = MAIN_CLKINP;
+
+  }else if(index==3) //ARM0 PLL
+  {
+    M_FRAC_MULT_val = ARM0_M_FRAC_MULT;
+
+    M_INT_MULT_val = ARM0_M_INT_MULT;  
+    N_DIV_val = ARM0_N_DIV;
+
+    M1_DIV_val = ARM0_M1_DIV;
+    M2_DIV_val = ARM0_M2_DIV;  
+    M3_DIV_val = ARM0_M3_DIV;
+
+    CLKIN_val = ARM0_CLKINP;
+
+  }else if(index==4) //ARM1 PLL
+  {
+    M_FRAC_MULT_val = ARM1_M_FRAC_MULT;
+
+    M_INT_MULT_val = ARM1_M_INT_MULT;  
+    N_DIV_val = ARM1_N_DIV;
+
+    M1_DIV_val = ARM1_M1_DIV;
+    M2_DIV_val = ARM1_M2_DIV;  
+    M3_DIV_val = ARM1_M3_DIV;
+
+    CLKIN_val = ARM1_CLKINP;
+
+  }else if(index==5) //DDR PLL
+  {
+    M_FRAC_MULT_val = DDR_M_FRAC_MULT;
+    SD_DIV_val = DDR_SD_DIV;
+
+    M_INT_MULT_val = DDR_M_INT_MULT;  
+    N_DIV_val = DDR_N_DIV;
+
+    M1_DIV_val = DDR_M1_DIV;
+    M2_DIV_val = DDR_M2_DIV;  
+
+    CLKIN_val = DDR_CLKINP;
+
+  }else if(index==6) //PER0 PLL
+  {
+    M_FRAC_MULT_val = PER0_M_FRAC_MULT;
+    SD_DIV_val = PER0_SD_DIV;
+
+    M_INT_MULT_val = PER0_M_INT_MULT;  
+    N_DIV_val = PER0_N_DIV;
+
+    M1_DIV_val = PER0_M1_DIV;
+    M2_DIV_val = PER0_M2_DIV; 
+
+    CLKIN_val = PER0_CLKINP;
+
+  }else if(index==7) //PER1 PLL
+  {
+    M_FRAC_MULT_val = PER1_M_FRAC_MULT;
+    SD_DIV_val = PER1_SD_DIV;
+
+    M_INT_MULT_val = PER1_M_INT_MULT;  
+    N_DIV_val = PER1_N_DIV;
+
+    M1_DIV_val = PER1_M1_DIV;
+    M2_DIV_val = PER1_M2_DIV;  
+    PLLHSDIV4_val = PER1_HSDIV4;  
+    PLLHSDIV3_val = PER1_HSDIV3;  
+    PLLHSDIV2_val = PER1_HSDIV2;  
+    PLLHSDIV1_val = PER1_HSDIV1;  
+
+    CLKIN_val = PER1_CLKINP;
+
+  }else if(index==8) //CPSW PLL
+  {
+    M_FRAC_MULT_val = CPSW_M_FRAC_MULT;
+
+    M_INT_MULT_val = CPSW_M_INT_MULT; 
+    N_DIV_val = CPSW_N_DIV;
+
+    M1_DIV_val = CPSW_M1_DIV;
+    M2_DIV_val = CPSW_M2_DIV; 
+    M3_DIV_val = CPSW_M3_DIV;
+    PLLHSDIV4_val = CPSW_HSDIV4; 
+    PLLHSDIV3_val = CPSW_HSDIV3; 
+    PLLHSDIV2_val = CPSW_HSDIV2; 
+    PLLHSDIV1_val = CPSW_HSDIV1; 
+
+    CLKIN_val = CPSW_CLKINP;
+
+  }else if(index==9) //DSS PLL
+  {
+    M_FRAC_MULT_val = DSS_M_FRAC_MULT;
+    SD_DIV_val = DSS_SD_DIV;
+
+    M_INT_MULT_val = DSS_M_INT_MULT;
+    N_DIV_val = DSS_N_DIV;
+
+    M1_DIV_val = DSS_M1_DIV;
+    M2_DIV_val = DSS_M2_DIV;
+
+    CLKIN_val = DSS_CLKINP;
+
+    /* Figure out what mode the user wants to put the PLL in. */
+    if(DSS_PLL_mode == 1){ //The user has selected Mode 1 (1155 MHz.)
+      M_FRAC_MULT_val = DSS_M_FRAC_MULT;
+      SD_DIV_val = DSS_SD_DIV;
+
+      M_INT_MULT_val = DSS_M_INT_MULT;
+      N_DIV_val = DSS_N_DIV;
+
+      M1_DIV_val = DSS_M1_DIV;
+      M2_DIV_val = DSS_M2_DIV;
+
+      CLKIN_val = DSS_CLKINP; //This is literally repeating the same code so it's slightly redundant.
+
+      if(debug_info){
+        GEL_TextOut("****Setting DSS PLL for Mode 2.*****\n");
+      }
+    }
+    if(DSS_PLL_mode == 2){ //The user has selected Mode 2 (1039.5 MHz.)
+      M_FRAC_MULT_val = MODE2_DSS_M_FRAC_MULT;
+      SD_DIV_val = MODE2_DSS_SD_DIV;
+
+      M_INT_MULT_val = MODE2_DSS_M_INT_MULT;
+      N_DIV_val = MODE2_DSS_N_DIV;
+
+      M1_DIV_val = MODE2_DSS_M1_DIV;
+      M2_DIV_val = MODE2_DSS_M2_DIV;
+
+      CLKIN_val = MODE2_DSS_CLKINP; //This is still 25MHz for real silicon, it hasn't changed.
+
+      if(debug_info){
+        GEL_TextOut("****Setting DSS PLL for Mode 2.*****\n");
+      }
+
+    }else if(DSS_PLL_mode == 3){ //The user has selected Mode 3 (499.7 MHz.)
+      M_FRAC_MULT_val = MODE3_DSS_M_FRAC_MULT;
+      SD_DIV_val = MODE3_DSS_SD_DIV;
+
+      M_INT_MULT_val = MODE3_DSS_M_INT_MULT;
+      N_DIV_val = MODE3_DSS_N_DIV;
+
+      M1_DIV_val = MODE3_DSS_M1_DIV;
+      M2_DIV_val = MODE3_DSS_M2_DIV;
+
+      CLKIN_val = MODE3_DSS_CLKINP; //This is still 25MHz for real silicon, it hasn't changed.
+
+      if(debug_info){
+        GEL_TextOut("****Setting DSS PLL for Mode 3.*****\n");
+      }
+    }
+
+  }
+  if(debug_info)
+  {
+    GEL_TextOut("PLL/HSDIV Multiplier/Divider Variables Initialized\n",,,,,);
+  }
+
+  //check for valid values
+  if((M1_DIV_val < 0)||(M1_DIV_val > 15))
+  {
+    GEL_TextOut("ERROR: INVALID M1 VALUE\n",,,,,);
+    return 0;
+  }
+  if(HSDIV_EXIST)
+  {
+    if((PLLHSDIV1_val<0)||(PLLHSDIV1_val>63))
+    {
+      GEL_TextOut("ERROR: INVALID HSDIV1 VALUE\n",,,,,);
+      return 0;
+    }
+    if((PLLHSDIV2_val<0)||(PLLHSDIV2_val>63))
+    {
+      GEL_TextOut("ERROR: INVALID HSDIV2 VALUE\n",,,,,);
+      return 0;
+    }
+    if((PLLHSDIV3_val<0)||(PLLHSDIV3_val>63))
+    {
+      GEL_TextOut("ERROR: INVALID HSDIV3 VALUE\n",,,,,);
+      return 0;
+    }
+    if((PLLHSDIV4_val<0)||(PLLHSDIV4_val>63))
+    {
+      GEL_TextOut("ERROR: INVALID HSDIV4 VALUE\n",,,,,);
+      return 0;
+    }
+  }
+  if(PLL_TYPE_ADPLLM)
+  {
+    if ((CLKIN_val< (float) .032)||(CLKIN_val > (float) 52))
+    {
+      GEL_TextOut("ERROR: INVALID CLKIN FREQUENCY\n",,,,,);
+      return 0;
+    }
+    if ((M2_DIV_val<1)||(M2_DIV_val>31))
+    {
+      GEL_TextOut("ERROR: INVALID M2 VALUE\n",,,,,);
+      return 0;
+    }
+    if ((M_INT_MULT_val<2)||(M_INT_MULT_val>2047))
+    {
+      GEL_TextOut("ERROR: INVALID M_INT VALUE\n",,,,,);
+      return 0;
+    }
+    if ((N_DIV_val<0)||(N_DIV_val>127))
+    {
+      GEL_TextOut("ERROR: INVALID N VALUE\n",,,,,);
+      return 0;
+    }
+    if ((M3_DIV_val<1)||(M3_DIV_val>31))
+    {
+      GEL_TextOut("ERROR: INVALID M3 VALUE\n",,,,,);
+      return 0;
+    }
+
+    temp2 = ((float) CLKIN_val*2*(M_INT_MULT_val + M_FRAC_MULT_val))/(N_DIV_val+1);//dcoclkldo
+    if((temp2/((float) 2*M2_DIV_val)) > (float) 1400)
+    {
+      temp2 = ((float) CLKIN_val*(M_INT_MULT_val + M_FRAC_MULT_val))/(N_DIV_val+1);//dcoclkldo if DCC
+    }
+    if (((temp2) < (float) 20)||((temp2) > (float) 2500))//dcoclkldo
+    {
+      GEL_TextOut("ERROR: INVALID CALCULATED DCOCLKLDO FREQUENCY\n",,,,,);
+      return 0;
+    }
+    temp2 = temp2 / ((float) 2* M2_DIV_val);//clkout
+    if (((temp2) < (float) 20)||((temp2) > (float) 2500))//clkout
+    {
+      GEL_TextOut("ERROR: INVALID CALCULATED CLKOUT FREQUENCY\n",,,,,);
+      return 0;
+    }
+  }else//ADPLLLJM
+  {
+    if((CLKIN_val < (float) .62)||(CLKIN_val > (float) 60))
+    {
+      GEL_TextOut("ERROR: INVALID CLKIN FREQUENCY\n",,,,,);
+      return 0;
+    }
+    if ((M2_DIV_val<1)||(M2_DIV_val>127))
+    {
+      GEL_TextOut("ERROR: INVALID M2 VALUE\n",,,,,);
+      return 0;
+    }
+    if ((SD_DIV_val<2)||(SD_DIV_val>255))
+    {
+      GEL_TextOut("ERROR: INVALID SD_DIV VALUE\n",,,,,);
+      return 0;
+    }
+    if ((M_INT_MULT_val<2)||(M_INT_MULT_val>4095))
+    {
+      GEL_TextOut("ERROR: INVALID M_INT VALUE\n",,,,,);
+      return 0;
+    }
+    if ((N_DIV_val<0)||(N_DIV_val>255))
+    {
+      GEL_TextOut("ERROR: INVALID N VALUE\n",,,,,);
+      return 0;
+    }
+    temp2 = ((float) CLKIN_val*(M_INT_MULT_val + M_FRAC_MULT_val))/(N_DIV_val + 1);//dcoclkldo
+    if (((temp2) < (float) 750)||((temp2) > (float) 2500))//dcoclkldo
+    {
+      GEL_TextOut("ERROR: INVALID CALCULATED DCOCLKLDO FREQUENCY\n",,,,,);
+      return 0;
+    }
+    temp2 = temp2 / ((float) M2_DIV_val);//clkout
+    if (((temp2) < (float) 20)||((temp2) > (float) 2500))//clkout
+    {
+      GEL_TextOut("ERROR: INVALID CALCULATED CLKOUT FREQUENCY\n",,,,,);
+      return 0;
+    }
+  }
+  //-------------------------------------------------------------------------//
+
+  if(debug_info)
+  {
+    GEL_TextOut("Program PLL\n",,,,,);
+  }
+
+  //set dc corrector if clkout frequency greater than 1.4GHz, only for ADPLLM
+  if(PLL_TYPE_ADPLLM)
+  {
+    temp2 = ((float) CLKIN_val*(M_INT_MULT_val + M_FRAC_MULT_val))/((N_DIV_val+1)*(M2_DIV_val));
+    if(debug_info)
+    {
+      GEL_TextOut("ADPLLM CLKOUT FREQ: %f MHz\n",,,,, temp2);
+    }
+    if(temp2 >= (float) 1400)
+    {
+      SET_BITS(PLL_BASE_ADDR, PLL_CTRL_OFFSET, 1, 1, 27); //bit 27 (DC_CORRECTOR_EN) of PLL_CTRL set to 1
+      if(debug_info)
+      {
+        GEL_TextOut("DC Corrector Set for ADPLLM\n",,,,,);
+      }
+    }
+  }
+
+  //-------------------------------------------------------------------------//
+
+  //initiate programming sequence by clearning programming bits
+  SET_BITS(PLL_BASE_ADDR, PLL_PROG_OFFSET, 0x0, 2, 0); //bits 1:0 (PROG_SM) of PLL_PROG set to 00
+  if(debug_info)
+  {
+    GEL_TextOut("Initiated PLL programming sequence\n",,,,,);
+  }
+  SET_BITS(PLL_BASE_ADDR, PLL_PROG_OFFSET, 0, 1, 8); //bit 8 (DIV_PROG) of PLL_PROG set to 0, null operation
+  if(debug_info)
+  {
+    GEL_TextOut("PLL Programming Bits Cleared\n",,,,,);
+  }
+
+  //write multiplier/divider values to registers independent of PLL type
+  SET_BITS(PLL_BASE_ADDR, PLL_FREQ_CTRL1_OFFSET, M_FRAC_MULT_val, 18, 0); //bits 17:0 (M_FRAC_MULT) of PLL_FREQ_CTRL1 //NQ
+  if(debug_info)
+  {
+    GEL_TextOut("M FRAC MULT value: %x\n",,,,, M_FRAC_MULT_val);
+  }
+
+  //write multiplier/divider values to registers based on PLL type
+  if(PLL_TYPE_ADPLLM)
+  {
+    //write values to freq ctrl 0 register
+    SET_BITS(PLL_BASE_ADDR, PLL_FREQ_CTRL0_OFFSET, M_INT_MULT_val, 11, 8); //bits 18:8 (M_INT_MULT) of PLL_FREQ_CTRL0
+	
+	if(debug_info)
+    {
+      GEL_TextOut("M INT MULT value: %x\n",,,,, M_INT_MULT_val);
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_FREQ_CTRL0_OFFSET, N_DIV_val, 7, 0); //bits 6:0 (N_DIV) of PLL_FREQ_CTRL0
+    if(debug_info)
+    {
+      GEL_TextOut("N DIV value: %x\n",,,,, N_DIV_val);
+    }
+
+    //write M1/M2 values to clkdiv register
+    SET_BITS(PLL_BASE_ADDR, PLL_CLKDIV_OFFSET, M1_DIV_val, 4, 0); //bits 3:0 (M1_DIV) of PLL_CLKDIV
+    if(debug_info)
+    {
+     GEL_TextOut("M1 value: %x\n",,,,, M1_DIV_val);
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_CLKDIV_OFFSET, M2_DIV_val, 5, 8); //bits 12:8 (M2_DIV) of PLL_CLKDIV
+    if(debug_info)
+    {
+      GEL_TextOut("M2 value: %x\n",,,,, M2_DIV_val);
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_CLKDIV_OFFSET, M3_DIV_val, 5, 16); //bits 20:16 (M3_DIV) of PLL_CLKDIV
+    if(debug_info)
+    {
+      GEL_TextOut("M3 value: %x\n",,,,, M3_DIV_val);
+    }
+  }else//PLLLJM
+  {
+    //write values to freq ctrl 0 register
+    SET_BITS(PLL_BASE_ADDR, PLL_FREQ_CTRL0_OFFSET, SD_DIV_val, 8, 24); //bits 31:24 (SD_DIV) of PLL_FREQ_CTRL0
+    if(debug_info)
+    {
+      GEL_TextOut("SD DIV value: %x\n",,,,, SD_DIV_val);
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_FREQ_CTRL0_OFFSET, M_INT_MULT_val, 12, 8); //bits 19:8 (M_INT_MULT) of PLL_FREQ_CTRL0
+    if(debug_info)
+    {
+      GEL_TextOut("M INT MULT value: %x\n",,,,, M_INT_MULT_val);
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_FREQ_CTRL0_OFFSET, N_DIV_val, 8, 0); //bits 7:0 (N_DIV) of PLL_FREQ_CTRL0
+    if(debug_info)
+    {
+      GEL_TextOut("N DIV value: %x\n",,,,, N_DIV_val);
+    }
+
+    //determine correct SEL_FREQ_DCO value and write value to freq ctrl 1 register
+    temp2 = ((float) CLKIN_val*(M_INT_MULT_val + M_FRAC_MULT_val))/(N_DIV_val+1);
+    if(debug_info)
+    {
+      GEL_TextOut("DCOCLKLDO FREQ: %f MHz\n",,,,, temp2);
+      GEL_TextOut("ADPLLJM FREQ: %f MHz\n",,,,, temp2/M2_DIV_val);
+    }
+    if(temp2 >= (float) 1375 && temp2 <= (float) 2500)
+    {
+      SET_BITS(PLL_BASE_ADDR, PLL_FREQ_CTRL1_OFFSET, 0x04, 3, 24); //bits 26:24 (SEL_FREQ_DCO) of PLL_FREQ_CTRL1 set to 100
+      if(debug_info)
+      {
+        GEL_TextOut("SEL FREQ DCO set to 100\n",,,,,);
+      }
+    }else if(temp2 >= (float) 750 && temp2 < (float) 1375)
+    {
+      SET_BITS(PLL_BASE_ADDR, PLL_FREQ_CTRL1_OFFSET, 0x02, 3, 24); //bits 26:24 (SEL_FREQ_DCO) of PLL_FREQ_CTRL1 set to 010
+      if(debug_info)
+      {
+        GEL_TextOut("SEL FREQ DCO set to 010\n",,,,,);
+      }
+    }else{
+      GEL_TextOut("ERROR: INVALID CLKIN FREQUENCY. SEL FREQ DCO NOT SET.\n",,,,,);
+      return 0;
+    }
+    
+    SET_BITS(PLL_BASE_ADDR, PLL_CLKDIV_OFFSET, M1_DIV_val, 4, 0); //bits 3:0 (M1_DIV) of PLL_CLKDIV
+    if(debug_info)
+    {
+     GEL_TextOut("M1 value: %x\n",,,,, M1_DIV_val);
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_CLKDIV_OFFSET, M2_DIV_val, 7, 8); //bits 14:8 (M2_DIV) of PLL_CLKDIV
+    if(debug_info)
+    {
+      GEL_TextOut("M2 value: %x\n",,,,, M2_DIV_val);
+    }
+  }
+
+  //program all values into register
+  SET_BITS(PLL_BASE_ADDR, PLL_PROG_OFFSET, 0x02, 2, 0); //bits 1:0 (PROG_SM) of PLL_PROG set to 10
+  if(silicon)
+  {
+    if(debug_info){
+        GEL_TextOut("Delay...\n",,,,,);
+    }
+    for(i = 0; i < delay; i++);
+  }
+  if(debug_info)
+  {
+    GEL_TextOut("Programed PLL M/N/SD/SEL_FREQ values\n",,,,,);
+  }
+  SET_BITS(PLL_BASE_ADDR, PLL_PROG_OFFSET, 1, 1, 8); //bit 8 (DIV_PROG) of PLL_PROG set to 1
+  if(silicon)
+  {
+    if(debug_info){
+        GEL_TextOut("Delay...\n",,,,,);
+    }
+    for(i = 0; i < delay; i++);
+  }
+  SET_BITS(PLL_BASE_ADDR, PLL_PROG_OFFSET, 0, 1, 8); //bit 8 (DIV_PROG) of PLL_PROG set to 0, null operation
+  if(debug_info)
+  {
+    GEL_TextOut("Programmed PLL M1/M2 values\n",,,,,);
+  }
+
+  //initiate locking sequence
+  SET_BITS(PLL_BASE_ADDR, PLL_PROG_OFFSET, 0x3, 2, 0); //bits 1:0 (PROG_SM) of PLL_PROG set to 11
+  SET_BITS(PLL_BASE_ADDR, PLL_CTRL_OFFSET, 0, 1, 7); //bit 7 (IDLE) of PLL_CTRL set to 1
+  if(silicon)
+  {
+    i = 0;
+    while(READ_BITS(PLL_BASE_ADDR, PLL_STAT_OFFSET, 1, 7)) //poll bit 7 (BYPASS_ACK) of PLL_STAT for 0
+    {
+      i++;
+      if(i > delay)
+      {
+        GEL_TextOut("ERROR: Polling BYPASS_ACK not set. Break.\n",,,,,);
+        return 0;
+      }
+    }
+    i = 0;
+    while(!READ_BITS(PLL_BASE_ADDR, PLL_STAT_OFFSET, 1, 25)) //poll bit 25 (FREQLOCK) of PLL_STAT for 1
+    {
+      i++;
+      if(i > delay)
+      {
+        GEL_TextOut("ERROR: Polling FREQLOCK not set. Break.\n",,,,,);
+        return 0;
+      }
+    }
+    i = 0;
+    while(!READ_BITS(PLL_BASE_ADDR, PLL_STAT_OFFSET, 1, 24)) //poll bit 24 (PHASELOCK) of PLL_STAT for 1
+    {
+      i++;
+      if(i > delay)
+      {
+        GEL_TextOut("ERROR: Polling PHASELOCK not set. Break.\n",,,,,);
+        return 0;
+      }
+    }
+  }
+  if(debug_info)
+  {
+    GEL_TextOut("PLL/HSDIV locked and out of bypass\n",,,,,);
+  }
+
+  //-------------------------------------------------------------------------//
+
+  if(HSDIV_EXIST)
+  {
+    //clear programming bit
+    SET_BITS(PLL_BASE_ADDR, PLL_HSDIV_CTRL_OFFSET, 0, 1, 31); //bit 31 (TENABLEDIV) of HSDIV_CTRL set to 0, null operation
+
+    //wait until HSDIV is locked, then program div values into registers
+    if(silicon)
+    {
+      i = 0;
+      while(!READ_BITS(PLL_BASE_ADDR, PLL_HSDIV_STAT_OFFSET, 1, 15)) //poll bit 15 (LOCK) of HSDIV_STAT for 1
+      {
+        i++;
+        if(i > delay)
+        {
+          GEL_TextOut("ERROR: Polling LOCK not set. Break.\n",,,,,);
+          return 0;
+        }
+      }
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_HSDIV_CLKDIV_OFFSET, PLLHSDIV4_val, 6, 24); //bits 29:24 (HSDIV4) of HSDIV_CLKDIV
+    if(debug_info)
+    {
+      GEL_TextOut("HSDIV4 value: %x\n",,,,, PLLHSDIV4_val);
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_HSDIV_CLKDIV_OFFSET, PLLHSDIV3_val, 6, 16); //bit 21:16 (HSDIV3) of HSDIV_CLKDIV
+    if(debug_info)
+    {
+      GEL_TextOut("HSDIV3 value: %x\n",,,,, PLLHSDIV3_val);
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_HSDIV_CLKDIV_OFFSET, PLLHSDIV2_val, 6, 8); //bits 13:8 (HSDIV2) of HSDIV_CLKDIV
+    if(debug_info)
+    {
+      GEL_TextOut("HSDIV2 value: %x\n",,,,, PLLHSDIV2_val);
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_HSDIV_CLKDIV_OFFSET, PLLHSDIV1_val, 6, 0); //bits 5:0 (HSDIV1) of HSDIV_CLKDIV
+    if(debug_info)
+    {
+        GEL_TextOut("HSDIV1 value: %x\n",,,,, PLLHSDIV1_val);
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_HSDIV_CTRL_OFFSET, 1, 1, 31); //bit 31 (TENABLEDIV) of HSDIV_CTRL set to 1
+    if(silicon)
+    {
+      if(debug_info){
+          GEL_TextOut("Delay...\n",,,,,);
+      }
+      for(i = 0; i < delay; i++);
+    }
+    if(debug_info)
+    {
+      GEL_TextOut("HSDIV values programmed\n",,,,,);
+    }
+
+    //enable HSDIV clks now that div values have been programmed
+    SET_BITS(PLL_BASE_ADDR, PLL_HSDIV_CTRL_OFFSET, 1, 1, 3); //bit 3 (CLKOUT4_EN) of HSDIV_CTRL set to 1
+    if(silicon)
+    {
+      i = 0;
+      while(!READ_BITS(PLL_BASE_ADDR, PLL_HSDIV_STAT_OFFSET, 1, 3)) //poll bit 3 (CLKOUT4_EN_ACK) of HSDIV_STAT for 1
+      {
+        i++;
+        if(i > delay)
+        {
+          GEL_TextOut("ERROR: Polling CLKOUT4_EN_ACK not set. Break.\n",,,,,);
+          return 0;
+        }
+      }
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_HSDIV_CTRL_OFFSET, 1, 1, 2); //bit 2 (CLKOUT3_EN) of HSDIV_CTRL set to 1
+    if(silicon)
+    {
+      i = 0;
+      while(!READ_BITS(PLL_BASE_ADDR, PLL_HSDIV_STAT_OFFSET, 1, 2)) //poll bit 2 (CLKOUT3_EN_ACK) of HSDIV_STAT for 1
+      {
+        i++;
+        if(i > delay)
+        {
+          GEL_TextOut("ERROR: Polling CLKOUT3_EN_ACK not set. Break.\n",,,,,);
+          return 0;
+        }
+      }
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_HSDIV_CTRL_OFFSET, 1, 1, 1); //bit 1 (CLKOUT2_EN) of HSDIV_CTRL set to 1
+    if(silicon)
+    {
+      i = 0;
+      while(!READ_BITS(PLL_BASE_ADDR, PLL_HSDIV_STAT_OFFSET, 1, 1)) //poll bit 1 (CLKOUT2_EN_ACK) of HSDIV_STAT for 1
+      {
+        i++;
+        if(i > delay)
+        {
+          GEL_TextOut("ERROR: Polling CLKOUT2_EN_ACK not set. Break.\n",,,,,);
+          return 0;
+        }
+      }
+    }
+    SET_BITS(PLL_BASE_ADDR, PLL_HSDIV_CTRL_OFFSET, 1, 1, 0); //bit 0 (CLKOUT1_EN) of HSDIV_CTRL set to 1
+    if(silicon)
+    {
+      i = 0;
+      while(!READ_BITS(PLL_BASE_ADDR, PLL_HSDIV_STAT_OFFSET, 1, 0)) //poll bit 0 (CLKOUT1_EN_ACK) of HSDIV_STAT for 1
+      {
+        i++;
+        if(i > delay)
+        {
+          GEL_TextOut("ERROR: Polling CLKOUT1_EN_ACK not set. Break.\n",,,,,);
+          return 0;
+        }
+      }
+    }
+    if(debug_info)
+    {
+      GEL_TextOut("Enabled HSDIV1-4\n",,,,,);
+    }
+
+    //wait for HSDIV to relock
+    if(silicon)
+    {
+      i = 0;
+      while(!READ_BITS(PLL_BASE_ADDR, PLL_HSDIV_STAT_OFFSET, 1, 15)) //poll bit 15 (LOCK) of HSDIV_STAT for 1
+      {
+        i++;
+        if(i > delay)
+        {
+          GEL_TextOut("ERROR: Polling LOCK not set. Break.\n",,,,,);
+          return 0;
+        }
+      }
+    }
+    if(debug_info)
+    {
+      GEL_TextOut("HSDIV locked\n",,,,,);
+    }
+
+    //clear programming bit again
+    SET_BITS(PLL_BASE_ADDR, PLL_HSDIV_CTRL_OFFSET, 0, 1, 31); //bit 31 (TENABLEDIV) of HSDIV_CTRL set to 0, null operation
+  }
+
+  if(debug_info){
+      GEL_TextOut("Completed Programming PLL and HSDIV\n",,,,,);
+  }
+}
+
+PROGRAM_CTRL(unsigned int CTRL_BASE_ADDR, unsigned int index, unsigned int debug_info, unsigned int delay, unsigned int silicon)
+{
+  //declare variables
+  unsigned int i;
+  unsigned int PLLCTRL_BPDIV_val;
+  unsigned int PLLCTRL_OD1_val;
+  unsigned int PLLCTRL_DIV1_val;
+
+  //initialize variables
+  if(index==MCU_PLL_INDEX) 
+  {
+    PLLCTRL_BPDIV_val = MCU_CTRL_BPDIV; 
+    PLLCTRL_OD1_val = MCU_CTRL_OD1; 
+    PLLCTRL_DIV1_val = MCU_CTRL_DIV1; 
+
+  }else if(index==MAIN_PLL_INDEX) 
+  {
+    PLLCTRL_BPDIV_val = MAIN_CTRL_BPDIV; 
+    PLLCTRL_OD1_val = MAIN_CTRL_OD1; 
+    PLLCTRL_DIV1_val = MAIN_CTRL_DIV1;
+
+  }
+  if(debug_info)
+  {
+    GEL_TextOut("PLL Controller Variables Initialized\n",,,,,);
+  }
+
+  //check for valid values
+  if((PLLCTRL_DIV1_val < 0)||(PLLCTRL_DIV1_val > 255))
+  {
+    GEL_TextOut("ERROR: INVALID PLL CONTROLLER DIV1 VALUE\n",,,,,);
+    return 0;
+  }
+  if((PLL_CTRL_BPDIV_OFFSET < 0)||(PLLCTRL_BPDIV_val > 255))
+  {
+    GEL_TextOut("ERROR: INVALID BPDIV VALUE\n",,,,,);
+    return 0;
+  }
+  if((PLLCTRL_OD1_val < 0)||(PLLCTRL_OD1_val > 255))
+  {
+    GEL_TextOut("ERROR: INVALID OD1 VALUE\n",,,,,);
+    return 0;
+  }
+
+  if(debug_info){
+      GEL_TextOut("Program PLL Controller\n",,,,,);
+  }
+
+  //write values to PLL controller registers
+  SET_BITS(CTRL_BASE_ADDR, PLL_CTRL_BPDIV_OFFSET, PLLCTRL_BPDIV_val, 8, 0); //bits 7:0 (RATIO) of BPDIV
+  if(debug_info)
+  {
+    GEL_TextOut("BPDIV value: %x\n",,,,, PLLCTRL_BPDIV_val);
+  }
+  SET_BITS(CTRL_BASE_ADDR, PLL_CTRL_OSCDIV1_OFFSET, PLLCTRL_OD1_val, 8, 0); //bits 7:0 (RATIO) of OSCDIV1
+  if(debug_info)
+  {
+    GEL_TextOut("OD1 value: %x\n",,,,, PLLCTRL_OD1_val);
+  }
+
+  //clear programming bit
+  SET_BITS(CTRL_BASE_ADDR, PLL_CTRL_PLLCMD_OFFSET, 0, 1, 0); //bit 0 (GOSET) of PLLCMD set to 0, null operation
+
+  //wait until no other GOSET operation in progress, the program PLL controller values
+  if(silicon)
+  {
+    i = 0;
+    while(READ_BITS(CTRL_BASE_ADDR, PLL_CTRL_PLLSTAT_OFFSET, 1, 0)) //poll bit 0 (GOSTAT) of PLLSTAT for 0
+    {
+      i++;
+      if(i > delay)
+      {
+        GEL_TextOut("ERROR: Polling GOSTAT not set. Break.\n",,,,,);
+        return 0;
+      }
+    }
+  }
+  SET_BITS(CTRL_BASE_ADDR, PLL_CTRL_PLLDIV1_OFFSET, PLLCTRL_DIV1_val, 8, 0); //bits 7:0 (RATIO) of PLLDIV1
+  if(debug_info)
+  {
+    GEL_TextOut("DIV1 value: %x\n",,,,, PLLCTRL_DIV1_val);
+  }
+  SET_BITS(CTRL_BASE_ADDR, PLL_CTRL_ALNCTL_OFFSET, 0, 1, 0); //bit 0 (ALN1) of ALNCTL set to 0, free
+  if(debug_info)
+  {
+    GEL_TextOut("Alignment of SYSCLK1 on PLL CTRL set\n",,,,,);
+  }
+  SET_BITS(CTRL_BASE_ADDR, PLL_CTRL_PLLCMD_OFFSET, 1, 1, 0); //bit 0 (GOSET) of PLLCMD set to 1
+  if(silicon)
+  {
+    i = 0;
+    while(READ_BITS(CTRL_BASE_ADDR, PLL_CTRL_PLLSTAT_OFFSET, 1, 0)) //poll bit 0 (GOSTAT) of PLLSTAT for 0
+    {
+      i++;
+      if(i > delay)
+      {
+        GEL_TextOut("ERROR: Polling GOSTAT not set. Break.\n",,,,,);
+        return 0;
+      }
+    }
+  }
+  SET_BITS(CTRL_BASE_ADDR, PLL_CTRL_PLLCMD_OFFSET, 0, 1, 0); //bit 0 (GOSET) of PLLCMD set to 0, null operation
+  if(debug_info)
+  {
+    GEL_TextOut("DIV1 programmed\n",,,,,);
+  }
+
+  //turn off PLL controller reset
+  SET_BITS(CTRL_BASE_ADDR, PLL_CTRL_PLLCTL_OFFSET, 0, 1, 3); //bit 3 (PLLRST) of PLLCTL set to 0
+  if(silicon)
+  {
+    if(debug_info){
+        GEL_TextOut("Delay...\n",,,,,);
+    }
+    for(i = 0; i < delay; i++);
+  }
+  if(debug_info)
+  {
+    GEL_TextOut("PLL CTRL out of reset\n",,,,,);
+  }
+
+  if(debug_info){
+      GEL_TextOut("Completed Programming PLL Controller\n",,,,,);
+  }
+}
+
+Set_PLL(unsigned int index, unsigned int DSS_PLL_mode)
+{
+  //declare variables
+  unsigned int read_pid = 0;
+  unsigned int debug_info;
+  unsigned int delay;
+  unsigned int silicon;
+  unsigned int PLL_BASE_ADDR;
+  unsigned int CTRL_BASE_ADDR;
+  unsigned int PLL_TYPE_ADPLLM;
+  unsigned int HSDIV_EXIST;
+  unsigned int CTRL_EXIST;
+
+  //initialize variables
+  debug_info = DEBUG; //determine wheather or not to display debug messages
+  delay = DELAY; 
+  silicon = USE_SILICON_MODEL; //if using a digital model of a PLL instead of silicon, polling/delays not necessary
+
+  if(index==MCU_PLL_INDEX) //.4GHZ MCU PLL CLKOUT
+  {
+    PLL_BASE_ADDR = MCU_PLL_BASE_ADDR;
+    CTRL_BASE_ADDR = MCU_WKUP_CTRL_BASE_ADDR;
+    PLL_TYPE_ADPLLM = MCU_TYPE;
+    HSDIV_EXIST = MCU_HSDIV_EXIST;
+    CTRL_EXIST = MCU_CTRL_EXIST;
+    if(debug_info)
+    {
+      GEL_TextOut("Selected MCU PLL\n",,,,,);
+    }
+
+  }else if(index==MAIN_PLL_INDEX) //.1GHZ MAIN PLL CLKOUT
+  {
+    PLL_BASE_ADDR = MAIN_PLL_BASE_ADDR;
+    CTRL_BASE_ADDR = MAIN_CTRL_BASE_ADDR;
+    PLL_TYPE_ADPLLM = MAIN_TYPE;
+    HSDIV_EXIST = MAIN_HSDIV_EXIST;
+    CTRL_EXIST = MAIN_CTRL_EXIST;
+    if(debug_info)
+    {
+      GEL_TextOut("Selected Main PLL\n",,,,,);
+    }
+
+  }else if(index==ARM0_PLL_INDEX) //.8GHZ ARM0 PLL CLKOUT
+  {
+    PLL_BASE_ADDR = ARM0_PLL_BASE_ADDR;
+    CTRL_BASE_ADDR = 0x0;
+    PLL_TYPE_ADPLLM = ARM0_TYPE;
+    HSDIV_EXIST = ARM0_HSDIV_EXIST;
+    CTRL_EXIST = ARM0_CTRL_EXIST;
+    if(debug_info)
+    {
+      GEL_TextOut("Selected ARM0 PLL\n",,,,,);
+    }
+
+  }else if(index==ARM1_PLL_INDEX) //.8GHZ ARM1 PLL CLKOUT
+  {
+    PLL_BASE_ADDR = ARM1_PLL_BASE_ADDR;
+    CTRL_BASE_ADDR = 0x0;
+    PLL_TYPE_ADPLLM = ARM1_TYPE;
+    HSDIV_EXIST = ARM1_HSDIV_EXIST;
+    CTRL_EXIST = ARM1_CTRL_EXIST;
+    if(debug_info)
+    {
+      GEL_TextOut("Selected ARM1 PLL\n",,,,,);
+    }
+
+  }else if(index==DDR_PLL_INDEX) //.4GHZ DDR PLL CLKOUT
+  {
+    PLL_BASE_ADDR = DDR_PLL_BASE_ADDR;
+    CTRL_BASE_ADDR = 0x0;
+    PLL_TYPE_ADPLLM = DDR_TYPE;
+    HSDIV_EXIST = DDR_HSDIV_EXIST;
+    CTRL_EXIST = DDR_CTRL_EXIST;
+    if(debug_info)
+    {
+      GEL_TextOut("Selected DDR PLL\n",,,,,);
+    }
+
+  }else if(index==PER0_PLL_INDEX) //.96GHZ PER0 PLL CLKOUT
+  {
+    PLL_BASE_ADDR = PER0_PLL_BASE_ADDR;
+    CTRL_BASE_ADDR = 0x0;
+    PLL_TYPE_ADPLLM = PER0_TYPE;
+    HSDIV_EXIST = PER0_HSDIV_EXIST;
+    CTRL_EXIST = PER0_CTRL_EXIST;
+    if(debug_info)
+    {
+      GEL_TextOut("Selected PER0 PLL\n",,,,,);
+    }
+
+  }else if(index==PER1_PLL_INDEX) //.3GHZ PER1 PLL CLKOUT
+  {
+    PLL_BASE_ADDR = PER1_PLL_BASE_ADDR;
+    CTRL_BASE_ADDR = 0x0;
+    PLL_TYPE_ADPLLM = PER1_TYPE;
+    HSDIV_EXIST = PER1_HSDIV_EXIST;
+    CTRL_EXIST = PER1_CTRL_EXIST;
+    if(debug_info)
+    {
+      GEL_TextOut("Selected PER1 PLL\n",,,,,);
+    }
+
+  }else if(index==CPSW_PLL_INDEX) //.25GHZ CPSW PLL CLKOUT
+  {
+    PLL_BASE_ADDR = CPSW_PLL_BASE_ADDR;
+    CTRL_BASE_ADDR = 0x0;
+    PLL_TYPE_ADPLLM = CPSW_TYPE;
+    HSDIV_EXIST = CPSW_HSDIV_EXIST;
+    CTRL_EXIST = CPSW_CTRL_EXIST;
+    if(debug_info)
+    {
+      GEL_TextOut("Selected CPSW PLL\n",,,,,);
+    }
+
+  }else if(index==DSS_PLL_INDEX) //1.155GHZ DSS PLL CLKOUT
+  {
+    PLL_BASE_ADDR = DSS_PLL_BASE_ADDR;
+    CTRL_BASE_ADDR = 0x0;
+    PLL_TYPE_ADPLLM = DSS_TYPE;
+    HSDIV_EXIST = DSS_HSDIV_EXIST;
+    CTRL_EXIST = DSS_CTRL_EXIST;
+    if(debug_info)
+    {
+      GEL_TextOut("Selected DSS PLL\n",,,,,);
+    }
+
+  }else
+  {
+    GEL_TextOut("ERROR: NO SUCH INDEX. PLL NOT SELECTED. BASE ADDRS AND PLL PROPERTIES NOT SET.\n",,,,,);
+    return 0;
+  }
+  if(debug_info)
+  {
+    GEL_TextOut("Base Addr and PLL Property Variables Initialized\n",,,,,);
+  }
+
+  //Check for running from M3
+  read_pid = *((unsigned int *)MAIN_PSC_BASE); 
+  if (read_pid != PSC_PID)
+  {
+    if(debug_info)
+    {
+      GEL_TextOut("Running from M3\n",,,,,);
+    }
+        if((index == 1) || (index == 8))
+        {
+          //Change base addresses for M3 access to MCU PLL MMR
+          PLL_BASE_ADDR += M3_MCU_OFFSET;
+            CTRL_BASE_ADDR += M3_MCU_OFFSET;
+        }else{
+          //Change base addresses for M3 access to MAIN PLL MMR
+          PLL_BASE_ADDR += M3_MAIN_OFFSET;
+            CTRL_BASE_ADDR += M3_MAIN_OFFSET;
+        }
+  }
+
+  //-------------------------------------------------------------------------//
+
+  //unlock registers
+  SET_BITS(PLL_BASE_ADDR, PLL_KICK0_OFFSET, KICK0_UNLOCK, 32, 0);
+  SET_BITS(PLL_BASE_ADDR, PLL_KICK1_OFFSET, KICK1_UNLOCK, 32, 0);
+  if(debug_info)
+  {
+    GEL_TextOut("KICK registers unlocked\n",,,,,);
+  }
+
+  //if BYPASS_ACK = 1, then started in bypass mode, need to perform 1st time setup
+  if(READ_BITS(PLL_BASE_ADDR, PLL_STAT_OFFSET, 1, 7)) //read bit 7 (BYPASS_ACK) of register PLL_STAT
+  {
+    if(debug_info)
+    {
+      GEL_TextOut("First Time Setup. PLL/HSDIV already in bypass mode\n",,,,,);
+    }
+
+    //set needed registers for PLL/HSDIV operation
+    INIT_SETUP_PLL(PLL_BASE_ADDR, PLL_TYPE_ADPLLM, debug_info, delay, silicon);
+
+    //set needed registers for PLL controller operation if it exisits
+    if(CTRL_EXIST)
+    {
+      INIT_SETUP_CTRL(CTRL_BASE_ADDR, debug_info, delay, silicon);
+    }
+
+  }else //not in bypass mode, initial setup already done
+  {
+    if(debug_info)
+    {
+      GEL_TextOut("Initial setup already complete\n",,,,,);
+    }
+
+    //place PLL and HSDIV in bypass mode and put PLL ctrl in reset, disable HSDIV output clocks for programming
+    SECONDARY_SETUP_PLL(PLL_BASE_ADDR, CTRL_BASE_ADDR, HSDIV_EXIST, CTRL_EXIST, debug_info, delay, silicon);
+
+  }
+
+  //--------------------------------------------------------------------------//
+
+  //program multiplier/divider values into PLL/HSDIV
+  PROGRAM_PLL(PLL_BASE_ADDR, PLL_TYPE_ADPLLM, HSDIV_EXIST, index, debug_info, delay, silicon, DSS_PLL_mode);
+
+  //program multiplier/divider values into PLL CTRL if it exists
+  if(CTRL_EXIST)
+  {
+    PROGRAM_CTRL(CTRL_BASE_ADDR, index, debug_info, delay, silicon);
+  }
+
+  //--------------------------------------------------------------------------//
+
+  //relock kick registers
+  SET_BITS(PLL_BASE_ADDR, PLL_KICK0_OFFSET, KICK_LOCK, 32, 0);
+  SET_BITS(PLL_BASE_ADDR, PLL_KICK1_OFFSET, KICK_LOCK, 32, 0);
+  if(debug_info)
+  {
+    GEL_TextOut("KICK registers relocked\n",,,,,);
+  }
+
+  if(debug_info)
+  {
+    GEL_TextOut("PLL, HSDIV (if it exists), and PLL CTRL (if it exists) configured and running\n",,,,,);
+  }
+}
+
+menuitem "PLL Controller"
+
+hotmenu Set_MAIN_PLL0()
+{
+	GEL_TextOut("Setting MAIN PLL in progress...\n",,,,,);
+	Set_PLL(MAIN_PLL0_PLL_INDEX, 0);
+	GEL_TextOut("Setting MAIN PLL done!\n",,,,,);
+}
+hotmenu Set_MAIN_PLL1()
+{
+	GEL_TextOut("Setting PER0 PLL in progress...\n",,,,,);
+	Set_PLL(MAIN_PLL1_PLL_INDEX, 0);
+	GEL_TextOut("Setting PER0 PLL done!\n",,,,,);
+}
+hotmenu Set_MAIN_PLL2()
+{
+	GEL_TextOut("Setting PER1 PLL in progress...\n",,,,,);
+	Set_PLL(MAIN_PLL2_PLL_INDEX, 0);
+	GEL_TextOut("Setting PER1 PLL done!\n",,,,,);
+}
+hotmenu Set_MAIN_PLL3()
+{
+	GEL_TextOut("Setting DDR PLL in progress...\n",,,,,);
+	Set_PLL(MAIN_PLL3_PLL_INDEX, 0);
+	GEL_TextOut("Setting DDR PLL done!\n",,,,,);
+}
+hotmenu Set_MAIN_PLL4_DSS_1155MHz() 
+{
+	GEL_TextOut("Setting DSS PLL in progress...\n",,,,,);
+	Set_PLL(MAIN_PLL4_PLL_INDEX, 1);
+	GEL_TextOut("Setting DSS PLL done!\n",,,,,);
+}
+hotmenu Set_MCU_PLL0()
+{
+	GEL_TextOut("Setting MCU PLL in progress...\n",,,,,);
+	Set_PLL(MCU_PLL0_PLL_INDEX, 0);
+	GEL_TextOut("Setting MCU PLL done!\n",,,,,);
+}
+hotmenu Set_MCU_PLL1()
+{
+	GEL_TextOut("Setting CPSW PLL in progress...\n",,,,,);
+	Set_PLL(MCU_PLL1_PLL_INDEX, 0);
+	GEL_TextOut("Setting CPSW PLL done!\n",,,,,);
+}
+hotmenu Set_MAIN_PLL6()
+{
+	GEL_TextOut("Setting ARM0 PLL in progress...\n",,,,,);
+	Set_PLL(MAIN_PLL6_PLL_INDEX, 0);
+	GEL_TextOut("Setting ARM0 PLL done!\n",,,,,);
+}
+hotmenu Set_MAIN_PLL7()
+{
+	GEL_TextOut("Setting ARM1 PLL in progress...\n",,,,,);
+	Set_PLL(MAIN_PLL7_PLL_INDEX, 0);
+	GEL_TextOut("Setting ARM1 PLL done!\n",,,,,);
+}
+hotmenu Set_All_PLL()
+{
+	GEL_TextOut("Setting all PLLs in progress. This may take some time.\n",,,,,);
+  GEL_TextOut("0 Percent Complete...\n",,,,,);
+	Set_PLL(MAIN_PLL0_PLL_INDEX, 0); //MAIN
+  GEL_TextOut("10 Percent Complete...\n",,,,,);
+	Set_PLL(MAIN_PLL1_PLL_INDEX, 0); //PER0
+  GEL_TextOut("20 Percent Complete...\n",,,,,);
+	Set_PLL(MAIN_PLL2_PLL_INDEX, 0); //PER1
+  GEL_TextOut("30 Percent Complete...\n",,,,,);
+	Set_PLL(MAIN_PLL3_PLL_INDEX, 0); //DDR
+  GEL_TextOut("40 Percent Complete...\n",,,,,);
+	Set_PLL(MAIN_PLL4_PLL_INDEX, 1); //DSS
+  GEL_TextOut("50 Percent Complete...\n",,,,,);
+	Set_PLL(MCU_PLL0_PLL_INDEX, 0); //MCU
+  GEL_TextOut("60 Percent Complete...\n",,,,,);
+	Set_PLL(MCU_PLL1_PLL_INDEX, 0); //CPSW
+  GEL_TextOut("70 Percent Complete...\n",,,,,);
+	Set_PLL(MAIN_PLL6_PLL_INDEX, 0); //ARM0
+  GEL_TextOut("80 Percent Complete...\n",,,,,);
+	Set_PLL(MAIN_PLL7_PLL_INDEX, 0); //ARM1
+  GEL_TextOut("90 Percent Complete...\n",,,,,);
+	GEL_TextOut("Setting all PLLs done!\n",,,,,);
+}
+
+menuitem "DSS PLL Special Configurations"
+
+/* Set DSS PLL for Mode 1, 1155MHz. */
+hotmenu Set_DSS_PLL_Mode_1(){
+    GEL_TextOut("Setting DSS PLL in progress...\n",,,,,);
+    GEL_TextOut("Setting DSS PLL for Mode 1, 1155 MHz.\n");
+    Set_PLL(MAIN_PLL4_PLL_INDEX, 1);
+    GEL_TextOut("Setting DSS PLL done!\n",,,,,);
+}
+
+/* Set DSS PLL for Mode 2, 1039.5 MHz. */
+hotmenu Set_DSS_PLL_Mode_2(){
+    GEL_TextOut("Setting DSS PLL in progress...\n",,,,,);
+    GEL_TextOut("Setting DSS PLL for Mode 2, 1039.5 MHz.\n");
+    Set_PLL(MAIN_PLL4_PLL_INDEX, 2);
+    GEL_TextOut("Setting DSS PLL done!\n",,,,,);
+}
+
+/* Set DSS PLL for Mode 3, 497.5 MHz. */
+hotmenu Set_DSS_PLL_Mode_3(){
+    GEL_TextOut("Setting DSS PLL in progress...\n",,,,,);
+    GEL_TextOut("Setting DSS PLL for Mode 3, 497.5 MHz.\n");
+    Set_PLL(MAIN_PLL4_PLL_INDEX, 3);
+    GEL_TextOut("Setting DSS PLL done!\n",,,,,);
+}
+
+menuitem "DDR Debug"
+
+#define DMSC_BASE 0x60000000
+
+hotmenu Get_DDR_PLL_Configuration()
+{
+    //unlock registers
+      SET_BITS(DMSC_BASE+DDR_PLL_BASE_ADDR, PLL_KICK0_OFFSET, KICK0_UNLOCK, 32, 0);
+      SET_BITS(DMSC_BASE+DDR_PLL_BASE_ADDR, PLL_KICK1_OFFSET, KICK1_UNLOCK, 32, 0);
+    
+        GEL_TextOut("KICK registers unlocked\n",,,,,);
+    GEL_TextOut("DDR PLL (PLL3)\n");
+    GEL_TextOut("SD_DIV = %x\n",,,,,(Read_MMR(DMSC_BASE+DDR_PLL_BASE_ADDR + PLL_FREQ_CTRL0_OFFSET) & 0xFF000000) >> 24);
+    GEL_TextOut("MULT = %x\n",,,,,(Read_MMR(DMSC_BASE+DDR_PLL_BASE_ADDR + PLL_FREQ_CTRL0_OFFSET) & 0x000FFF00) >> 8);
+    GEL_TextOut("DIV = %x\n",,,,,(Read_MMR(DMSC_BASE+DDR_PLL_BASE_ADDR + PLL_FREQ_CTRL0_OFFSET) & 0x000000FF) >> 0);
+    GEL_TextOut("SEL_FREQ_DCO = %x\n",,,,,(Read_MMR(DMSC_BASE+DDR_PLL_BASE_ADDR + PLL_FREQ_CTRL1_OFFSET) & 0x07000000) >> 24);
+    GEL_TextOut("M1_DIV = %x\n",,,,,(Read_MMR(DMSC_BASE+DDR_PLL_BASE_ADDR + PLL_CLKDIV_OFFSET) & 0xF) >> 0);
+    GEL_TextOut("M2_DIV = %x\n",,,,,(Read_MMR(DMSC_BASE+DDR_PLL_BASE_ADDR + PLL_CLKDIV_OFFSET) & 0x7F00) >> 8);
+    GEL_TextOut("M3_DIV = %x\n",,,,,(Read_MMR(DMSC_BASE+DDR_PLL_BASE_ADDR + PLL_CLKDIV_OFFSET) & 0x1F0000) >> 16);
+    GEL_TextOut("PLL3_PLL_CTRL = %x\n",,,,,Read_MMR(DMSC_BASE+DDR_PLL_BASE_ADDR + PLL_CTRL_OFFSET));
+           
+        
+        
+        
+}

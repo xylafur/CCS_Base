@@ -1,0 +1,118 @@
+/*H***************************************************************************
+* $Revision: /main/c55x_rel/c55xx_ccs240/2 $
+* $Date: July 28, 2004   11:39:11 $
+*
+* TI Proprietary Information - Internal Data
+* Copyright (c) 2004, Texas Instruments Incorporated
+* All rights reserved
+*****************************************************************************/
+/* The Startup() function is executed when the GEL file is loaded. */
+
+StartUp()
+{   
+
+	GEL_MapOn();
+	GEL_MapReset();
+	
+	/* Program Space */
+	GEL_MapAdd(0x0000C0u,0,0x00FF40u,1,1);	/* DARAM */
+	GEL_MapAdd(0x010000u,0,0x040000u,1,1);	/* SARAM */
+	GEL_MapAdd(0x050000u,0,0x3B0000u,1,1);	/* External CE0 */
+	GEL_MapAdd(0x400000u,0,0x400000u,1,1);	/* External CE1 */
+	GEL_MapAdd(0x800000u,0,0x400000u,1,1);	/* External CE2 */
+	/* For MP/MC=1 (BOOTM[2:0] = 0)  */
+	GEL_MapAdd(0xC00000u,0,0x400000u,1,1);	/* External CE3 */
+	/* For MP/MC=0 (BOOTM[2:0] != 0) */
+	/*GEL_MapAdd(0xC00000u,0,0x3F8000u,1,1);	/* External CE3 */
+	/*GEL_MapAdd(0xFF8000u,0,0x008000u,1,0);	/* PDROM        */
+
+
+    /* Data Space */
+	GEL_MapAdd(0x000000u,1,0x000050u,1,1);	/* MMRs */
+	GEL_MapAdd(0x000060u,1,0x007FA0u,1,1);		/* DARAM */
+	GEL_MapAdd(0x008000u,1,0x020000u,1,1);	/* SARAM */
+	GEL_MapAdd(0x028000u,1,0x1D8000u,1,1);	/* External CE0 */
+	GEL_MapAdd(0x200000u,1,0x200000u,1,1);	/* External CE1 */
+	GEL_MapAdd(0x400000u,1,0x200000u,1,1);	/* External CE2 */
+	/* For MP/MC=1 (BOOTM[2:0] = 0) */
+	GEL_MapAdd(0x600000u,1,0x200000u,1,1);	/* External CE3 */
+	/* For MP/MC=0 (BOOTM[2:0] != 0)*/
+	/*GEL_MapAdd(0x600000u,1,0x1FC000u,1,1);	/* External CE3 */
+	/*GEL_MapAdd(0x7FC000u,1,0x004000u,1,0);	/* PDROM */
+	
+    /* IO Space */
+	GEL_MapAdd(0x0000u,2,0x0400u,1,1);	/* RHEA 1KW */
+	GEL_MapAdd(0x0400u,2,0x0300u,1,1);	/* EMULATION */
+	GEL_MapAdd(0x07FEu,2,0x0002u,1,1);	/* System Control */
+	GEL_MapAdd(0x0800u,2,0x0400u,1,1);	/* EMIF 1KW */
+	GEL_MapAdd(0x0C00u,2,0x0400u,1,1);	/* DMA 1KW */
+	GEL_MapAdd(0x1000u,2,0x0400u,1,1);	/* TIMER#0 1KW */
+	GEL_MapAdd(0x1400u,2,0x0400u,1,1);	/* ICACHE 1KW */
+	GEL_MapAdd(0x1C00u,2,0x0400u,1,1);	/* CLKGEN 1KW */
+	GEL_MapAdd(0x2000u,2,0x0400u,1,1);	/* TRACE FIFO 1KW */
+	GEL_MapAdd(0x2400u,2,0x0400u,1,1);	/* TIMER#1 1KW */
+	GEL_MapAdd(0x2800u,2,0x0400u,1,1);	/* SERIAL PORT#0 1KW */
+	GEL_MapAdd(0x2C00u,2,0x0400u,1,1);	/* SERIAL PORT#1 1KW */
+	GEL_MapAdd(0x3000u,2,0x0400u,1,1);	/* SERIAL PORT#2 1KW */
+	GEL_MapAdd(0x3400u,2,0x0400u,1,1);	/* GPIO 1KW */
+	GEL_MapAdd(0x3800u,2,0x0400u,1,1);	/* ID 1KW */
+
+	GEL_TextOut("Gel StartUp Complete.\n");
+}
+
+OnTargetConnect()
+{
+	C5510_Init(); 
+}
+
+OnPreFileLoaded()
+{
+//	GEL_TextOut("OnPreFileLoaded\n");
+}
+
+OnReset()
+{
+//	GEL_TextOut("OnReset\n");
+
+}
+OnRestart()
+{
+//	GEL_TextOut("OnRestart\n");
+}
+
+menuitem "C5510_Configuration";
+hotmenu CPU_Reset()
+{
+	GEL_Reset();
+
+	GEL_TextOut("CPU Reset Complete.\n");
+}
+
+
+/* Memory map based on MP/MC value=1 (BOOTM[2:0]=0).    */
+
+hotmenu C5510_Init()
+{
+	GEL_Reset();
+	TMCR_Reset(); 
+
+	GEL_TextOut("C5510_Init Complete.\n");
+}
+
+/* Initialize Test Mode Control Registers(TMCR) */ 
+/* This register selects modes for factory test */
+/* and may be corrupted when device is powered  */
+/* up with the emulator attached.  This 	*/
+/* function restores the the registers to their */
+/* default values.  There is not impact to 	*/
+/* system functionality from these writes.	*/
+TMCR_Reset() 
+{ 
+	#define TMCR_MGS3	0x07FE 
+	#define TMCR_MM		0x07FF 
+
+	*(short *)TMCR_MGS3@IO = 0x0510; 
+	*(short *)TMCR_MM@IO    = 0x0000; 
+} 
+
+

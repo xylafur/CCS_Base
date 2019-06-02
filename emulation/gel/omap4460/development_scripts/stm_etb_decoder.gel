@@ -1,0 +1,43 @@
+menuitem "STM_ETB_Decoder functions"
+
+// Support ETB base addresses
+#define CSETB_ADDRESS_APP       0x54162000
+#define CSETB_ADDRESS_DBG       0xd4162000
+
+#define CSETB_RRD               0x10
+#define CSETB_RRP               0x14
+#define CSETB_RWP	            0x18
+#define CSETB_CTL               0x20
+#define CSETB_FFCR              0x304
+#define CSETB_LOCK              0xFB0
+
+#define CM_L3INSTR_L3_3_CLKCTRL      *(int*)0x4A008E20  
+#define CM_L3INSTR_L3_INSTR_CLKCTRL  *(int*)0x4A008E28
+
+//unsigned int ETBArray;
+
+hotmenu Get_ETB_Data()
+{ // Assume no wraparound
+  int writePointer;
+  int i=0;
+  int ETBData;
+  
+  GEL_TextOut("> Acquiring ETB data\n");
+  
+  CM_L3INSTR_L3_3_CLKCTRL     = 0x1;
+  CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+  
+  writePointer = *(int*)(CSETB_ADDRESS_APP + CSETB_RWP);
+  
+  GEL_TextOut("> The ETB WritePointer value %d\n",,,,, writePointer);
+ 
+  *(int*)(CSETB_ADDRESS_APP + CSETB_RRP) = 0x0;
+  
+  for (i=0; i<writePointer; i++)
+  {
+      ETBData = *(int*)(CSETB_ADDRESS_APP + CSETB_RRD);
+	  GEL_TextOut(">%x\n",,,,, ETBData);
+  };
+    
+  GEL_TextOut("Readout all of the ETB data\n"); 
+}

@@ -1,0 +1,72 @@
+Radar Device Support Files
+==========================
+
+1.6.1
+-----
+Added support for xWR18xx and xWR68xx devices
+Added HWACC, HWACC_PARAM for 18xx, 68xx devices
+
+1.6.0
+-----
+Added DSSREG, DSSCBUFF, TOPRCM, RCM, and GPCFG to xwr14xx devices
+Removed redundant comments from device files
+
+1.5.9
+-----
+Added MSS_DTHE to xwr16xx Device.
+
+1.5.8
+-----
+Added Register Descriptions to security registers
+Fixed issues with non-C-callable register names
+
+1.5.7
+-----
+Added registers to AWR16xx/IWR16xx
+Cleanup of unused directives
+
+1.5.6
+-----
+Updated GEL Files for Secure variants
+
+1.5.5
+-----
+Updated TPCC to display PaRAM sets correctly.
+
+1.5.4
+-----
+Name changes to Uniflash fields for AWR12xx/IWR12xx and AWR14xx/IWR14xx.
+
+1.5.3
+-----
+Added fields to AWR16xx/IWR16xx, AWR14xx/IWR14xx and AWR12xx/IWR12xx to support Uniflash 
+
+1.5.2
+-----
+Changed device names to AWR1xx/IWR1xx
+THIS BREAKS COMPATIBILITY WITH EXISTING CONFIGURATIONS
+Added GEL files for AWR16x/IWR16x
+
+1.5.1
+-----
+Fixed endianess on AR1443 and IR1443 devices
+
+1.5.0
+-----
+Added IR1443 and IR1642 device XML files.
+Added AR1642/IR1642 Trace Support Files.
+Added Linker CMD files for AR1642/IR1642.
+
+1.4.1
+-----
+Added AR1642 device XML file.
+Removed emulation drivers.
+
+1.1.0
+-----
+Updated AR1443 device XML file. Register Map details are removed.
+Added Linker CMD file for AR1443.
+
+1.0.0
+-----
+Initial public release.

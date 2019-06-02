@@ -1,0 +1,9 @@
+<module name="WKUP_GPIOMUX_INTRTR0" acronym="" XML_version="1.0" HW_revision="n/a" description="">
+  <register id="WKUP_GPIOMUX_INTRTR0_PID" acronym="WKUP_GPIOMUX_INTRTR0_PID" offset="0x0" width="32" description="Identification register">
+    <bitfield id="REV" width="32" begin="31" end="0" resetval="0x66946100" description="TI internal data. Identifies revision of peripheral." range="" rwaccess="R"/>
+  </register>
+  <register id="WKUP_GPIOMUX_INTRTR0_MUXCNTL_y" acronym="WKUP_GPIOMUX_INTRTR0_MUXCNTL_y" offset="0x4" width="32" description="Interrupt mux control register Offset = 4h + (y * 4h); where y = 0h to Fh">
+    <bitfield id="RESERVED" width="26" begin="31" end="6" resetval="0xX" description="Reserved" range="" rwaccess="RW"/>
+    <bitfield id="ENABLE" width="6" begin="5" end="0" resetval="0x0" description="Mux control for interrupt N" range="" rwaccess="RW"/>
+  </register>
+</module>

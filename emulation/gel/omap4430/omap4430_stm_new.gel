@@ -1,0 +1,542 @@
+/*******************************************************************/ 
+/* OMAP4430 Sequences for STM system trace   		     		 */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Madhav Vij (SDO)				     		   	 */
+/*  Lates updated by zhenyu wang				    */
+/*  - Add new function to use PDLO as PTI clock source				    */
+/*  - Add new function to be used by ES2 silicon since right now    */
+/*    we cannot determine the revision of silicon automatically     */
+/*  - this gel file needed to be loaded from cs_dap_debugSS to      */
+/*    better support for EMU device                                */
+/*******************************************************************/
+
+/**********************************************************************
+ *
+ *  DEFINITIONS
+ *
+ **********************************************************************/
+// OPP definitions
+// Core DPLL is typically running at 1328MHz on OMAP4430 SDC
+// (M/(N+1))x2x38.4MHz (M= 432, 24)
+// (if using clock slicer mode with 38.4MHz system clock)
+//
+// The M6 divider provides REF_A_CLK and DBGCLK at 166MHz with a 
+// divider at M6=8; Note, we may be able to go up to 266MHz but timing
+// has been closed in SDC at 166MHz.
+// Note that an odd divider may not provide a 50/50 duty cycle on the
+// clock, this is a glitchless divider so may be changed on the fly
+//
+
+#define CM_DIV_M6_DPLL_CORE      0x4A004140  
+// omap4430 control core: PAD CONF Registers
+// Note there is a bug in OMAP4430 SDC in that memory map must block
+// reserved regions else errors are returned for accesses even to valid
+// pad conf registers.
+
+
+#define SEC_EMU_MRM_PERM_REG_LOW_0   0x4A226088
+
+
+#define PAD0_SYS_BOOT5_PAD1_DPM_EMU0 0x4A1001AC
+#define PAD0_DPM_EMU1_PAD1_DPM_EMU2  0x4A1001B0
+#define PAD0_DPM_EMU3_PAD1_DPM_EMU4  0x4A1001b4
+
+#define OMAP4430_FREQ_MEAS_PERIOD    0.000003368  // 3.368 us -- assuming 38MHz reference clock and /128
+#define OMAP4430_DRM_BASE_ADDR       0x54160000
+
+
+#define DRM_CLKGEN_CFG                 (int*) (OMAP4430_DRM_BASE_ADDR + 0x00000020)
+#define DRM_CLKGEN_PDLO_TRC_CTL        (int*) (OMAP4430_DRM_BASE_ADDR + 0x00000024)
+#define DRM_CLKGEN_PDLO_TRC_LIMIT      (int*) (OMAP4430_DRM_BASE_ADDR + 0x00000028)
+#define DRM_CLKGEN_PDLO_TRC_STATUS     (int*) (OMAP4430_DRM_BASE_ADDR + 0x0000002C)
+#define DRM_CLKGEN_PDLO_STM_CTL        (int*) (OMAP4430_DRM_BASE_ADDR + 0x00000030)
+#define DRM_CLKGEN_PDLO_STM_LIMIT      (int*) (OMAP4430_DRM_BASE_ADDR + 0x00000034)
+#define DRM_CLKGEN_PDLO_STM_STATUS     (int*) (OMAP4430_DRM_BASE_ADDR + 0x00000038)
+
+#define DRM_CLKGEN_CFG               0x54160020
+
+#define CM_EMU_DEBUGSS_CLKCTRL       0x4A307A20
+#define CM_L3INSTR_L3_3_CLKCTRL      0x4A008E20
+#define CM_L3INSTR_L3_INSTR_CLKCTRL  0x4A008E28
+
+#define DRM_CLAIM                    0x54160050
+#define DPM_CTRL0                    0x54160080
+#define DPM_CTRL1                    0x54160084
+#define DPM_CTRL2                    0x54160088
+#define DPM_CTRL3                    0x5416008C
+#define DPM_CTRL4                    0x54160090
+
+#define STM_SWMCTRL0                 0x54161024
+#define STM_PTI_CONFIG               0x5416103C
+#define STM_LOCK_ACCESS              0x54161FB0
+#define STM_TESTCTRL                 0x54161050
+
+#define CONTROL_SMART2IO_PADCONF_0   0x4A1005B0
+#define CONTROL_SMART2IO_PADCONF_1   0x4A1005B4
+
+#define UNLOCK_VALUE             0xC5ACCE55
+
+menuitem "STM_Utility";
+
+
+/**********************************************************************
+ *
+ *  FUNCTIONS
+ *
+ *  Three solutions to change the frequency of the STM clock
+ *   1/ Best option to get a divide by 2 or 4 is to change the divider in
+ *      CM_EMU_DEBUGSS_CLKCTRL which will derive an /2 or /4 ..etc
+ *   2/ Another solution is to change the M6 divider, this should be avoided
+ *      because it will affect other debugss clocks also (dbgclk, pclk)
+ *      SDC timing closure on dbgclk = 166MHz, ref_a_clk = 166MHz.
+ *   3/ A third option which allows better granularity is to use the 
+ *      peripheral DPLL M7 divider  (ref_b_clk) which will impact 
+ *      dbgclk/pclks.... - PLEASE contact Madhav if you want to do this.
+ *      (we will do this for validation purposes anyway)
+ *   
+ *   The sequences in this gel FILE SHOULD BE used in the following order:
+ *    (Cortex-A9)
+ *    1/ Setup_STM_Clocking_Modes()
+ *    2/ Configure_EMU0_4_For_STM for 4 pin trace or Configure_EMU0_1_For_STM()
+ *              for 1 pin trace
+ *    3/ Enable_Pattern_Generator_in_STM_1_pin_mode() or 
+ *             Enable_Pattern_Generator_in_STM_4_pin_mode()
+ *
+ *
+ *    Note that the drive strength of the I/O (EMU0..4) are for 1-10pF external
+ *    load. It can be changed by using the hotmenu GEL functions to use 10-16pF
+ *    external load (Configure_EMU0_4_SmartIO_Load_10pF_16pF())
+ *
+ *   Configure FPGA as follows: (on TEB)
+ *      * Do not allow FPGA to drive EMU0/1 pins (disable WIR mode)
+ *      * Configure QSWITCH2 register in FPGA using HPC tool as follows
+ *        Set bits 25:24 to 0x1 and 23:22 to 0x1 to route EMU2..4 through
+ *        switches controlled by the FPGA to the 20 Pin TI header.
+ *
+ *      * Also configure QSWITCH4 register to disconnect FPGA from EMU0/1
+ *
+ *
+ *      * Also need to ensure EMU0..4 disconnected from MIPI 60 connector 
+ *        through resistor bank on board.
+ *
+ *      * Also need to ensure EMU2..4 connected to TI-20 JTAG header
+ *              
+ **********************************************************************/
+
+
+hotmenu Setup_STM_Clocking_Modes()
+{
+   Configure_CM2_provide_clk_l3debugss();
+
+   Set_DBGCLK_And_RefACLK_to_166MHz();
+
+   Configure_PRM_provide_RefA_clk_debugss();
+
+   //Set_Ref_A_Clk_to_STM_Module();
+   Set_PDLO_Clock_to_STM_Module();
+}
+
+hotmenu EnableTraceFunnelforETB()
+{
+
+	// Configure Trace Funnel
+	*(int*)0x54164FB0 = UNLOCK_VALUE;
+
+	//Enable port 7 to pass STM data to ETB
+	*(int*)0x54164000 = 0x380; 
+		
+}
+
+hotmenu EnableTraceFunnelforETB_ETM()
+{
+	// Configure Trace Funnel
+	*(int*)0xD4164FB0@data  = UNLOCK_VALUE;
+	*(int*)0xD4158FB0@data  = UNLOCK_VALUE;
+
+	//Enable port 7 to pass STM data to ETB
+	*(int*)0xD4164000@data  = 0x30F; 
+	*(int*)0xD4158000@data  = 0x30F; 		
+}
+
+hotmenu Configure_EMU0_4_For_STM()
+{
+   Configure_DRM_to_assign_STM_to_DP0_4();
+
+   Configure_Spinner_For_STM_trace_Pins_EMU0_EMU4();
+}
+
+hotmenu Configure_EMU0_2_For_STM()
+{
+   Configure_DRM_to_assign_STM_to_DP0_2();
+
+   Configure_Spinner_For_STM_trace_Pins_EMU0_EMU4();
+}
+
+hotmenu Configure_EMU0_1_For_STM()
+{
+   Configure_DRM_to_assign_STM_to_DP0_1();
+
+   Configure_Spinner_For_STM_trace_Pins_EMU0_EMU4();
+}
+
+hotmenu Configure_EMU0_4_SmartIO_Load_1pF_10pF()
+{
+   GEL_TextOut("Configuring EMU0..4 for drive strength based upon external load 1-10pF which is default \n");
+   
+   // Pin /  Pin Group in device control module for Smart2Io
+   // DP0 -- DPM_DR1
+   // DP1 -- DPM_DR2
+   // DP2 -- USBA0_DR0
+   // DP3 -- USBA0_DR1
+   // DP4 -- USBA0_DR1
+   // DP5 -- USBA0_DR1
+   // DP6 -- UART3_DR2
+   // DP7 -- UART3_DR3
+   // DP8 -- UART3_DR4
+   // DP9 -- UART3_DR5
+   // DP10 --USBA_DR2
+   // DP11 --USBA_DR2
+   // DP12 --USBA_DR2
+   // DP13 --USBA_DR2
+   // DP14 --GPIO_DR10
+   // DP15 --GPIO_DR10
+   // DP16 --DPM_DR2
+   // DP17 --DPM_DR2
+   // DP18 --DPM_DR3
+   // DP19 --DPM_DR3
+
+    // Setting up 1pF-10pF load for DPM_DR1_LB, DPM_DR2_LB, USBA0_DR1_LB
+   *(int*)CONTROL_SMART2IO_PADCONF_0 &= ~((1 << 30) | (1 << 29) | (1 << 2));
+
+    // USBA0_DR0_LB
+   *(int*)CONTROL_SMART2IO_PADCONF_1 &= ~((1 << 29));
+
+}
+
+hotmenu Configure_EMU0_4_SmartIO_Load_10pF_16pF()
+{
+   GEL_TextOut("Configuring EMU0..4 for drive strength based upon external load 10-16pF \n");
+
+    // Setting up 10pF-16pF load for DPM_DR1_LB, DPM_DR2_LB, USBA0_DR1_LB
+   *(int*)CONTROL_SMART2IO_PADCONF_0 |= ((1 << 30) | (1 << 29) | (1 << 2));
+
+    // USBA0_DR0_LB 
+   *(int*)CONTROL_SMART2IO_PADCONF_1 |= ((1 << 29));
+}
+
+
+hotmenu Enable_Pattern_Generator_in_STM_4_pin_mode()
+{
+ /* Enable Pattern Generator in STM */
+  // unlock access of stm (ONLY needed for application access)
+   *(int*)STM_LOCK_ACCESS = 0xC5ACCE55;
+
+   // Release any prior ownership
+   *(int*)STM_SWMCTRL0 = 0x20000000;
+
+   // claim ownersip
+    *(int*)STM_SWMCTRL0 = 0x40000000;
+   // Set PTISize and PTIEnable
+   // Double data rate
+   // 4-pin data
+    *(int*)STM_PTI_CONFIG = (0x0 << 3) |
+                            (0x2 << 4) |
+                            (0x1 << 8);
+
+   // Enable Simple Pattern A
+    *(int*)STM_TESTCTRL = 0x1; 
+   // Enable STM
+    *(int*)STM_SWMCTRL0 = 0x80000000;
+   GEL_TextOut("Enable Pattern Generator in STM,4 pin mode \n"); 
+}
+
+hotmenu Enable_Pattern_Generator_in_STM_2_pin_mode()
+{
+ /* Enable Pattern Generator in STM */
+  // unlock access of stm (ONLY needed for application access)
+   *(int*)STM_LOCK_ACCESS = 0xC5ACCE55;
+
+   // Release any prior ownership
+   *(int*)STM_SWMCTRL0 = 0x20000000;
+
+   // claim ownersip
+    *(int*)STM_SWMCTRL0 = 0x40000000;
+   // Set PTISize and PTIEnable
+   // Double data rate
+   // 2-pin data
+    *(int*)STM_PTI_CONFIG = (0x0 << 3) |
+                            (0x1 << 4) |
+                            (0x1 << 8);
+
+   // Enable Simple Pattern A
+    *(int*)STM_TESTCTRL = 0x1; 
+   // Enable STM
+    *(int*)STM_SWMCTRL0 = 0x80000000;
+   GEL_TextOut("Enable Pattern Generator in STM,2 pin mode \n"); 
+}
+
+hotmenu Enable_Pattern_Generator_in_STM_1_pin_mode()
+{
+ /* Enable Pattern Generator in STM */
+  // unlock access of stm (ONLY needed for application access)
+   *(int*)STM_LOCK_ACCESS = 0xC5ACCE55;
+
+   // Release any prior ownership
+   *(int*)STM_SWMCTRL0 = 0x20000000;
+
+   // claim ownersip
+    *(int*)STM_SWMCTRL0 = 0x40000000;
+   // Set PTISize and PTIEnable
+   // Double data rate
+   // 1-pin data
+    *(int*)STM_PTI_CONFIG = (0x0 << 3) |
+                            (0x0 << 4) |
+                            (0x1 << 8);
+
+   // Enable Simple Pattern A
+    *(int*)STM_TESTCTRL = 0x1; 
+   // Enable STM
+    *(int*)STM_SWMCTRL0 = 0x80000000;
+   GEL_TextOut("Enable Pattern Generator in STM, 1 pin mpde\n"); 
+}
+
+
+Set_DBGCLK_And_RefACLK_to_166MHz()
+{
+    GEL_TextOut("Set DBGCLK to 166MHz assuming CORE DPLL is locked \n");
+    *(int*)CM_DIV_M6_DPLL_CORE = 0x9;
+  
+    // Add a check to verify that the status bit which confirms 
+    // the divider change takes effect (status bit in the register is a 
+    // toggle bit.
+}
+
+Set_Ref_A_Clk_to_STM_Module()
+{
+    // Choose not PDLO clock (who knows if it works or not...)
+    // but instead REFA/B clock output for STM/TPIU trace
+    int device_type;
+    int secure_mode;
+
+    device_type = *(int*)0x4A0022C4;
+    
+    if (((device_type & 0x300)>>8) != 0x3)
+    { 
+       GEL_TextOut("--->>> Not a GP device so open EMUSS firewall <<<---\n"); 
+
+       secure_mode = REG_TZ_SECURE;
+
+       if (secure_mode == 0)
+       { 
+          REG_TZ_SECURE = 1;
+       }
+   
+        // Open EMUSS firewall (note this will only work if L3_3 clock domain
+        // is not gated (which is it by default on SDC device........)
+        // You need to run Configure_CM2_provide_clkdebugss() first otherwise
+        // the disconnect bridge will cause in-band errors to be returned (:)
+        // This allows non-secure access in EMU/TEST device to go through
+        // Also needed for testing software messages on EMU/TEST device.
+       *(int*)SEC_EMU_MRM_PERM_REG_LOW_0 = 0xFFFFFFFF;
+       
+
+       if (secure_mode == 0)
+       { 
+          REG_TZ_SECURE = 0;
+       }
+    }
+ 
+    *(int*)DRM_CLKGEN_CFG = 0x1;
+
+    GEL_TextOut("Configure CLKGEN CLKMUX for REFA/B/C clock to STM/TPIU \n");
+}
+
+hotmenu Set_PDLO_Clock_to_STM_Module()
+{
+    // Choose PDLO clock as clock source to STM module
+    int device_type;
+    int secure_mode;
+
+    device_type = *(int*)0x4A0022C4;
+    
+    if (((device_type & 0x300)>>8) != 0x3)
+    { 
+       GEL_TextOut("--->>> Not a GP device so open EMUSS firewall <<<---\n"); 
+
+       secure_mode = REG_TZ_SECURE;
+
+       if (secure_mode == 0)
+       { 
+          REG_TZ_SECURE = 1;
+       }
+   
+        // Open EMUSS firewall (note this will only work if L3_3 clock domain
+        // is not gated (which is it by default on SDC device........)
+        // You need to run Configure_CM2_provide_clkdebugss() first otherwise
+        // the disconnect bridge will cause in-band errors to be returned (:)
+        // This allows non-secure access in EMU/TEST device to go through
+        // Also needed for testing software messages on EMU/TEST device.
+       *(int*)SEC_EMU_MRM_PERM_REG_LOW_0 = 0xFFFFFFFF;
+       
+
+       if (secure_mode == 0)
+       { 
+          REG_TZ_SECURE = 0;
+       }
+    }     
+    *(int*)DRM_CLKGEN_CFG = 0x0;
+
+   // Initialize register to reset state
+   *DRM_CLKGEN_PDLO_STM_CTL = 0x00000000;
+
+   // Set divider to 1
+   *DRM_CLKGEN_PDLO_STM_CTL = (0x1 << 11);
+
+   // set refsel assuming 38MHz sysclk (/128)
+   *DRM_CLKGEN_PDLO_STM_CTL |= (0x2 << 5);
+
+   // configure dly_a value to control the speed. the lower this value is
+   // the higher the clock speed. The value of 165 here gives PTI clock at
+   // 90MHz +-5%
+   *DRM_CLKGEN_PDLO_STM_CTL |= (165) << 16;
+
+   *DRM_CLKGEN_PDLO_STM_CTL |= 0x0800;
+   // enable clock
+   *DRM_CLKGEN_PDLO_STM_CTL |= 0x4;
+
+   // enable oscillator
+   *DRM_CLKGEN_PDLO_STM_CTL |= 0x2;
+
+    GEL_TextOut("Configure CLKGEN CLKMUX for PDLO clock to STM/TPIU \n");
+}
+
+Configure_PRM_provide_RefA_clk_debugss()
+{
+    // Configure PRM to provide a RefA clk to debugss
+    // Configurations are in EMU_CM in PRM module 
+
+    // Clear all bits to start cleanly.
+   *(int*)CM_EMU_DEBUGSS_CLKCTRL = 0x0;
+
+    // PMD_STM_MUX_CTRL = CORE_DPLL_EMU_CLK
+    // STM clock is CORE_DPLL_EMU_CLK / 1
+    // Allow REF_A clock to be propagated as CORE_DPLL_EMU_CLK
+   *(int*)CM_EMU_DEBUGSS_CLKCTRL = (0x1 << 20 | 0x1 << 27); 
+
+   GEL_TextOut("Configure PRM to provide REF_A clk as CORE_CLK_M6 DIVIDE BY 1 \n");
+}
+
+Configure_CM2_provide_clk_l3debugss()
+{
+   // Allow Arteris L3_3 clock to be provided
+  *(int*)CM_L3INSTR_L3_3_CLKCTRL = 0x1;
+
+   // Allow l3 instr clock to be provided
+  *(int*)CM_L3INSTR_L3_INSTR_CLKCTRL = 0x1;
+ 
+   GEL_TextOut("Configure CM2 to provide a clock to debugss \n");
+}
+
+
+Configure_Spinner_For_STM_trace_Pins_EMU0_EMU4()
+{
+    /* Clear bits 16:31 */
+    /* Input buffer should be turned off, some reflections have been seen
+     * on silicon */
+    *(int*)PAD0_SYS_BOOT5_PAD1_DPM_EMU0 &= 0x0000FFFF;
+
+    *(int*)PAD0_SYS_BOOT5_PAD1_DPM_EMU0 |= (0x0 << 16); /* MUX mode 0 */
+
+    *(int*)PAD0_DPM_EMU1_PAD1_DPM_EMU2 = 0;
+
+    *(int*)PAD0_DPM_EMU3_PAD1_DPM_EMU4 = 0;
+
+    /* Configure EMU0..4 for DBG pin usage */
+    /* All are MUX MODE 0 and for all the input buffer has been disabled */
+    /* Input buffer enabling for output only signals may result in reflections */
+    /* Pull-ups/down have been disabled as well */
+
+    GEL_TextOut("Set DBGCLK to 166MHz assuming CORE DPLL is locked \n");
+}                                           
+
+
+Configure_DRM_to_assign_STM_to_DP0_4()
+{
+
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM = (0x2 << 30);
+   *(int*)DPM_CTRL0 = 0x2; // STM_DATA[0] (DP0)
+   *(int*)DPM_CTRL1 = 0x3; // STM_DATA[1] (DP1)
+   *(int*)DPM_CTRL2 = 0x6; // STM_CLK     (DP2)
+   *(int*)DPM_CTRL3 = 0x4; // STM_DATA[2] (DP3)
+   *(int*)DPM_CTRL4 = 0x5; // STM_DATA[3] (DP4)
+
+   // Note the app owned state status bit should be '0' after PAD configuration
+   // (i checked, it appears to work)
+
+   // Debug only status bit is always '0' because on OMAP-4 no DP pin is exclusively 
+   // available for debug
+
+   // The output and output enable status bits should reflect the way STM is driving
+   // the pins (output enable should go to zero and stay zero)
+
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 4 pin STM data \n");
+}
+
+Configure_DRM_to_assign_STM_to_DP0_2()
+{
+
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM = (0x2 << 30);
+   *(int*)DPM_CTRL0 = 0x2; // STM_DATA[0] (DP0)
+   *(int*)DPM_CTRL1 = 0x3; // STM_DATA[1] (DP1)
+   *(int*)DPM_CTRL2 = 0x6; // STM_CLK     (DP2)
+
+   // Note the app owned state status bit should be '0' after PAD configuration
+   // (i checked, it appears to work)
+
+   // Debug only status bit is always '0' because on OMAP-4 no DP pin is exclusively 
+   // available for debug
+
+   // The output and output enable status bits should reflect the way STM is driving
+   // the pins (output enable should go to zero and stay zero)
+
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 2 pin STM data \n");
+}
+
+Configure_DRM_to_assign_STM_to_DP0_1()
+{
+   /* Claim application ownership from DRM */
+   *(int*)DRM_CLAIM = (0x1 << 30);
+   /* Enable application ownership from DRM */
+   *(int*)DRM_CLAIM = (0x2 << 30);
+   *(int*)DPM_CTRL0 = 0x2; // STM_DATA[0] (DP0)
+   *(int*)DPM_CTRL1 = 0x6; // STM_CLK (DP1)
+
+   // Note the app owned state status bit should be '0' after PAD configuration
+   // Debug only status bit is always '0' because on OMAP-4 no DP pin is exclusively available for debug
+
+   // The output and output enable status bits should reflect the way STM is driving
+   // the pins (output enable should go to zero and stay zero)
+
+    GEL_TextOut("Programmed DRM to select debug function for DP pins, 1 pin STM data \n");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

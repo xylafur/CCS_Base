@@ -1,0 +1,102 @@
+DaVinci Device Support Package
+==============================
+
+1.1.4
+-----
+DM8127 Device support added
+
+1.1.3
+-----
+Added the compiler end-of-life project wizard property for legacy devices
+General cleanup of unused XML properties
+
+1.1.2
+-----
+Fixed SDSCM00048464
+Removed generic TI814x/TI816x devices
+Handoff to CCSv6.0
+
+1.1.1
+-----
+Added default project options for DA830/DA828
+Migrated emupack generic device files for Netra/Centaurus (TI814x/TI816x)
+
+1.1.0
+-----
+Fixed upper caps issue with evmdm6467.xml and evmdm6467T.xml
+Fixed GEL file issue with OMAP3430 and OMAP3630
+
+1.0.9
+-----
+ETB added for DM368 and DM365
+
+1.0.8
+-----
+ETM added to dm8146, dm8147, dm8148, dm8165, dm8166, dm8167 and dm8168
+
+1.0.7
+-----
+Fixed several uppercase/lowercase issues in board files
+Fixed CR/LF in several files
+Fixed naming to EVMDM368
+Removed <processors> directive in several files
+Removed unnecessary Modules directory
+Added evmdm8168.xml
+Added DM6467 DSP core memory map to linker CMD file
+Added DM6467 DSP core project options to device XML file
+Fixed relative paths to GEL files in several device and board XML files from ../../emulation to ../../../emulation
+EVMDM3730, EVMOMAP3530, EVMDM357, EVMDM368, EVMDM648 board files created
+Removed backslashes from board files
+Added EVMDM357, EVMDM368 and EVMDM6467T GEL files
+Updated EVMDM6437 GEL file
+Removed duplicate/stale GEL files for DM37x
+Removed references to board GEL files from DM35x and DM64x devices
+Added DM6441 device
+Added Linker CMD files for all devices
+Created ARM and C6000 directories for the project wizard
+Added project options for all devices
+Added DSP-core specific options for linker CMD files and project options
+
+1.0.6
+-----
+Added filter strings for omap3525 and omap3530 
+Added default build options for omap3525 and omap3530
+Added legacy da8xx device files 
+
+1.0.5
+-----
+Moved revision history to /doc
+Set elf as default for dm81xx devices for c6 and arm cores
+Set elf as default for dm37xx devices for arm cores
+
+1.0.4
+-----
+Added TMS320 to part number description in DM3725, DM3730, DM8146, DM8147, DM8148, DM8165, DM8166, DM8167, DM8168
+Added DM642.gel
+Added OMAP3530.xml with peripheral registers
+Added OMAP3535.xml with peripheral registers
+
+1.0.3
+-----
+Corrected address issue with DM816x files for Cortex A8
+
+1.0.2
+-----
+Removed extra -D option in DM6467
+Added DM8148, DM8147 and DM8146
+Updated -D option for ARM in DM816x devices
+
+1.0.1
+-----
+Corrected path issues in DM37xx and DM816x files
+Removed extra -D option in DM644x files
+
+1.0.0
+-----
+Device files added for dm3725, dm3730, dm8165, dm8166, dm8167, dm8168, dm368
+GEL files added for dm8168, dm8148
+Corrected case on DM files
+Correct use of \ for / in all files
+Added -D option for device name
+
+

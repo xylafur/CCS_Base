@@ -1,0 +1,197 @@
+<module name="MMCSD1_SS_CFG" acronym="" XML_version="1.0" HW_revision="n/a" description="">
+  <register id="MMCSD1_SS_SS_ID_REV_REG" acronym="MMCSD1_SS_SS_ID_REV_REG" offset="0x0" width="32" description="The Subsystem ID and Revision Register contains the module ID, major, and minor revisions for the subsystem.">
+    <bitfield id="MOD_ID" width="16" begin="31" end="16" resetval="0x6840" description="Module ID" range="" rwaccess="R"/>
+    <bitfield id="RTL_VER" width="5" begin="15" end="11" resetval="0x8" description="RTL Version" range="" rwaccess="R"/>
+    <bitfield id="MAJ_REV" width="3" begin="10" end="8" resetval="0x1" description="Major Version" range="" rwaccess="R"/>
+    <bitfield id="CUSTOM" width="2" begin="7" end="6" resetval="0x0" description="Custom Version" range="" rwaccess="R"/>
+    <bitfield id="MIN_REV" width="6" begin="5" end="0" resetval="0x0" description="Minor Version" range="" rwaccess="R"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_1_REG" acronym="MMCSD1_SS_CTL_CFG_1_REG" offset="0x10" width="32" description="The Controller Config 1 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification.">
+    <bitfield id="RESERVED" width="2" begin="31" end="30" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="TUNINGCOUNT" width="6" begin="29" end="24" resetval="0x20" description="This field controls the corecfg_tuningcount port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="3" begin="23" end="21" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="ASYNCWKUPENA" width="1" begin="20" end="20" resetval="0x1" description="This field controls the corecfg_asyncwkupena port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="4" begin="19" end="16" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="CQFMUL" width="4" begin="15" end="12" resetval="0x3" description="This field controls the corecfg_cqfmul port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="2" begin="11" end="10" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="CQFVAL" width="10" begin="9" end="0" resetval="0xC8" description="This field controls the corecfg_cqfval port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_2_REG" acronym="MMCSD1_SS_CTL_CFG_2_REG" offset="0x14" width="32" description="The Controller Config 2 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification. This register sets the LSB fields in the register inside the Host Controller.">
+    <bitfield id="SLOTTYPE" width="2" begin="31" end="30" resetval="0x0" description="This field controls the corecfg_slottype port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="ASYNCHINTRSUPPORT" width="1" begin="29" end="29" resetval="0x1" description="This field controls the corecfg_asynchintrsupport port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="2" begin="28" end="27" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="SUPPORT1P8VOLT" width="1" begin="26" end="26" resetval="0x1" description="This field controls the corecfg_1p8voltsupport port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="SUPPORT3P0VOLT" width="1" begin="25" end="25" resetval="0x1" description="This field controls the corecfg_3p0voltsupport port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="SUPPORT3P3VOLT" width="1" begin="24" end="24" resetval="0x1" description="This field controls the corecfg_3p3voltsupport port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="SUSPRESSUPPORT" width="1" begin="23" end="23" resetval="0x1" description="This field controls the corecfg_suspressupport port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="SDMASUPPORT" width="1" begin="22" end="22" resetval="0x1" description="This field controls the corecfg_sdmasupport port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="HIGHSPEEDSUPPORT" width="1" begin="21" end="21" resetval="0x1" description="This field controls the corecfg_highspeedsupport port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="1" begin="20" end="20" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="ADMA2SUPPORT" width="1" begin="19" end="19" resetval="0x1" description="This field controls the corecfg_adma2support port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="SUPPORT8BIT" width="1" begin="18" end="18" resetval="0x0" description="This field controls the corecfg_8bitsupport port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="MAXBLKLENGTH" width="2" begin="17" end="16" resetval="0x0" description="This field controls the corecfg_maxblklength port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="BASECLKFREQ" width="8" begin="15" end="8" resetval="0xC8" description="This field controls the corecfg_baseclkfreq port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="TIMEOUTCLKUNIT" width="1" begin="7" end="7" resetval="0x0" description="This field controls the corecfg_timeoutclkunit port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="1" begin="6" end="6" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="TIMEOUTCLKFREQ" width="6" begin="5" end="0" resetval="0x1" description="This field controls the corecfg_timeoutclkfreq port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_3_REG" acronym="MMCSD1_SS_CTL_CFG_3_REG" offset="0x18" width="32" description="The Controller Config 3 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification. This register sets the MSB fields in the register inside the Host Controller.">
+    <bitfield id="RESERVED" width="3" begin="31" end="29" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="SUPPORT1P8VDD2" width="1" begin="28" end="28" resetval="0x1" description="This field controls the corecfg_1p8vdd2support port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="ADMA3SUPPORT" width="1" begin="27" end="27" resetval="0x1" description="This field controls the corecfg_adma3support port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="3" begin="26" end="24" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="CLOCKMULTIPLIER" width="8" begin="23" end="16" resetval="0x0" description="This field controls the corecfg_clockmultiplier port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="RETUNINGMODES" width="2" begin="15" end="14" resetval="0x0" description="This field controls the corecfg_retuningmodes port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="TUNINGFORSDR50" width="1" begin="13" end="13" resetval="0x0" description="This field controls the corecfg_tuningforsdr50 port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="1" begin="12" end="12" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="RETUNINGTIMERCNT" width="4" begin="11" end="8" resetval="0x4" description="This field controls the corecfg_retuningtimercnt port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="TYPE4SUPPORT" width="1" begin="7" end="7" resetval="0x0" description="This field controls the corecfg_type4support port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="DDRIVERSUPPORT" width="1" begin="6" end="6" resetval="0x0" description="This field controls the corecfg_ddriversupport port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="CDRIVERSUPPORT" width="1" begin="5" end="5" resetval="0x0" description="This field controls the corecfg_cdriversupport port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="ADRIVERSUPPORT" width="1" begin="4" end="4" resetval="0x0" description="This field controls the corecfg_adriversupport port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="1" begin="3" end="3" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="DDR50SUPPORT" width="1" begin="2" end="2" resetval="0x1" description="This field controls the corecfg_ddr50support port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="SDR104SUPPORT" width="1" begin="1" end="1" resetval="0x1" description="This field controls the corecfg_sdr104support port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="SDR50SUPPORT" width="1" begin="0" end="0" resetval="0x1" description="This field controls the corecfg_sdr50support port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_4_REG" acronym="MMCSD1_SS_CTL_CFG_4_REG" offset="0x1C" width="32" description="The Controller Config 4 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification. This register sets the LSB fields in the register inside the Host Controller.">
+    <bitfield id="RESERVED" width="8" begin="31" end="24" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="MAXCURRENT1P8V" width="8" begin="23" end="16" resetval="0x0" description="This field controls the corecfg_maxcurrent1p8v port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="MAXCURRENT3P0V" width="8" begin="15" end="8" resetval="0x0" description="This field controls the corecfg_maxcurrent3p0v port on the controller." range="" rwaccess="RW"/>
+    <bitfield id="MAXCURRENT3P3V" width="8" begin="7" end="0" resetval="0x0" description="This field controls the corecfg_maxcurrent3p3v port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_5_REG" acronym="MMCSD1_SS_CTL_CFG_5_REG" offset="0x20" width="32" description="The Controller Config 5 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification. This register sets the MSB fields in the register inside the Host Controller.">
+    <bitfield id="RESERVED" width="24" begin="31" end="8" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="MAXCURRENTVDD2" width="8" begin="7" end="0" resetval="0x0" description="This field controls the corecfg_maxcurrentvdd2 port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_6_REG" acronym="MMCSD1_SS_CTL_CFG_6_REG" offset="0x24" width="32" description="The Controller Config 6 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification. This register sets the fields in the Preset Values registers ( to ) for Initialization inside the Host Controller.">
+    <bitfield id="RESERVED" width="19" begin="31" end="13" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="INITPRESETVAL" width="13" begin="12" end="0" resetval="0x100" description="This field controls the corecfg_initpresetval port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_7_REG" acronym="MMCSD1_SS_CTL_CFG_7_REG" offset="0x28" width="32" description="The Controller Config 7 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification. This register sets the fields in the Preset Values registers ( to ) for Default Speed inside the Host Controller.">
+    <bitfield id="RESERVED" width="19" begin="31" end="13" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="DSPDPRESETVAL" width="13" begin="12" end="0" resetval="0x4" description="This field controls the corecfg_dspdpresetval port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_8_REG" acronym="MMCSD1_SS_CTL_CFG_8_REG" offset="0x2C" width="32" description="The Controller Config 8 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification. This register sets the fields in the Preset Values registers ( to ) for High Speed inside the Host Controller.">
+    <bitfield id="RESERVED" width="19" begin="31" end="13" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="HSPDPRESETVAL" width="13" begin="12" end="0" resetval="0x2" description="This field controls the corecfg_hspdpresetval port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_9_REG" acronym="MMCSD1_SS_CTL_CFG_9_REG" offset="0x30" width="32" description="The Controller Config 9 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification. This register sets the fields in the Preset Values registers ( to ) for SDR12 inside the Host Controller.">
+    <bitfield id="RESERVED" width="19" begin="31" end="13" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="SDR12PRESETVAL" width="13" begin="12" end="0" resetval="0x4" description="This field controls the corecfg_sdr12presetval port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_10_REG" acronym="MMCSD1_SS_CTL_CFG_10_REG" offset="0x34" width="32" description="The Controller Config 10 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification. This register sets the fields in the Preset Values registers ( to ) for SDR25 inside the Host Controller.">
+    <bitfield id="RESERVED" width="19" begin="31" end="13" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="SDR25PRESETVAL" width="13" begin="12" end="0" resetval="0x2" description="This field controls the corecfg_sdr25presetval port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_11_REG" acronym="MMCSD1_SS_CTL_CFG_11_REG" offset="0x38" width="32" description="The Controller Config 11 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification. This register sets the fields in the Preset Values registers ( to ) for SDR50 inside the Host Controller.">
+    <bitfield id="RESERVED" width="19" begin="31" end="13" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="SDR50PRESETVAL" width="13" begin="12" end="0" resetval="0x1" description="This field controls the corecfg_sdr50presetval port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_12_REG" acronym="MMCSD1_SS_CTL_CFG_12_REG" offset="0x3C" width="32" description="The Controller Config 12 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification. This register sets the fields in the Preset Values registers ( to ) for SDR104 inside the Host Controller.">
+    <bitfield id="RESERVED" width="19" begin="31" end="13" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="SDR104PRESETVAL" width="13" begin="12" end="0" resetval="0x0" description="This field controls the corecfg_sdr104presetval port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_CFG_13_REG" acronym="MMCSD1_SS_CTL_CFG_13_REG" offset="0x40" width="32" description="The Controller Config 13 Register contains various fields to control the configuration ports on the Host Controller. For detailed functionality of the Host Controller configuration ports please refer to its specification. This register sets the fields in the Preset Values registers ( to ) for DDR50 inside the Host Controller.">
+    <bitfield id="RESERVED" width="19" begin="31" end="13" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="DDR50PRESETVAL" width="13" begin="12" end="0" resetval="0x2" description="This field controls the corecfg_ddr50presetval port on the controller." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_STAT_1_REG" acronym="MMCSD1_SS_CTL_STAT_1_REG" offset="0x60" width="32" description="The Controller Status 1 Register contains various fields to reflect the status of the debug ports on the Host Controller. For detailed functionality of the Host Controller debug ports please refer to its specification.">
+    <bitfield id="SDHC_CMDIDLE" width="1" begin="31" end="31" resetval="0x1" description="This field reflects the value of the sdhc_cmdidle port on the controller." range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="15" begin="30" end="16" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="DMADEBUGBUS" width="16" begin="15" end="0" resetval="0x0" description="This field reflects the value of the sdhc_dmadebugbus port on the controller." range="" rwaccess="R"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_STAT_2_REG" acronym="MMCSD1_SS_CTL_STAT_2_REG" offset="0x64" width="32" description="The Controller Status 2 Register contains various fields to reflect the status of the debug ports on the Host Controller. For detailed functionality of the Host Controller debug ports please refer to its specification.">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="CMDDEBUGBUS" width="16" begin="15" end="0" resetval="0x10" description="This field reflects the value of the sdhc_cmddebugbus port on the controller." range="" rwaccess="R"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_STAT_3_REG" acronym="MMCSD1_SS_CTL_STAT_3_REG" offset="0x68" width="32" description="The Controller Status 3 Register contains various fields to reflect the status of the debug ports on the Host Controller. For detailed functionality of the Host Controller debug ports please refer to its specification.">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="TXDDEBUGBUS" width="16" begin="15" end="0" resetval="0x0" description="This field reflects the value of the sdhc_txddebugbus port on the controller." range="" rwaccess="R"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_STAT_4_REG" acronym="MMCSD1_SS_CTL_STAT_4_REG" offset="0x6C" width="32" description="The Controller Status 4 Register contains various fields to reflect the status of the debug ports on the Host Controller. For detailed functionality of the Host Controller debug ports please refer to its specification.">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="RXDDEBUGBUS0" width="16" begin="15" end="0" resetval="0x0" description="This field reflects the value of the sdhc_rxddebugbus0 port on the controller." range="" rwaccess="R"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_STAT_5_REG" acronym="MMCSD1_SS_CTL_STAT_5_REG" offset="0x70" width="32" description="The Controller Status 5 Register contains various fields to reflect the status of the debug ports on the Host Controller. For detailed functionality of the Host Controller debug ports please refer to its specification.">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="RXDDEBUGBUS1" width="16" begin="15" end="0" resetval="0x8" description="This field reflects the value of the sdhc_rxddebugbus1 port on the controller." range="" rwaccess="R"/>
+  </register>
+  <register id="MMCSD1_SS_CTL_STAT_6_REG" acronym="MMCSD1_SS_CTL_STAT_6_REG" offset="0x74" width="32" description="The Controller Status 6 Register contains various fields to reflect the status of the debug ports on the Host Controller. For detailed functionality of the Host Controller debug ports please refer to its specification.">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="TUNDEBUGBUS" width="16" begin="15" end="0" resetval="0x0" description="This field reflects the value of the sdhc_tundebugbus port on the controller." range="" rwaccess="R"/>
+  </register>
+  <register id="MMCSD1_SS_PHY_CTRL_1_REG" acronym="MMCSD1_SS_PHY_CTRL_1_REG" offset="0x100" width="32" description="The PHY Control 1 Register contains various fields to control the ports on the Host Controller PHY. For detailed functionality of the Host Controller PHY control ports please refer to its specification.">
+    <bitfield id="IOMUX_ENABLE" width="1" begin="31" end="31" resetval="0x1" description="This field controls the phyctrl_enable_iomuxing port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="8" begin="30" end="23" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="DR_TY" width="3" begin="22" end="20" resetval="0x0" description="This field controls the phyctrl_dr_ty port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="2" begin="19" end="18" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="RETRIM" width="1" begin="17" end="17" resetval="0x0" description="This field controls the phyctrl_retrim port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="EN_RTRIM" width="1" begin="16" end="16" resetval="0x1" description="This field controls the phyctrl_en_rtrim port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="8" begin="15" end="8" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="DLL_TRM_ICP" width="4" begin="7" end="4" resetval="0x0" description="This field controls the phyctrl_dll_trm_icp port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="2" begin="3" end="2" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="ENDLL" width="1" begin="1" end="1" resetval="0x0" description="This field controls the phyctrl_endll port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="PDB" width="1" begin="0" end="0" resetval="0x0" description="This field controls the phyctrl_pdb port on the PHY." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_PHY_CTRL_2_REG" acronym="MMCSD1_SS_PHY_CTRL_2_REG" offset="0x104" width="32" description="The PHY Control 2 Register contains various fields to control the ports on the Host Controller PHY. For detailed functionality of the Host Controller PHY control ports please refer to its specification.">
+    <bitfield id="RESERVED" width="3" begin="31" end="29" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="OD_RELEASE_CMD" width="1" begin="28" end="28" resetval="0x0" description="This field controls the phyctrl_OD_release_cmd port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="8" begin="27" end="20" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="OD_RELEASE_DAT" width="4" begin="19" end="16" resetval="0x0" description="This field controls the phyctrl_OD_release_dat port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="3" begin="15" end="13" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="ODEN_CMD" width="1" begin="12" end="12" resetval="0x0" description="This field controls the phyctrl_oden_cmd port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="8" begin="11" end="4" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="ODEN_DAT" width="4" begin="3" end="0" resetval="0x0" description="This field controls the phyctrl_oden_dat port on the PHY." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_PHY_CTRL_3_REG" acronym="MMCSD1_SS_PHY_CTRL_3_REG" offset="0x108" width="32" description="The PHY Control 3 Register contains various fields to control the ports on the Host Controller PHY. For detailed functionality of the Host Controller PHY control ports please refer to its specification.">
+    <bitfield id="RESERVED" width="3" begin="31" end="29" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="PU_CMD" width="1" begin="28" end="28" resetval="0x1" description="This field controls the phyctrl_pu_cmd port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="8" begin="27" end="20" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="PU_DAT" width="4" begin="19" end="16" resetval="0xF" description="This field controls the phyctrl_pu_dat port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="3" begin="15" end="13" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="REN_CMD" width="1" begin="12" end="12" resetval="0x1" description="This field controls the phyctrl_ren_cmd port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="8" begin="11" end="4" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="REN_DAT" width="4" begin="3" end="0" resetval="0xF" description="This field controls the phyctrl_ren_dat port on the PHY." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_PHY_CTRL_4_REG" acronym="MMCSD1_SS_PHY_CTRL_4_REG" offset="0x10C" width="32" description="The PHY Control 4 Register contains various fields to control the ports on the Host Controller PHY. For detailed functionality of the Host Controller PHY control ports please refer to its specification.">
+    <bitfield id="RESERVED" width="11" begin="31" end="21" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="OTAPDLYENA" width="1" begin="20" end="20" resetval="0x0" description="This field controls the phyctrl_otapdlyena port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="4" begin="19" end="16" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="OTAPDLYSEL" width="4" begin="15" end="12" resetval="0x0" description="This field controls the phyctrl_otapdlysel port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="2" begin="11" end="10" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="ITAPCHGWIN" width="1" begin="9" end="9" resetval="0x0" description="This field controls the phyctrl_itapchgwin port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="ITAPDLYENA" width="1" begin="8" end="8" resetval="0x0" description="This field controls the phyctrl_itapdlyena port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="3" begin="7" end="5" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="ITAPDLYSEL" width="5" begin="4" end="0" resetval="0x0" description="This field controls the phyctrl_itapdlysel port on the PHY." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_PHY_CTRL_5_REG" acronym="MMCSD1_SS_PHY_CTRL_5_REG" offset="0x110" width="32" description="The PHY Control 5 Register contains various fields to control the ports on the Host Controller PHY. For detailed functionality of the Host Controller PHY control ports please refer to its specification.">
+    <bitfield id="RESERVED" width="14" begin="31" end="18" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="SELDLYTXCLK" width="1" begin="17" end="17" resetval="0x0" description="This field controls the phyctrl_seldlytxclk port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="SELDLYRXCLK" width="1" begin="16" end="16" resetval="0x0" description="This field controls the phyctrl_seldlyrxclk port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="6" begin="15" end="10" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="SEL100" width="1" begin="9" end="9" resetval="0x0" description="This field controls the phyctrl_sel100 port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="SEL50" width="1" begin="8" end="8" resetval="0x0" description="This field controls the phyctrl_sel50 port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="5" begin="7" end="3" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="CLKBUFSEL" width="3" begin="2" end="0" resetval="0x0" description="This field controls the phyctrl_clkbufsel port on the PHY." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_PHY_CTRL_6_REG" acronym="MMCSD1_SS_PHY_CTRL_6_REG" offset="0x114" width="32" description="The PHY Control 6 Register contains various fields to control the ports on the Host Controller PHY. For detailed functionality of the Host Controller PHY control ports please refer to its specification.">
+    <bitfield id="BISTENABLE" width="1" begin="31" end="31" resetval="0x0" description="This field controls the phyctrl_bistenable port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="BISTSTART" width="1" begin="30" end="30" resetval="0x0" description="This field controls the phyctrl_biststart port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="2" begin="29" end="28" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="BISTMODE" width="4" begin="27" end="24" resetval="0x0" description="This field controls the phyctrl_bistmode port on the PHY." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="16" begin="23" end="8" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="TESTCTRL" width="8" begin="7" end="0" resetval="0x0" description="This field controls the phyctrl_testctrl port on the PHY." range="" rwaccess="RW"/>
+  </register>
+  <register id="MMCSD1_SS_PHY_STAT_1_REG" acronym="MMCSD1_SS_PHY_STAT_1_REG" offset="0x130" width="32" description="The PHY Status 1 Register contains various fields to reflect the status of the Host Controller PHY ports. For detailed functionality of the Host Controller PHY status ports please refer to its specification.">
+    <bitfield id="RESERVED" width="24" begin="31" end="8" resetval="0x0" description="Reserved" range="" rwaccess="R"/>
+    <bitfield id="RTRIM" width="4" begin="7" end="4" resetval="0xE" description="This field reflects the value of the phyctrl_rtrim port on the PHY." range="" rwaccess="R"/>
+    <bitfield id="BISTDONE" width="1" begin="3" end="3" resetval="0x0" description="This field reflects the value of the phyctrl_bistdone port on the PHY." range="" rwaccess="R"/>
+    <bitfield id="EXR_NINST" width="1" begin="2" end="2" resetval="0x0" description="This field reflects the value of the phyctrl_exr_ninst port on the PHY." range="" rwaccess="R"/>
+    <bitfield id="CALDONE" width="1" begin="1" end="1" resetval="0x0" description="This field reflects the value of the phyctrl_caldone port on the PHY." range="" rwaccess="R"/>
+    <bitfield id="DLLRDY" width="1" begin="0" end="0" resetval="0x0" description="This field reflects the value of the phyctrl_dllrdy port on the PHY." range="" rwaccess="R"/>
+  </register>
+  <register id="MMCSD1_SS_PHY_STAT_2_REG" acronym="MMCSD1_SS_PHY_STAT_2_REG" offset="0x134" width="32" description="The PHY Status 2 Register contains various fields to reflect the status of the Host Controller PHY ports. For detailed functionality of the Host Controller PHY status ports please refer to its specification.">
+    <bitfield id="BISTSTATUS" width="32" begin="31" end="0" resetval="0x0" description="This field reflects the value of the phyctrl_biststatus port on the PHY." range="" rwaccess="R"/>
+  </register>
+</module>

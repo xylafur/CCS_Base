@@ -1,0 +1,41 @@
+/* GEL file defining a Debug Server Session wrapper to be able
+to load a GEL file from a javascript */
+menuitem "utils"
+
+dialog  DSS_GEL_LoadGel( gelfileidx "Load GEL for: 1:transcode-2:FDIF-3:encode-4:decode-5:MMC")
+  {
+	if (gelfileidx == 1)
+	{
+		 GEL_LoadGel("$(GEL_file_dir)/h264transcode_conf.gel");
+	}
+	else if (gelfileidx == 2)
+	{
+		GEL_LoadGel("$(GEL_file_dir)/fdif_init.gel");
+	}
+	else if (gelfileidx == 3)
+	{
+		GEL_LoadGel("$(GEL_file_dir)/h264enc_conf.gel");
+
+	}
+	else if (gelfileidx == 4)
+	{
+		GEL_LoadGel("$(GEL_file_dir)/h264dec_conf.gel");
+
+	}
+	else if (gelfileidx == 5)
+	{
+		GEL_LoadGel("$(GEL_file_dir)/MMC2DDR_cfg.gel");
+
+	}
+	/* ADD your own wrapper here 
+	else if (gelfileidx == 6)
+	{
+		GEL_LoadGel("<user_specific_gel_file>");
+
+	}
+	*/ 
+	else
+		GEL_TextOut("Unsupported GEL file index");
+  }
+
+

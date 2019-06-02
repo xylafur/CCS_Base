@@ -1,0 +1,109 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* Attila L4 PER     			     						   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+memorymap_init_L4_PER()
+{
+    GEL_MapAddStr(0x48000000, 0, 0x00000800, "R|W|AS4", 0);  /* L4 Per configuration AP */
+    GEL_MapAddStr(0x48000800, 0, 0x00000800, "R|W|AS4", 0);  /* L4 Per configuration IP */
+    GEL_MapAddStr(0x48001000, 0, 0x00001000, "R|W|AS4", 0);  /* L4 Per configuration LA */
+   	GEL_MapAddStr(0x48020000, 0, 0x00001000, "R|W|AS1", 0);  /* UART3 - module */
+    GEL_MapAddStr(0x48021000, 0, 0x00001000, "R|W|AS2", 0);  /* UART3 - L4 interconnect */ 
+    GEL_MapAddStr(0x48032000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER2 - module */
+    GEL_MapAddStr(0x48033000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER2 - L4 interconnect */
+    GEL_MapAddStr(0x48034000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER3 - module */
+    GEL_MapAddStr(0x48035000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER3 - L4 interconnect */
+    GEL_MapAddStr(0x48036000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER4 - module */
+    GEL_MapAddStr(0x48037000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER4 - L4 interconnect */
+    GEL_MapAddStr(0x4803E000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER9 - module */
+    GEL_MapAddStr(0x4803F000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER9 - L4 interconnect */
+    GEL_MapAddStr(0x48040000, 0, 0x00001000, "R|W|AS4", 0);  /* DSS registers */
+    GEL_MapAddStr(0x48041000, 0, 0x00001000, "R|W|AS4", 0);  /* DISPC */
+    GEL_MapAddStr(0x48042000, 0, 0x00001000, "R|W|AS4", 0);  /* RFBI */
+    GEL_MapAddStr(0x48043000, 0, 0x00001000, "R|W|AS4", 0);  /* VENC */
+    GEL_MapAddStr(0x48044000, 0, 0x00001000, "R|W|AS4", 0);  /* DSI1 */
+    GEL_MapAddStr(0x48045000, 0, 0x00001000, "R|W|AS4", 0);  /* DSI2 */
+    GEL_MapAddStr(0x48046000, 0, 0x00001000, "R|W|AS4", 0);  /* HDMI */
+    GEL_MapAddStr(0x48047000, 0, 0x00001000, "R|W|AS4", 0);  /* HDCP */
+    GEL_MapAddStr(0x48050000, 0, 0x00001000, "R|W|AS4", 0);  /* DSS - L4 interconnect */
+    GEL_MapAddStr(0x48055000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO2 module */
+    GEL_MapAddStr(0x48056000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO2 L4 interconnect */
+    GEL_MapAddStr(0x48057000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO3 module */
+    GEL_MapAddStr(0x48058000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO3 L4 interconnect */
+    GEL_MapAddStr(0x48059000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO4 module */
+    GEL_MapAddStr(0x4805A000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO4 L4 interconnect */
+    GEL_MapAddStr(0x4805B000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO5 module */
+    GEL_MapAddStr(0x4805C000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO5 L4 interconnect */
+    GEL_MapAddStr(0x4805D000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO6 module */
+    GEL_MapAddStr(0x4805E000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO6 L4 interconnect */
+    GEL_MapAddStr(0x48060000, 0, 0x00001000, "R|W|AS2", 0);  /* I2C3 - module */
+    GEL_MapAddStr(0x48061000, 0, 0x00001000, "R|W|AS2", 0);  /* I2C3 - L4 interconnect */
+    GEL_MapAddStr(0x4806A000, 0, 0x00001000, "R|W|AS1", 0);  /* UART1 - module */
+    GEL_MapAddStr(0x4806B000, 0, 0x00001000, "R|W|AS2", 0);  /* UART1 - L4 interconnect */
+    GEL_MapAddStr(0x4806C000, 0, 0x00001000, "R|W|AS1", 0);  /* UART2 - module */
+    GEL_MapAddStr(0x4806D000, 0, 0x00001000, "R|W|AS2", 0);  /* UART2 - L4 interconnect */
+    GEL_MapAddStr(0x48070000, 0, 0x00001000, "R|W|AS2", 0);  /* I2C1 - module */
+    GEL_MapAddStr(0x48071000, 0, 0x00001000, "R|W|AS2", 0);  /* I2C1 - L4 interconnect */
+    GEL_MapAddStr(0x48072000, 0, 0x00001000, "R|W|AS2", 0);  /* I2C2 - module */
+    GEL_MapAddStr(0x48073000, 0, 0x00001000, "R|W|AS2", 0);  /* I2C2 - L4 interconnect */
+    GEL_MapAddStr(0x48076000, 0, 0x00001000, "R|W|AS4", 0);  /* SLIMBUS2 - module */
+    GEL_MapAddStr(0x48077000, 0, 0x00001000, "R|W|AS4", 0);  /* SLIMBUS2 - L4 interconnect */
+    GEL_MapAddStr(0x48078000, 0, 0x00001000, "R|W|AS4", 0);  /* ELM - module */
+    GEL_MapAddStr(0x48079000, 0, 0x00001000, "R|W|AS4", 0);  /* ELM - L4 interconnect */
+    GEL_MapAddStr(0x48086000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER10 - module */
+    GEL_MapAddStr(0x48087000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER10 - L4 interconnect */
+    GEL_MapAddStr(0x48088000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER11 - module */
+    GEL_MapAddStr(0x48089000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER11 - L4 interconnect */
+    GEL_MapAddStr(0x48090000, 0, 0x00002000, "R|W|AS4", 0);  /* RNG - module */
+    GEL_MapAddStr(0x48092000, 0, 0x00001000, "R|W|AS4", 0);  /* RNG - L4 interconnect */
+    GEL_MapAddStr(0x48096000, 0, 0x00001000, "R|W|AS4", 0);  /* MCBSP4 - module */
+    GEL_MapAddStr(0x48097000, 0, 0x00001000, "R|W|AS4", 0);  /* MCBSP4 - L4 interconnect */
+    GEL_MapAddStr(0x48098000, 0, 0x00001000, "R|W|AS4", 0);  /* SPI1 - module */
+    GEL_MapAddStr(0x48099000, 0, 0x00001000, "R|W|AS4", 0);  /* SPI1 - L4 interconnect */
+    GEL_MapAddStr(0x4809A000, 0, 0x00001000, "R|W|AS4", 0);  /* SPI2 - module */
+    GEL_MapAddStr(0x4809B000, 0, 0x00001000, "R|W|AS4", 0);  /* SPI2 - L4 interconnect */
+    GEL_MapAddStr(0x4809C000, 0, 0x00001000, "R|W|AS2", 0);  /* HS-MMC1 - module */
+    GEL_MapAddStr(0x4809D000, 0, 0x00001000, "R|W|AS2", 0);  /* HS-MMC1 - L4 interconnect */
+    GEL_MapAddStr(0x4809E000, 0, 0x00001000, "R|W|AS4", 0);  /* MSPRO - module */
+    GEL_MapAddStr(0x4809F000, 0, 0x00001000, "R|W|AS4", 0);  /* MSPRO - L4 interconnect */
+    GEL_MapAddStr(0x480A2000, 0, 0x00001000, "R|W|AS4", 0);  /* CRYPTO DMA CONFIGURATION - module */
+    GEL_MapAddStr(0x480A3000, 0, 0x00001000, "R|W|AS4", 0);  /* CRYPTO DMA CONFIGURATION - L4 interconnect */
+    GEL_MapAddStr(0x480A4000, 0, 0x00001000, "R|W|AS4", 0);  /* DES3DES0 - module */
+    GEL_MapAddStr(0x480A5000, 0, 0x00001000, "R|W|AS4", 0);  /* DES3DES1 - module */
+    GEL_MapAddStr(0x480A6000, 0, 0x00001000, "R|W|AS4", 0);  /* DES3DES1 - L4 interconnect */
+    GEL_MapAddStr(0x480A8000, 0, 0x00004000, "R|W|AS4", 0);  /* FPKA - module */
+    GEL_MapAddStr(0x480AC000, 0, 0x00001000, "R|W|AS4", 0);  /* FPKA - L4 interconnect */
+    GEL_MapAddStr(0x480AD000, 0, 0x00001000, "R|W|AS4", 0);  /* MMC/SD/SDIO3 - module*/
+    GEL_MapAddStr(0x480AE000, 0, 0x00001000, "R|W|AS4", 0);  /* MMC/SD/SDIO3 - L4 Interconnect*/
+    GEL_MapAddStr(0x480B0000, 0, 0x00001000, "R|W|AS4", 0);  /* Magic Gate - module*/
+    GEL_MapAddStr(0x480B1000, 0, 0x00001000, "R|W|AS4", 0);  /* Magic Gate - L4 Interconnect*/
+    GEL_MapAddStr(0x480B2000, 0, 0x00001000, "R|W|AS4", 0);  /* HDQ (1 wire) - module */ 
+    GEL_MapAddStr(0x480B3000, 0, 0x00001000, "R|W|AS4", 0);  /* HDQ (1 wire) - L4 interconnect */ 
+    GEL_MapAddStr(0x480B4000, 0, 0x00001000, "R|W|AS2", 0);  /* HS-MMC2 - module */
+    GEL_MapAddStr(0x480B5000, 0, 0x00001000, "R|W|AS2", 0);  /* HS-MMC2 - L4 interconnect */
+    GEL_MapAddStr(0x480B6000, 0, 0x00001000, "R|W|AS2", 0);  /* HS-MMC6 - module */
+    GEL_MapAddStr(0x480B7000, 0, 0x00001000, "R|W|AS2", 0);  /* HS-MMC6 - L4 interconnect */
+    GEL_MapAddStr(0x480B8000, 0, 0x00001000, "R|W|AS4", 0);  /* SPI3 - module */
+    GEL_MapAddStr(0x480B9000, 0, 0x00001000, "R|W|AS4", 0);  /* SPI3 - L4 interconnect */
+    GEL_MapAddStr(0x480BA000, 0, 0x00001000, "R|W|AS4", 0);  /* SPI4 - module */
+    GEL_MapAddStr(0x480BB000, 0, 0x00001000, "R|W|AS4", 0);  /* SPI4 - L4 interconnect */
+    GEL_MapAddStr(0x480D1000, 0, 0x00001000, "R|W|AS2", 0);  /* MMC/SD4 - module */
+    GEL_MapAddStr(0x480D2000, 0, 0x00001000, "R|W|AS2", 0);  /* MMC/SD4 - L4 interconnect */
+    GEL_MapAddStr(0x480D5000, 0, 0x00001000, "R|W|AS2", 0);  /* MMC/SD5 - module */
+    GEL_MapAddStr(0x480D6000, 0, 0x00001000, "R|W|AS2", 0);  /* MMC/SD5 - L4 interconnect */
+    GEL_MapAddStr(0x48240000, 0, 0x00040000, "R|W|AS4", 0);  /* MPUSS config register */
+    GEL_MapAddStr(0x48280000, 0, 0x00001000, "R|W|AS4", 0);  /* MPUSS SCM register */
+    GEL_MapAddStr(0x48350000, 0, 0x00001000, "R|W|AS2", 0);  /* I2C4 - module */
+    GEL_MapAddStr(0x48351000, 0, 0x00001000, "R|W|AS2", 0);  /* I2C4 - L4 interconnect */
+}
+    
+ 
+    
+    

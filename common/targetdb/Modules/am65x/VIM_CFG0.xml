@@ -1,0 +1,93 @@
+<module name="VIM_CFG0" acronym="" XML_version="1.0" HW_revision="n/a" description="">
+  <register id="VIM_PID" acronym="VIM_PID" offset="0x0" width="32" description="The Revision Register contains the major and minor revisions for the module.">
+    <bitfield id="SCHEME" width="2" begin="31" end="30" resetval="0x1" description="" range="" rwaccess="R"/>
+    <bitfield id="BU" width="2" begin="29" end="28" resetval="0x2" description="Business Unit: 10 = Processors" range="" rwaccess="R"/>
+    <bitfield id="FUNC" width="12" begin="27" end="16" resetval="0x90" description="Module ID" range="" rwaccess="R"/>
+    <bitfield id="RTL" width="5" begin="15" end="11" resetval="0x0" description="RTL revision. Will vary depending on release." range="" rwaccess="R"/>
+    <bitfield id="MAJOR" width="3" begin="10" end="8" resetval="0x0" description="Major revision" range="" rwaccess="R"/>
+    <bitfield id="CUSTOM" width="2" begin="7" end="6" resetval="0x0" description="Custom" range="" rwaccess="R"/>
+    <bitfield id="MINOR" width="6" begin="5" end="0" resetval="0x1" description="Minor revision" range="" rwaccess="R"/>
+  </register>
+  <register id="VIM_INFO" acronym="VIM_INFO" offset="0x4" width="32" description="The Info Register gives the configuration Inforrmation of this VIM.">
+    <bitfield id="RESERVED" width="21" begin="31" end="11" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="INTERRUPTS" width="11" begin="10" end="0" resetval="0x200" description="Total number of Interrupts" range="" rwaccess="R"/>
+  </register>
+  <register id="VIM_PRIIRQ" acronym="VIM_PRIIRQ" offset="0x8" width="32" description="The Prioritized IRQ Register shows the number of the highest priority pending IRQ.">
+    <bitfield id="VALID" width="1" begin="31" end="31" resetval="0x0" description="Indicates that the num field is valid. 0h = num field is invalid. 1h = num field is valid." range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="11" begin="30" end="20" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="PRI" width="4" begin="19" end="16" resetval="0x0" description="Priority of the highest priority pending IRQ. valid only if the valid flag is set." range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="6" begin="15" end="10" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="NUM" width="10" begin="9" end="0" resetval="0x0" description="Number of the highest priority pending IRQ. valid only if the valid flag is set." range="" rwaccess="R"/>
+  </register>
+  <register id="VIM_PRIFIQ" acronym="VIM_PRIFIQ" offset="0xC" width="32" description="The Prioritized FIQ Register shows the number of the highest priority pending FIQ.">
+    <bitfield id="VALID" width="1" begin="31" end="31" resetval="0x0" description="Indicates that the num field is valid. 0h = num field is invalid. 1h = num field is valid." range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="11" begin="30" end="20" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="PRI" width="4" begin="19" end="16" resetval="0x0" description="Priority of the highest priority pending FIQ. valid only if the valid flag is set." range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="6" begin="15" end="10" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="NUM" width="10" begin="9" end="0" resetval="0x0" description="Number of the highest priority pending FIQ. valid only if the valid flag is set." range="" rwaccess="R"/>
+  </register>
+  <register id="VIM_IRQGSTS" acronym="VIM_IRQGSTS" offset="0x10" width="32" description="The IRQ Group Status Register indicates which groups have pending IRQ interrupts.">
+    <bitfield id="STS" width="32" begin="31" end="0" resetval="0x0" description="Indicates that the num field is valid." range="" rwaccess="R"/>
+  </register>
+  <register id="VIM_FIQGSTS" acronym="VIM_FIQGSTS" offset="0x14" width="32" description="The FIQ Group Status Register indicates which groups have pending FIQ interrupts.">
+    <bitfield id="STS" width="32" begin="31" end="0" resetval="0x0" description="Indicates that the num field is valid." range="" rwaccess="R"/>
+  </register>
+  <register id="VIM_IRQVEC" acronym="VIM_IRQVEC" offset="0x18" width="32" description="The IRQ Vector Address Register contains the 32-bit address of the interrupt vector for the current pendind IRQ.">
+    <bitfield id="ADDR" width="30" begin="31" end="2" resetval="0x0" description="Upper 30 bits of the 32-bit vector address. Only valid if the Prioritized IRQ Register valid flag is true." range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="2" begin="1" end="0" resetval="0xX" description="" range="" rwaccess="R"/>
+  </register>
+  <register id="VIM_FIQVEC" acronym="VIM_FIQVEC" offset="0x1C" width="32" description="The FIQ Vector Address Register contains the 32-bit address of the interrupt vector for the current pendind FIQ.">
+    <bitfield id="ADDR" width="30" begin="31" end="2" resetval="0x0" description="Upper 30 bits of the 32-bit vector address. Only valid if the Prioritized FIQ Register valid flag is true." range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="2" begin="1" end="0" resetval="0xX" description="" range="" rwaccess="R"/>
+  </register>
+  <register id="VIM_ACTIRQ" acronym="VIM_ACTIRQ" offset="0x20" width="32" description="The Active IRQ Register shows the number of the currently active IRQ.">
+    <bitfield id="VALID" width="1" begin="31" end="31" resetval="0x0" description="Indicates that the num field is valid. Set when the IRQ Vector Address Register is read and cleared whenever the IRQ Vector Address Register is written. 0h = num field is invalid. 1h = num field is valid." range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="11" begin="30" end="20" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="PRI" width="4" begin="19" end="16" resetval="0x0" description="Priority of the highest priority pending IRQ. valid only if the valid flag is set." range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="6" begin="15" end="10" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="NUM" width="10" begin="9" end="0" resetval="0x0" description="Number of the currently active IRQ. Loaded from teh Prioritized IRQ Register whenever the IRQ Vector Address is read. Valid only if the valid flag is set." range="" rwaccess="R"/>
+  </register>
+  <register id="VIM_ACTFIQ" acronym="VIM_ACTFIQ" offset="0x24" width="32" description="The Active FIQ Register shows the number of the currently active FIQ.">
+    <bitfield id="VALID" width="1" begin="31" end="31" resetval="0x0" description="Indicates that the num field is valid. Set when the FIQ Vector Address Register is read and cleared whenever the FIQ Vector Address Register is written. 0h = num field is invalid. 1h = num field is valid." range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="11" begin="30" end="20" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="PRI" width="4" begin="19" end="16" resetval="0x0" description="Priority of the highest priority pending IRQ. valid only if the valid flag is set." range="" rwaccess="R"/>
+    <bitfield id="RESERVED" width="6" begin="15" end="10" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="NUM" width="10" begin="9" end="0" resetval="0x0" description="Number of the currently active FIQ. Loaded from teh Prioritized FIQ Register whenever the FIQ Vector Address is read. Valid only if the valid flag is set." range="" rwaccess="R"/>
+  </register>
+  <register id="VIM_DEDVEC" acronym="VIM_DEDVEC" offset="0x30" width="32" description="The DED Vector Address contains a default vector address for when an uncorrectable error is detected for an active IRQ or FIQ.">
+    <bitfield id="ADDR" width="30" begin="31" end="2" resetval="0x0" description="Upper 30 bits of the 32-bit vector address." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="2" begin="1" end="0" resetval="0xX" description="" range="" rwaccess="RW"/>
+  </register>
+  <register id="VIM_RAW_j" acronym="VIM_RAW_j" offset="0x400" width="32" description="Raw Status/Set Register for Group A Errors Offset = 400h + (j * 20h); where j = 0h to Fh">
+    <bitfield id="STS" width="32" begin="31" end="0" resetval="0x0" description="This is the raw status/set for interrupts Group A" range="" rwaccess="RW1S"/>
+  </register>
+  <register id="VIM_STS_j" acronym="VIM_STS_j" offset="0x404" width="32" description="Masked Status and Clear Register Offset = 404h + (j * 20h); where j = 0h to Fh">
+    <bitfield id="MSK" width="32" begin="31" end="0" resetval="0x0" description="This is the masked status/clear for interrupts in Group A" range="" rwaccess="RW1C"/>
+  </register>
+  <register id="VIM_INTR_EN_SET_j" acronym="VIM_INTR_EN_SET_j" offset="0x408" width="32" description="Enable Set Register Offset = 408h + (j * 20h); where j = 0h to Fh">
+    <bitfield id="MSK" width="32" begin="31" end="0" resetval="0x0" description="This is the mask enable set for interrupts in Group A" range="" rwaccess="RW1S"/>
+  </register>
+  <register id="VIM_INTR_EN_CLR_j" acronym="VIM_INTR_EN_CLR_j" offset="0x40C" width="32" description="Interrupt Enabled Clear register Offset = 40Ch + (j * 20h); where j = 0h to Fh">
+    <bitfield id="MSK" width="32" begin="31" end="0" resetval="0x0" description="This is the mask enable clear for interrupts in Group A" range="" rwaccess="RW1C"/>
+  </register>
+  <register id="VIM_IRQSTS_j" acronym="VIM_IRQSTS_j" offset="0x410" width="32" description="Masked IRQ Status and Clear Register Offset = 410h + (j * 20h); where j = 0h to Fh">
+    <bitfield id="MSK" width="32" begin="31" end="0" resetval="0x0" description="This is the masked status/clear for interrupts in Group A mapped as IRQs" range="" rwaccess="RW1C"/>
+  </register>
+  <register id="VIM_FIQSTS_j" acronym="VIM_FIQSTS_j" offset="0x414" width="32" description="Masked FIQ Status and Clear Register Offset = 414h + (j * 20h); where j = 0h to Fh">
+    <bitfield id="MSK" width="32" begin="31" end="0" resetval="0x0" description="This is the masked status/clear for interrupts in Group A mapped as FIQs" range="" rwaccess="RW1C"/>
+  </register>
+  <register id="VIM_INTMAP_j" acronym="VIM_INTMAP_j" offset="0x418" width="32" description="Maps interrupts to IRQ or FIQ Offset = 418h + (j * 20h); where j = 0h to Fh">
+    <bitfield id="MSK" width="32" begin="31" end="0" resetval="0x0" description="This is interrupt map for interrupts in Group A. 0 - IRQ 1 - FIQ" range="" rwaccess="RW"/>
+  </register>
+  <register id="VIM_INTTYPE_j" acronym="VIM_INTTYPE_j" offset="0x41C" width="32" description="Indicates whether an interrupt is a pulse or level source Offset = 41Ch + (j * 20h); where j = 0h to Fh">
+    <bitfield id="MSK" width="32" begin="31" end="0" resetval="0x0" description="This is interrupt type for interrupts in Group A. 0 - Level 1 - Pulse" range="" rwaccess="RW"/>
+  </register>
+  <register id="VIM_PRI_INT_j" acronym="VIM_PRI_INT_j" offset="0x1000" width="32" description="This register contains the priority for Interrupt A Offset = 1000h + (j * 4h); where j = 0h to 1FFh">
+    <bitfield id="RESERVED" width="28" begin="31" end="4" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="VAL" width="4" begin="3" end="0" resetval="0xF" description="This is the priority for interrupt A. 0 - Highest ... 15 - Lowest (Default)" range="" rwaccess="RW"/>
+  </register>
+  <register id="VIM_VEC_INT_j" acronym="VIM_VEC_INT_j" offset="0x2000" width="32" description="This register contains the vector for Interrupt A Offset = 2000h + (j * 4h); where j = 0h to 1FFh">
+    <bitfield id="VAL" width="30" begin="31" end="2" resetval="0x0" description="This is the upper 30 bits of the 32-bits vector for interrupt A." range="" rwaccess="RW"/>
+    <bitfield id="RESERVED" width="2" begin="1" end="0" resetval="0xX" description="" range="" rwaccess="RW"/>
+  </register>
+</module>

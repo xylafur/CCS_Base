@@ -1,0 +1,611 @@
+
+/* ============================================================================
+* LOCAL TYPES AND DEFINITIONS
+* =============================================================================
+*/
+
+#define INFO_PRINT								0
+
+/* Register offset address definitions */
+
+#define MSHSI2COCP_I2C_REVNB_LO_OFFSET                                              (int)(0x0u)
+#define MSHSI2COCP_I2C_REVNB_HI_OFFSET                                              (int)(0x4u)
+#define MSHSI2COCP_I2C_SYSC_OFFSET                                                  (int)(0x10u)
+#define MSHSI2COCP_I2C_IE_OFFSET                                                    (int)(0x84u)  
+#define MSHSI2COCP_I2C_STAT_OFFSET                                                  (int)(0x88u) 
+#define MSHSI2COCP_I2C_SYSS_OFFSET                                                  (int)(0x90u)
+#define MSHSI2COCP_I2C_BUF_OFFSET                                                   (int)(0x94u)
+#define MSHSI2COCP_I2C_CNT_OFFSET                                                   (int)(0x98u)
+#define MSHSI2COCP_I2C_DATA_OFFSET                                                  (int)(0x9cu) 
+#define MSHSI2COCP_I2C_CON_OFFSET                                                   (int)(0xA4u)
+#define MSHSI2COCP_I2C_OA_OFFSET                                                    (int)(0xA8u) 
+#define MSHSI2COCP_I2C_SA_OFFSET                                                    (int)(0xAcu)  
+#define MSHSI2COCP_I2C_PSC_OFFSET                                                   (int)(0xB0u)                                                                
+#define MSHSI2COCP_I2C_SCLL_OFFSET                                                  (int)(0xB4u)                                                                
+#define MSHSI2COCP_I2C_SCLH_OFFSET                                                  (int)(0xB8u)                                                                
+#define MSHSI2COCP_I2C_OA1_OFFSET                                                   (int)(0xC4u)              
+
+ /* ----------------------------------------------------------------------------
+  * MACRO: RD_MEM_16_VOLATILE, WR_MEM_16_VOLATILE        
+  *
+  * DESCRIPTION:  16 bit register access macros
+  *
+  * -----------------------------------------------------------------------------
+  */
+  #define RD_MEM_16_VOLATILE(addr)	((unsigned short)(*((unsigned short *)(addr))))
+  #define WR_MEM_16_VOLATILE(addr, data)	(*((unsigned short *)(addr)) = (unsigned short)(data))
+
+
+/* Address size */
+#define MSI2C_10BIT_ADD_MAX     0x03FF
+#define MSI2C_7BIT_ADD_MAX      0x007F
+
+/* Data number max to transmit */
+#define MSI2C_DATA_NUMBER_MAX   0xFFFF
+
+/* I2C Max Mode (for parameter control): Fast/Standard =0, High Speed = 1.  SCCB is not allowed  */
+#define MSI2C_MODE_MAX          3
+
+/* Master-Slave configuration*/
+#define    MSI2C_MASTER_MODE       1
+#define    MSI2C_SLAVE_MODE        0
+
+/* Mode of communication */
+#define    MSI2C_TRANSMITTER_MODE  1
+#define    MSI2C_RECEIVER_MODE     0
+
+/* Time counter for differents wait functions */
+/*  Reset timeout counter .*/
+#define MSI2C_RESET_TIMEOUT_COUNTER_INIT_VALUE      0x000000FF
+/*  Bus busy timeout .*/
+#define MSI2C_BB_TIMEOUT_COUNTER_INIT_VALUE         0x00000FFF
+/* Address as slave timeout .*/
+#define MSI2C_AAS_TIMEOUT_COUNTER_INIT_VALUE        0x00000FFF
+/* Triton Init timeout .*/
+#define TRITON_BB_TIMEOUT_COUNTER_INIT_VALUE		0x0000FFFF
+
+#define    MSI2C_INT_ARBITRATION_LOST           0x0001
+#define    MSI2C_INT_NO_ACKNOWLEDGMENT          0x0002
+#define    MSI2C_INT_RESISTER_ACCESS_READY      0x0004
+#define    MSI2C_INT_RECEIVE_DATA_READY         0x0008
+#define    MSI2C_INT_TRANSMIT_DATA_READY        0x0010
+#define    MSI2C_INT_GENERAL_CALL               0x0020
+#define    MSI2C_INT_START_CONDITION            0x0040
+#define    MSI2C_INT_ACCESS_ERROR               0x0080
+#define    MSI2C_INT_BUS_FREE                   0x0100
+#define    MSI2C_INT_ADDRESSED_AS_SLAVE         0x0200
+#define    MSI2C_INT_RECEIVE_DRAINING           0x2000
+#define    MSI2C_INT_TRANSMIT_DRAINING          0x4000
+#define    MSI2C_INT_TRANSMIT_UNDERFLOW         0x0400
+#define    MSI2C_INT_RECEIVE_OVERRUN            0x0800
+#define    MSI2C_INT_BUS_BUSY                   0x1000
+#define    MSI2C_INT_RECEIVE_DRAINING           0x2000
+#define    MSI2C_INT_TRANSMIT_DRAINING          0x4000
+#define    MSI2C_INT_ALL                        0x7fff
+#define    MSI2C_INT_NONE                       0x0
+
+
+/* ============================================================================
+* GLOBAL VARIABLES
+* =============================================================================
+*/
+int stuck = 0;
+int timeoutCounter = 0x0;
+
+/* ============================================================================
+* LOCAL FUNCTIONS PROTOTYPES
+* =============================================================================
+*/
+
+MSI2C_Init( int baseAddress, short prescaler, char scll, char sclh, char    hsscll, char hssclh )
+{
+    int data;
+    
+    timeoutCounter = MSI2C_RESET_TIMEOUT_COUNTER_INIT_VALUE; /* to count the timeout */
+	
+	if (INFO_PRINT) { 
+	
+	GEL_TextOut("MSI2C_Init Function\n",,1);
+	}
+
+	/* DEBUG TRACE */  
+	
+	if (INFO_PRINT) {  
+	 GEL_TextOut("baseAddress %x\n",,,,,baseAddress); 
+	 GEL_TextOut("prescaler %x\n",,,,,prescaler); 
+	 GEL_TextOut("scll %x\n",,,,,scll); 
+	 GEL_TextOut("sclh %x\n",,,,,sclh); 
+	 GEL_TextOut("hsscll %x\n",,,,,hsscll); 
+	 GEL_TextOut("hssclh %x\n",,,,,hssclh); 
+	 
+	 }
+
+    /* Force MSI2C module disable */
+    /* MSHSI2COCPI2C_CONI2C_ENWrite32L((int)baseAddress, 0x0000); */          /* beach function */
+    
+    data = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET);
+    data &= 0x7FFF;
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET, data);
+    
+    if (INFO_PRINT) {  
+    GEL_TextOut(" data %x\n",,,,,data);
+    }
+    
+    /* Set MSI2C module core frequency */
+    /* MSHSI2COCPI2C_PSCWriteRegister32L((int)baseAddress, prescaler);    */  /* beach function */
+    WR_MEM_16_VOLATILE(baseAddress +MSHSI2COCP_I2C_PSC_OFFSET, prescaler);
+
+    /* Set SCL frequency for fast/standard speed mode */
+    /* MSHSI2COCPI2C_SCLLSCLLWrite32L((int)baseAddress, scll);  */        /* beach function */
+    data = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_SCLL_OFFSET);
+    data &= 0xFF00;
+    data |= scll;
+    
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_SCLL_OFFSET, data);
+    
+    /* MSHSI2COCPI2C_SCLHSCLHWrite32L((int)baseAddress, sclh);      */    /* beach function */
+    data = RD_MEM_16_VOLATILE(((int)(baseAddress))+(int)(MSHSI2COCP_I2C_SCLH_OFFSET));
+    data &= 0xFF00;
+    data |= sclh;
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_SCLH_OFFSET, data);
+
+    /* Set SCL frequency for high speed mode */
+    /* MSHSI2COCPI2C_SCLLHSSCLLWrite32L((int)baseAddress, hsscll);   */       /* beach function */
+    data = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_SCLL_OFFSET);
+    data &= 0xFF;
+    data |= hsscll;
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_SCLL_OFFSET, data);
+    
+    /* MSHSI2COCPI2C_SCLHHSSCLHWrite32L((int)baseAddress, hssclh);      */    /* beach function */
+    data = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_SCLH_OFFSET);
+    data &= 0xFF;
+    data |= hssclh;
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_SCLH_OFFSET, data);
+
+
+    /* Enable MSI2C module */
+    /* MSHSI2COCPI2C_CONI2C_ENWrite32L((int)baseAddress, 0x0001);    */       /* beach function */
+    
+    data = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET);
+    data |= 0x8000;
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET, data);
+    
+
+    /* Wait until reset complete and avoid infinite loop */
+    while(
+         ( 
+         
+         (RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_SYSS_OFFSET)&0x0001) != 0x0001 ) && 
+         ( (--timeoutCounter) != 0                       )
+         );
+
+    /* If timeout occurred */
+    if (timeoutCounter == 0)
+    {
+		GEL_TextOut("Time Out !!!\n",,2);        
+    }
+}
+
+/*==================== Function Separator =============================*/
+
+MSI2C_Configure( int baseAddress, char opMode, int startByte, int addressLength, short ownAddress, char masterCode )
+{
+
+	int data;
+	
+	if (INFO_PRINT) {  
+    GEL_TextOut("MSI2C_Configure Function\n",,1);
+    }
+
+	/* DEBUG TRACE */
+	if (INFO_PRINT) {
+	 GEL_TextOut("baseAddress %x\n",,,,,baseAddress); 
+	 GEL_TextOut("opMode %x\n",,,,,opMode); 
+	 GEL_TextOut("startByte %x\n",,,,,startByte);  
+	 GEL_TextOut("addressLength %x\n",,,,,addressLength); 
+	 GEL_TextOut("ownAddress %x\n",,,,,ownAddress); 
+	 GEL_TextOut("masterCode %x\n",,,,,masterCode);
+	 }
+
+    /* Configure MSI2C operation mode */
+    /* MSHSI2COCPI2C_CONOPMODEWrite32L((int)baseAddress,(short)opMode);  */  /* beach function */
+    data = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET);
+    data &= 0xCFFF;
+    data |= (opMode<<12);
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET, data);
+
+    /* Set MSI2C module start byte mode */
+    /* MSHSI2COCPI2C_CONSTBWrite32L((int)baseAddress,
+                                 (short)startByte);   */         /* beach function */
+    data = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET);
+    data &= 0xF7FF;
+    data |= (startByte<<11);
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET, data);                             
+
+    /* Set MSI2C module address length mode */
+    /* MSHSI2COCPI2C_CONXSAWrite32L((int)baseAddress,
+                                (short)addressLength);   */     /* beach function */
+    data = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET);
+    data &= 0xFEFF;
+    data |= (addressLength<<8);
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET, data);                            
+
+    /* Set MSI2C module own address */
+    /* MSHSI2COCPI2C_OAOAWrite32L((int)baseAddress,ownAddress);      */    /* beach function */
+    data = RD_MEM_16_VOLATILE( baseAddress + MSHSI2COCP_I2C_OA_OFFSET);
+    data &= 0xFC00;
+    data |= ownAddress;
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_OA_OFFSET, data);
+
+    /* Set MSI2C master code */
+    /* MSHSI2COCPI2C_OAMCODEWrite32L((int)baseAddress,masterCode); */    /* beach function */
+    data = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_OA_OFFSET);
+    data &= 0x1FFF;
+    data |= (ownAddress<<13);
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_OA_OFFSET, data);
+}
+
+/*==================== Function Separator =============================*/
+
+MSI2C_IntAck( int baseAddress, short intSet )
+{
+    short RegVal;
+
+	if (INFO_PRINT) {  
+		
+    GEL_TextOut("MSI2C_IntAck Function\n",,1);
+    
+    }
+	
+	/* DEBUG TRACE */
+	
+	if (INFO_PRINT) {  
+	GEL_TextOut("baseAddress %x\n",,,,,baseAddress);
+	GEL_TextOut("intSet %x\n",,,,,intSet);
+	}
+
+    /* Enable requested Interruption */
+    RegVal = /* MSHSI2COCPI2C_STATReadRegister32L((int)baseAddress);  */        /* beach function */
+    RegVal = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_STAT_OFFSET);
+    
+    RegVal = (RegVal & 0xFFE0) | ( intSet & 0x001F );
+    /* MSHSI2COCPI2C_STATWriteRegister32L((int)baseAddress,
+                             (short) RegVal);      */       /* beach function */
+                             
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_STAT_OFFSET, (short) RegVal);                         
+}
+
+
+/*==================== Function Separator =============================*/
+
+MSI2C_MasterSendPolling( int baseAddress, short slaveAddress, char regAddress, char pDataArray, short dataNumber)
+{
+    unsigned int stop = 0x0;
+    unsigned int stop_i2c = 0x0;
+	char DATA = 0x0;
+    int sendData;
+    short count;          /* to count the number of byte sent to the MSI2C module */
+    short currentState;   /* to store the current state of the MSI2C module */
+    timeoutCounter = MSI2C_BB_TIMEOUT_COUNTER_INIT_VALUE; /* to count the timeout */
+	
+	if (INFO_PRINT) {  
+	GEL_TextOut("MSI2C_MasterSendPolling Function\n",,1);
+	}
+
+	/* DEBUG TRACE */
+	if (INFO_PRINT) {  
+	GEL_TextOut("baseAddress %x\n",,,,,baseAddress);
+	GEL_TextOut("slaveAddress %x\n",,,,,slaveAddress);
+	GEL_TextOut("regAddress %x\n",,,,,regAddress);
+	GEL_TextOut("dataNumber %x\n",,,,,dataNumber);
+    }
+    
+
+    /* Wait for bus free */
+    while(
+         ((RD_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_STAT_OFFSET)>>12) == 1) &&
+         ( (--timeoutCounter) != 0               )
+         );
+
+    /* If timeout occurred */
+    if (timeoutCounter == 0)
+    {
+        GEL_TextOut("Time Out !!!\n",,2);     
+    }
+
+    /* Configure slave device address */
+    /* MSHSI2COCPI2C_SASAWrite32L((int)baseAddress, slaveAddress);     */         /* beach function */
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_SA_OFFSET, slaveAddress);
+
+    /* Configure data count */
+    /* MSHSI2COCPI2C_CNTDCOUNTWrite32L((int)baseAddress, dataNumber);   */        /* beach function */
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CNT_OFFSET, dataNumber);
+
+    /* Configure transfer - Master, Transmitter, Stop */
+    /* MSHSI2COCPI2C_CONMSTWrite32L((int)baseAddress, MSI2C_MASTER_MODE);  */     /* beach function */
+    sendData = RD_MEM_16_VOLATILE(baseAddress+ MSHSI2COCP_I2C_CON_OFFSET);
+    sendData &= 0xFBFF;
+    sendData |= (MSI2C_MASTER_MODE<<10);
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET, sendData);
+    
+    /*MSHSI2COCPI2C_CONTRXWrite32L((int)baseAddress, MSI2C_TRANSMITTER_MODE); */  /* beach function */
+    sendData = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET);
+    sendData &= 0xFDFF;
+    sendData |= (MSI2C_TRANSMITTER_MODE<<9);
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET, sendData);
+    
+    
+    /* MSHSI2COCPI2C_CONSTPWrite32L((int)baseAddress, 0x1);  */                   /* beach function */
+    sendData = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET);
+    sendData &= 0xFFFD;
+    sendData |= (0x1<<1);
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET, sendData);
+
+    /* Start transfer */
+    /* MSHSI2COCPI2C_CONSTTWrite32L((int)baseAddress, 0x1); */                    /* beach function */
+    sendData = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET);
+    sendData &= 0xFFFE;
+    sendData |= (0x1<<0);
+    WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET, sendData);
+
+    /* Send data */
+    count = 0;
+  
+  while(stop == 0x0)
+    {       
+        /* Added for GEL Driver 'cause pointers are not possible in GEL Files... */
+        if(count == 0)
+			DATA = (char)regAddress;
+		else if (count == 1)
+			DATA = (char)pDataArray;
+		else
+			DATA = 0x0;
+	       
+        /* Read current MSI2C module State */
+        /* currentState = MSHSI2COCPI2C_STATReadRegister32L((int)baseAddress); */ /* beach function */
+        currentState = RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_STAT_OFFSET);
+        
+        if (INFO_PRINT) {  
+		GEL_TextOut("currentState = %d\n",,,,,currentState);
+		}
+        
+        /* if ( MSHSI2COCPI2C_STATALGet32L(currentState) == 0x01)  */        /* beach function */
+        if ((currentState&0x1) == 0x01)
+        { /* Arbitratin lost */
+            /* Clear flag */
+            /* MSHSI2COCPI2C_STATALWrite32L((int)baseAddress, 0x0001);   */       /* beach function */
+            WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_STAT_OFFSET , 0x1);
+			stop = 0x1;
+            stop_i2c = 0x1;
+            currentState&=0xFFFE;
+			GEL_TextOut("STOP_AL\n");
+        }
+
+        /* if ( MSHSI2COCPI2C_STATNACKGet32L(currentState) == 0x00) */       /* beach function */
+        if ((currentState&0x2) == 0x00)
+        { /* NACK not set */
+            /* if ( MSHSI2COCPI2C_STATARDYGet32L(currentState) == 0x00) */    /* beach function */
+            if ((currentState&0x4) == 0x00)
+            { /* ARDY not set */
+                /* if ( MSHSI2COCPI2C_STATXRDYGet32L(currentState) != 0x00) */ /* beach function */
+                if ((currentState&0x10) != 0x00)
+                { /* XRDY set: need new data to send */
+
+					if (INFO_PRINT) {  
+                   GEL_TextOut("DATA and STOP %x %x\n",,,,,DATA, stop);
+                   }
+                   
+                   /* MSHSI2COCPI2C_DATAWriteRegister32LL(
+                                baseAddress,
+                                (char)(DATA)
+                                ); */                             /* beach function */
+                   WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_DATA_OFFSET, (char)(DATA));
+                                
+                   count ++;
+
+                   /* Acknowledge XRDY */
+                   MSI2C_IntAck((int)baseAddress,MSI2C_INT_TRANSMIT_DATA_READY );
+                }
+                /* else if  ( MSHSI2COCPI2C_STATXDRGet32L(currentState) != 0x00 ) */
+                else if  ((currentState&0xBFFF) != 0x00)
+                {
+                	if (INFO_PRINT) {  
+                   GEL_TextOut("DATA1 %x\n",,,,,DATA);
+                   }
+                   /* MSHSI2COCPI2C_DATAWriteRegister32LL(
+                                baseAddress,
+                                (char)(DATA)
+                                );  */                             /* beach function */
+                   WR_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_DATA_OFFSET, (char)(DATA));             
+                   count ++;
+                   
+                   /* Acknowledge XDR */
+                   MSI2C_IntAck((int)baseAddress,MSI2C_INT_TRANSMIT_DRAINING);
+
+                }
+            }
+            else
+            { /* ARDY set */
+                /* Acknowledge ARDY */
+                MSI2C_IntAck((int)baseAddress,MSI2C_INT_RESISTER_ACCESS_READY );
+                /* if( MSHSI2COCPI2C_CONSTPRead32L((int)baseAddress) == 0 ) */    /* beach function */
+                if((RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_CON_OFFSET)&0x2) == 0)
+                { /* STP is cleared */
+                  /* transfer ended */
+                	stop = 0x1;
+                	if (INFO_PRINT) {  
+					GEL_TextOut("STOP_ARDY\n");
+					}
+                }
+            }
+        }
+        else
+        { /* NACK received */
+            /* Clear flag */
+            /* MSHSI2COCPI2C_STATNACKWrite32L((int)baseAddress, 0x0001)    */    /* beach function */
+            WR_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_STAT_OFFSET, 0x2);
+            
+            /* MSHSI2COCPI2C_CONSTPWrite32L((int)baseAddress, 0x1);  */          /* 2420 modification */
+            WR_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_CON_OFFSET, 0x2);
+			stop = 0x1;
+            stop_i2c = 0x1;
+			GEL_TextOut("STOP_NACK\n");
+        }
+    }
+    
+    return stop_i2c;
+}
+
+/*==================== Function Separator =============================*/
+
+MSI2C_MasterReceivePolling( int baseAddress, short slaveAddress, char pDataArray, short dataNumber )
+{
+    unsigned int stop = 0x0;
+    unsigned int stop_i2c = 0x0;
+    short currentState;   /* to store the current state of the MSI2C module */
+    short currentData;    /* to store the last reiceved data */
+	char data = 0x0;
+    int sendData;
+	timeoutCounter = MSI2C_BB_TIMEOUT_COUNTER_INIT_VALUE; /* to count the timeout */
+
+	if (INFO_PRINT) {  
+	
+	GEL_TextOut("MSI2C_MasterReceivePolling Function\n",,1);
+	}
+
+	/* DEBUG TRACE */
+	if (INFO_PRINT) {  
+	GEL_TextOut("baseAddress %x\n",,,,,baseAddress);
+	GEL_TextOut("slaveAddress %x\n",,,,,slaveAddress);
+	GEL_TextOut("dataNumber %x\n",,,,,dataNumber);
+	}
+
+    /* Wait for bus free */
+    while(
+         ((RD_MEM_16_VOLATILE(baseAddress + MSHSI2COCP_I2C_STAT_OFFSET)>>12) == 1) &&
+         ( (--timeoutCounter) != 0               )
+         );
+
+    /* If timeout occurred */
+    if (timeoutCounter == 0)
+    {
+        GEL_TextOut("Time Out !!!\n",,2);
+    }
+
+    /* Configure slave device address */
+    /* MSHSI2COCPI2C_SASAWrite32L((int)baseAddress, slaveAddress);  */            /* beach function */
+    WR_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_SA_OFFSET, slaveAddress);
+
+    /* Configure data count */
+    /* MSHSI2COCPI2C_CNTDCOUNTWrite32L((int)baseAddress, dataNumber);  */         /* beach function */
+    WR_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_CNT_OFFSET, dataNumber);
+
+    /* Configure transfer - Master, Receiver, Stop */
+    /* MSHSI2COCPI2C_CONMSTWrite32L((int)baseAddress, MSI2C_MASTER_MODE);  */     /* beach function */
+    sendData = RD_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_CON_OFFSET);
+    sendData &= 0xFBFF;
+    sendData |= (MSI2C_MASTER_MODE<<10);
+    WR_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_CON_OFFSET, sendData);
+    
+    /* MSHSI2COCPI2C_CONTRXWrite32L((int)baseAddress, MSI2C_RECEIVER_MODE); */    /* beach function */
+    sendData = RD_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_CON_OFFSET);
+    sendData &= 0xFDFF;
+    sendData |= (MSI2C_RECEIVER_MODE<<9);
+    WR_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_CON_OFFSET, sendData);
+    
+    /* MSHSI2COCPI2C_CONSTPWrite32L((int)baseAddress, 0x1);  */                   /* beach function */
+    sendData = RD_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_CON_OFFSET);
+    sendData &= 0xFFFD;
+    sendData |= (0x1<<1);
+    WR_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_CON_OFFSET, sendData);
+
+    /* Start transfer */
+    /* MSHSI2COCPI2C_CONSTTWrite32L((int)baseAddress, 0x1);  */                   /* beach function */
+    sendData = RD_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_CON_OFFSET);
+    sendData &= 0xFFFE;
+    sendData |= (0x1<<0);
+    WR_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_CON_OFFSET, sendData);
+
+    /* Receive data */
+    while(stop == 0x0)
+    {
+        /* Read current MSI2C module State */
+        /* currentState = MSHSI2COCPI2C_STATReadRegister32L((int)baseAddress);  */ /* beach function */
+        currentState = RD_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_STAT_OFFSET);
+
+        /* if ( MSHSI2COCPI2C_STATALGet32L(currentState) == 0x01) */         /* beach function */
+        if ((currentState&0x1) == 0x01)
+        { /* Arbitratin lost */
+            /* Clear flag */
+            /* MSHSI2COCPI2C_STATALWrite32L((int)baseAddress, 0x0001)  */         /* beach function */
+            WR_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_STAT_OFFSET, 0x1);
+			stop = 0x1;
+            stop_i2c = 0x1;
+			GEL_TextOut("STOP_AL\n");
+        }
+        /* if ( MSHSI2COCPI2C_STATNACKGet32L(currentState) == 0x00)   */     /* beach function */
+        if ((currentState&0x2) == 0x00)
+        { /* NACK not set */
+            /* if ( MSHSI2COCPI2C_STATARDYGet32L(currentState) == 0x00 ) */  /* beach function */
+            if ((currentState&0x4) == 0x00)
+            { /* ARDY not set */
+                /* if ( MSHSI2COCPI2C_STATRRDYGet32L(currentState) != 0x00) *//* beach function */
+                if ((currentState&0x08) != 0x00)
+                { /* RRDY set: new data reiceved */
+                    /* currentData = MSHSI2COCPI2C_DATAReadRegister32LL((int)baseAddress); */ /* beach function */
+                    currentData = RD_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_DATA_OFFSET);
+                    
+                    data = (char)(currentData & 0x00FF); /* Store data */
+                    if (INFO_PRINT) {  
+					GEL_TextOut("DATA and STOP2 %x %x\n",,,,,data, stop);
+					}
+                    //pDataArray ++;
+                    /* Acknowledge RRDY */
+                    MSI2C_IntAck((int)baseAddress,MSI2C_INT_RECEIVE_DATA_READY );
+                }
+                /* else if ( MSHSI2COCPI2C_STATRDRGet32L(currentState) != 0x00 ) */
+                else if  ((currentState&0xDFFF) != 0x00)
+                {
+                   /* RDR set: new data reiceved */
+                   /* currentData = MSHSI2COCPI2C_DATAReadRegister32LL((int)baseAddress); */ /* beach function */
+                   currentData = RD_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_DATA_OFFSET);
+                    data = (char)(currentData & 0x00FF); /* Store data */
+                    if (INFO_PRINT) {  
+					GEL_TextOut("DATA %x\n",,,,,data);
+					}
+                    //pDataArray ++;
+                    /* Acknowledge RDR */
+                   MSI2C_IntAck((int)baseAddress,MSI2C_INT_RECEIVE_DRAINING);
+                }
+
+            }
+            else
+            { /* ARDY set */
+                /* Acknowledge ARDY */
+                MSI2C_IntAck((int)baseAddress,MSI2C_INT_RESISTER_ACCESS_READY );
+                /* if( MSHSI2COCPI2C_CONSTPRead32L((int)baseAddress) == 0 ) */     /* beach function */
+                if((RD_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_CON_OFFSET)&0x2) == 0)
+                { /* STP is cleared */
+                  /* transfer ended */
+                	stop = 0x1;
+                	if (INFO_PRINT) {  
+					 GEL_TextOut("STOP_ARDY\n");
+					 }	
+                }
+            }
+         }
+        else
+        { /* NACK received */
+            /* Clear flag */
+            /* MSHSI2COCPI2C_STATNACKWrite32L((int)baseAddress, 0x0001) */         /* beach function */
+            WR_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_STAT_OFFSET, 0x2);
+            /* MSHSI2COCPI2C_CONSTPWrite32L((int)baseAddress, 0x1);     */       /* 2420 modification */
+            WR_MEM_16_VOLATILE(baseAddress+MSHSI2COCP_I2C_CON_OFFSET, 0x2);
+			stop = 0x1;
+            stop_i2c = 0x1;
+			GEL_TextOut("STOP_NACK\n");
+
+        }
+    }
+	return data;
+}

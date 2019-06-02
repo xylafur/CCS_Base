@@ -1,0 +1,31 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* Attila L4 PER DSS     			     						   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+memorymap_init_L4_PER_DSS()
+{
+    GEL_MapAddStr(0x48100000, 0, 0x00001000, "R|W|AS4", 0);  /* DSS registers */
+    GEL_MapAddStr(0x48101000, 0, 0x00001000, "R|W|AS4", 0);  /* DISPC */
+    GEL_MapAddStr(0x48102000, 0, 0x00001000, "R|W|AS4", 0);  /* RFBI */
+    GEL_MapAddStr(0x48104000, 0, 0x00001000, "R|W|AS4", 0);  /* DSI1A */
+    GEL_MapAddStr(0x48105000, 0, 0x00001000, "R|W|AS4", 0);  /* DSI1B */
+    
+    GEL_MapAddStr(0x48107000, 0, 0x00001000, "R|W|AS4", 0);  /* HDCP */
+    GEL_MapAddStr(0x48108000, 0, 0x00001000, "R|W|AS4", 0);  /* L4 DSS */
+    GEL_MapAddStr(0x48109000, 0, 0x00001000, "R|W|AS4", 0);  /* DSI1C */
+    
+    GEL_MapAddStr(0x48140000, 0, 0x00020000, "R|W|AS4", 0);  /* HDMI WRP */
+    GEL_MapAddStr(0x48160000, 0, 0x00018000, "R|W|AS4", 0);  /* HDMI NHDCP */
+    GEL_MapAddStr(0x48178000, 0, 0x00008000, "R|W|AS4", 0);  /* HDMI HDCP */
+}
+    
+ 
+    
+    

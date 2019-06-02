@@ -1,0 +1,4774 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* OMAP5460 USB3 DEBUG PINS SIGNALS				   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Christophe CORTEMIGLIA				   */
+/*******************************************************************/
+
+#define HWOBS_CONTROL_REG_ADDR        *(int *) 0x4A002360
+#define DEBOBS_FINAL_MUX_SEL_REG_ADDR *(int *) 0x4A002400
+
+/****************************************************************/
+menuitem "USB3 Debug Observability"
+/****************************************************************/
+
+
+/***********************************************/
+/*****                                  ********/
+/*****    U  U   TTTTT   MM   MM   I    ********/
+/*****    U  U     T     M M M M   I    ********/
+/*****    U  U     T     M  M  M   I    ********/
+/*****    U  U     T     M     M   I    ********/
+/*****    UUUU     T     M     M   I    ********/
+/*****                                  ********/
+/***********************************************/
+
+
+utmi_clk_Wkdbg0_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg0 to pad SYSCFG_PAD_SYS_BOOT0,
+	#define SYSCFG_PAD_SYS_BOOT0 *(int *) 0x4AE0C870
+	muxMode = SYSCFG_PAD_SYS_BOOT0;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT0 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(0) on dbg signal hw_dbg0
+	#define CORE_CONF_DEBUG_SEL_TST_0_REG_ADDR *(int *) 0x4A0024D0
+	CORE_CONF_DEBUG_SEL_TST_0_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(0), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+	GEL_TextOut("\n utmi_clk => Connector J16 - Pin 15 (#E4) \r\n");   
+}
+
+/*****************************************************************************/
+
+utmi_databus16_8_Wkdbg1_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg1 to pad SYSCFG_PAD_SYS_BOOT1,
+	#define SYSCFG_PAD_SYS_BOOT1 *(int *) 0x4AE0C872
+	muxMode = SYSCFG_PAD_SYS_BOOT1;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT1 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(1) on dbg signal hw_dbg1
+	#define CORE_CONF_DEBUG_SEL_TST_1_REG_ADDR *(int *) 0x4A0024D4
+	CORE_CONF_DEBUG_SEL_TST_1_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(1), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+
+        GEL_TextOut("\n utmi_databus16_8 => Connector J16 - Pin 24 (#C1) \r\n");
+}
+
+/*****************************************************************************/
+
+utmi_txvalid_Wkdbg2_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg2 to pad SYSCFG_PAD_SYS_BOOT2,
+	#define SYSCFG_PAD_SYS_BOOT2 *(int *) 0x4AE0C874
+	muxMode = SYSCFG_PAD_SYS_BOOT2;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT2 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(2) on dbg signal hw_dbg2
+	#define CORE_CONF_DEBUG_SEL_TST_2_REG_ADDR *(int *) 0x4A0024D8
+	CORE_CONF_DEBUG_SEL_TST_2_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(2), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+ 
+ 	GEL_TextOut("\n utmi_txvalid => Connector J16 - Pin 30 (#D1) \r\n");
+  
+}
+
+/*****************************************************************************/
+
+utmi_txvalidh_Wkdbg3_Debug_Observability()
+{
+ 	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg3 to pad SYSCFG_PAD_SYS_BOOT3,
+	#define SYSCFG_PAD_SYS_BOOT3 *(int *) 0x4AE0C876
+	muxMode = SYSCFG_PAD_SYS_BOOT3;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT3 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(3) on dbg signal hw_dbg3
+	#define CORE_CONF_DEBUG_SEL_TST_3_REG_ADDR *(int *) 0x4A0024DC
+	CORE_CONF_DEBUG_SEL_TST_3_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(3), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+ 
+        GEL_TextOut("\n utmi_txvalidh => Connector J16 - Pin 20 (#G3) \r\n"); 
+}
+
+/*****************************************************************************/
+
+utmi_txready_Wkdbg4_Debug_Observability()
+{
+		int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg4 to pad SYSCFG_PAD_SYS_BOOT4,
+	#define SYSCFG_PAD_SYS_BOOT4 *(int *) 0x4AE0C878
+	muxMode = SYSCFG_PAD_SYS_BOOT4;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT4 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(4) on dbg signal hw_dbg4
+	#define CORE_CONF_DEBUG_SEL_TST_4_REG_ADDR *(int *) 0x4A0024E0
+	CORE_CONF_DEBUG_SEL_TST_4_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(4), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+	GEL_TextOut("\n utmi_txready => Connector J16 - Pin 14 (#E3) \r\n"); 
+}
+
+/*****************************************************************************/
+
+utmi_rxactive_Wkdbg5_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg5 to pad SYSCFG_PAD_FREF_CLK1_OUT,
+	#define SYSCFG_PAD_FREF_CLK1_OUT *(int *) 0x4AE0C85A
+	muxMode = SYSCFG_PAD_FREF_CLK1_OUT;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK1_OUT = muxMode;
+ 
+	// getting signal hwobs_debug_usb(5) on dbg signal hw_dbg5
+	#define CORE_CONF_DEBUG_SEL_TST_5_REG_ADDR *(int *) 0x4A0024E4
+	CORE_CONF_DEBUG_SEL_TST_5_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(5), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+
+	GEL_TextOut("\n utmi_rxactive => Connector J16 - Pin 8 (#E5) \r\n"); 
+}
+
+/*****************************************************************************/
+
+utmi_rxvalid_Wkdbg6_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg6 to pad SYSCFG_PAD_DRM_EMU0,
+	#define SYSCFG_PAD_DRM_EMU0 *(int *) 0x4AE0C844
+	muxMode = SYSCFG_PAD_DRM_EMU0;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_DRM_EMU0 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(6) on dbg signal hw_dbg6
+	#define CORE_CONF_DEBUG_SEL_TST_6_REG_ADDR *(int *) 0x4A0024E8
+	CORE_CONF_DEBUG_SEL_TST_6_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(6), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+ 
+	GEL_TextOut("\n utmi_rxvalid => Connector J18 - Pin 105 (#R4) \r\n");  
+}
+
+/*****************************************************************************/
+
+utmi_rxvalidh_Wkdbg7_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg7 to pad SYSCFG_PAD_DRM_EMU1,
+	#define SYSCFG_PAD_DRM_EMU1 *(int *) 0x4AE0C846
+	muxMode = SYSCFG_PAD_DRM_EMU1;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_DRM_EMU1 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(7) on dbg signal hw_dbg7
+	#define CORE_CONF_DEBUG_SEL_TST_7_REG_ADDR *(int *) 0x4A0024EC
+	CORE_CONF_DEBUG_SEL_TST_7_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(7), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_rxvalidh => Connector J18 - Pin 111 (#R6) \r\n");  
+}
+
+/*****************************************************************************/
+
+utmi_rxerror_Wkdbg8_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg8 to pad SYSCFG_PAD_SYS_BOOT5,
+	#define SYSCFG_PAD_SYS_BOOT5 *(int *) 0x4AE0C87A
+	muxMode = SYSCFG_PAD_SYS_BOOT5;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT5 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(8) on dbg signal hw_dbg8
+	#define CORE_CONF_DEBUG_SEL_TST_8_REG_ADDR *(int *) 0x4A0024F0
+	CORE_CONF_DEBUG_SEL_TST_8_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(8), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_rxerror => Connector J16 - Pin 17 (#C3) \r\n");   
+
+}        
+
+
+/*****************************************************************************/
+
+utmi_reset_Wkdbg9_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg9 to pad SYSCFG_PAD_FREF_CLK0_OUT,
+	#define SYSCFG_PAD_FREF_CLK0_OUT *(int *) 0x4AE0C858
+	muxMode = SYSCFG_PAD_FREF_CLK0_OUT;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK0_OUT = muxMode;
+ 
+	// getting signal hwobs_debug_usb(9) on dbg signal hw_dbg9
+	#define CORE_CONF_DEBUG_SEL_TST_9_REG_ADDR *(int *) 0x4A0024F4
+	CORE_CONF_DEBUG_SEL_TST_9_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(9), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_reset => Connector J16 - Pin 13 (#G6) \r\n");
+}
+
+/*****************************************************************************/
+
+utmi_suspendm_Wkdbg10_Debug_Observability()
+{	
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg10 to pad SYSCFG_PAD_FREF_CLK2_OUT,
+	#define SYSCFG_PAD_FREF_CLK2_OUT *(int *) 0x4AE0C85C
+	muxMode = SYSCFG_PAD_FREF_CLK2_OUT;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK2_OUT = muxMode;
+ 
+	// getting signal hwobs_debug_usb(10) on dbg signal hw_dbg10
+	#define CORE_CONF_DEBUG_SEL_TST_10_REG_ADDR *(int *) 0x4A0024F8
+	CORE_CONF_DEBUG_SEL_TST_10_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(10), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_suspendm => Connector J16 - Pin 9 (#F8) \r\n"); 
+}
+
+/*****************************************************************************/
+
+utmi_xcvrselect0_Wkdbg11_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg11 to pad SYSCFG_PAD_FREF_CLK2_REQ,
+	#define SYSCFG_PAD_FREF_CLK2_REQ *(int *) 0x4AE0C85E
+	muxMode = SYSCFG_PAD_FREF_CLK2_REQ;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK2_REQ = muxMode;
+ 
+	// getting signal hwobs_debug_usb(11) on dbg signal hw_dbg11
+	#define CORE_CONF_DEBUG_SEL_TST_11_REG_ADDR *(int *) 0x4A0024FC
+	CORE_CONF_DEBUG_SEL_TST_11_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(11), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_xcvrselect[0] => Connector J16 - Pin 19 (#G5) \r\n");          
+}
+
+/*****************************************************************************/
+
+utmi_xcvrselect1_Wkdbg12_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg12 to pad SYSCFG_PAD_FREF_CLK1_REQ,
+	#define SYSCFG_PAD_FREF_CLK1_REQ *(int *) 0x4AE0C860
+	muxMode = SYSCFG_PAD_FREF_CLK1_REQ;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK1_REQ = muxMode;
+ 
+	// getting signal hwobs_debug_usb(12) on dbg signal hw_dbg12
+	#define CORE_CONF_DEBUG_SEL_TST_12_REG_ADDR *(int *) 0x4A002500
+	CORE_CONF_DEBUG_SEL_TST_12_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(12), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_xcvrselect[1] => Connector J16 - Pin 25 (#H6) \r\n");        
+}
+
+/*****************************************************************************/
+
+utmi_termselect_Wkdbg13_Debug_Observability()
+{
+	 int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg13 to pad SYSCFG_PAD_LLIB_WAKEREQIN,
+	#define SYSCFG_PAD_LLIB_WAKEREQIN *(int *) 0x4AE0C842
+	muxMode = SYSCFG_PAD_LLIB_WAKEREQIN;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_LLIB_WAKEREQIN = muxMode;
+ 
+	// getting signal hwobs_debug_usb(13) on dbg signal hw_dbg13
+	#define CORE_CONF_DEBUG_SEL_TST_13_REG_ADDR *(int *) 0x4A002504
+	CORE_CONF_DEBUG_SEL_TST_13_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(13), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_termselect => Connector J18 - Pin 115 (#O6) \r\n");              
+}
+
+/*****************************************************************************/
+
+utmi_opmode0_Wkdbg14_Debug_Observability()
+{	
+        int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg14 to pad SYSCFG_PAD_LLIA_WAKEREQIN,
+	#define SYSCFG_PAD_LLIA_WAKEREQIN *(int *) 0x4AE0C840
+	muxMode = SYSCFG_PAD_LLIA_WAKEREQIN;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_LLIA_WAKEREQIN = muxMode;
+ 
+	// getting signal hwobs_debug_usb(14) on dbg signal hw_dbg14
+	#define CORE_CONF_DEBUG_SEL_TST_14_REG_ADDR *(int *) 0x4A002508
+	CORE_CONF_DEBUG_SEL_TST_14_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(14), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_opmode[0] => Connector J18 - Pin 103 (#N6) \r\n");                  
+}   
+ 
+/*****************************************************************************/
+ 
+utmi_opmode1_Wkdbg15_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg15 to pad SYSCFG_PAD_SYS_PWR_REQ,
+	#define SYSCFG_PAD_SYS_PWR_REQ *(int *) 0x4AE0C866
+	muxMode = SYSCFG_PAD_SYS_PWR_REQ;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_PWR_REQ = muxMode;
+ 
+	// getting signal hwobs_debug_usb(15) on dbg signal hw_dbg15
+	#define CORE_CONF_DEBUG_SEL_TST_15_REG_ADDR *(int *) 0x4A00250C
+	CORE_CONF_DEBUG_SEL_TST_15_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(15), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+	GEL_TextOut("\n utmi_opmode[1] => Connector J16 - Pin 21 (#G4) \r\n");         
+} 
+
+/*****************************************************************************/
+
+utmi_linestate0_dbg16_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg16 to pad SYSCFG_PAD_C2C_DATAOUT0,
+	#define SYSCFG_PAD_C2C_DATAOUT0 *(int *) 0x4A00286C
+	muxMode = SYSCFG_PAD_C2C_DATAOUT0;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT0 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(16) on dbg signal hw_dbg16
+	#define CORE_CONF_DEBUG_SEL_TST_16_REG_ADDR *(int *) 0x4A002510
+	CORE_CONF_DEBUG_SEL_TST_16_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(16), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_linestate[0] => Connector J18 - Pin 2 (#E6) \r\n");        
+}
+
+/*****************************************************************************/
+
+utmi_linestate1_dbg17_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg17 to pad SYSCFG_PAD_C2C_DATAOUT1,
+	#define SYSCFG_PAD_C2C_DATAOUT1 *(int *) 0x4A00286E
+	muxMode = SYSCFG_PAD_C2C_DATAOUT1;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT1 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(17) on dbg signal hw_dbg17
+	#define CORE_CONF_DEBUG_SEL_TST_17_REG_ADDR *(int *) 0x4A002514
+	CORE_CONF_DEBUG_SEL_TST_17_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(17), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_linestate[1] => Connector J18 - Pin 1 (#F6) \r\n");                         
+}
+
+/*****************************************************************************/
+
+utmi_idpullup_dbg18_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg18 to pad SYSCFG_PAD_C2C_DATAOUT2,
+	#define SYSCFG_PAD_C2C_DATAOUT2 *(int *) 0x4A002870
+	muxMode = SYSCFG_PAD_C2C_DATAOUT2;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT2 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(18) on dbg signal hw_dbg18
+	#define CORE_CONF_DEBUG_SEL_TST_18_REG_ADDR *(int *) 0x4A002518
+	CORE_CONF_DEBUG_SEL_TST_18_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(18), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        	
+        GEL_TextOut("\n utmi_idpullup => Connector J18 - Pin 81 (#P4) \r\n");      
+}
+
+/*****************************************************************************/
+
+utmi_dppulldown_dbg19_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg19 to pad SYSCFG_PAD_C2C_DATAOUT3,
+	#define SYSCFG_PAD_C2C_DATAOUT3 *(int *) 0x4A002872
+	muxMode = SYSCFG_PAD_C2C_DATAOUT3;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT3 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(19) on dbg signal hw_dbg19
+	#define CORE_CONF_DEBUG_SEL_TST_19_REG_ADDR *(int *) 0x4A00251C
+	CORE_CONF_DEBUG_SEL_TST_19_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(19), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_dppulldown => Connector J18 - Pin 8 (#E5) \r\n");  
+}
+
+/*****************************************************************************/
+
+utmi_dmpulldown_dbg20_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg20 to pad SYSCFG_PAD_C2C_DATAOUT4,
+	#define SYSCFG_PAD_C2C_DATAOUT4 *(int *) 0x4A002874
+	muxMode = SYSCFG_PAD_C2C_DATAOUT4;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT4 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(20) on dbg signal hw_dbg20
+	#define CORE_CONF_DEBUG_SEL_TST_20_REG_ADDR *(int *) 0x4A002520
+	CORE_CONF_DEBUG_SEL_TST_20_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(20), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_dmpulldown => Connector J19 - Pin 57 (#L4) \r\n");      
+}
+
+/*****************************************************************************/
+
+utmi_drvvbus_dbg21_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg21 to pad SYSCFG_PAD_C2C_DATAOUT5,
+	#define SYSCFG_PAD_C2C_DATAOUT5 *(int *) 0x4A002876
+	muxMode = SYSCFG_PAD_C2C_DATAOUT5;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT5 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(21) on dbg signal hw_dbg21
+	#define CORE_CONF_DEBUG_SEL_TST_21_REG_ADDR *(int *) 0x4A002524
+	CORE_CONF_DEBUG_SEL_TST_21_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(21), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_drvvbus => Connector J19 - Pin 35 (#E2) \r\n");   
+}
+
+/*****************************************************************************/
+
+utmi_chrgvbus_dbg22_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg22 to pad SYSCFG_PAD_C2C_DATAOUT6,
+	#define SYSCFG_PAD_C2C_DATAOUT6 *(int *) 0x4A002878
+	muxMode = SYSCFG_PAD_C2C_DATAOUT6;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT6 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(22) on dbg signal hw_dbg22
+	#define CORE_CONF_DEBUG_SEL_TST_22_REG_ADDR *(int *) 0x4A002528
+	CORE_CONF_DEBUG_SEL_TST_22_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(22), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_chrgvbus => Connector J18 - Pin 72 (#M1) \r\n");    
+}
+     
+/*****************************************************************************/
+utmi_dischrgvbus_dbg23_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg23 to pad SYSCFG_PAD_C2C_DATAOUT7,
+	#define SYSCFG_PAD_C2C_DATAOUT7 *(int *) 0x4A00287A
+	muxMode = SYSCFG_PAD_C2C_DATAOUT7;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT7 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(23) on dbg signal hw_dbg23
+	#define CORE_CONF_DEBUG_SEL_TST_23_REG_ADDR *(int *) 0x4A00252C
+	CORE_CONF_DEBUG_SEL_TST_23_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(23), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_dischrgvbus => Connector J18 - Pin 64 (#J2) \r\n");     
+}
+
+/*****************************************************************************/
+
+utmi_txbitstuffenable_dbg24_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg24 to pad SYSCFG_PAD_C2C_DATA8,
+	#define SYSCFG_PAD_C2C_DATA8 *(int *) 0x4A00287C
+	muxMode = SYSCFG_PAD_C2C_DATA8;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA8 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(24) on dbg signal hw_dbg24
+	#define CORE_CONF_DEBUG_SEL_TST_24_REG_ADDR *(int *) 0x4A002530
+	CORE_CONF_DEBUG_SEL_TST_24_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(24), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_txbitstuffenable => Connector J18 - Pin 57 (#L4) \r\n");    
+}
+
+/*****************************************************************************/
+
+utmi_txbitstuffenableh_dbg25_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg25 to pad SYSCFG_PAD_C2C_DATA9,
+	#define SYSCFG_PAD_C2C_DATA9 *(int *) 0x4A00287E
+	muxMode = SYSCFG_PAD_C2C_DATA9;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA9 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(25) on dbg signal hw_dbg25
+	#define CORE_CONF_DEBUG_SEL_TST_25_REG_ADDR *(int *) 0x4A002534
+	CORE_CONF_DEBUG_SEL_TST_25_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(25), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_txbitstuffenableh => Connector J19 - Pin 64 (#J2) \r\n");  
+}
+
+/*****************************************************************************/
+
+utmi_hostdisconnect_dbg26_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg26 to pad SYSCFG_PAD_C2C_DATA10,
+	#define SYSCFG_PAD_C2C_DATA10 *(int *) 0x4A002880
+	muxMode = SYSCFG_PAD_C2C_DATA10;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA10 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(26) on dbg signal hw_dbg26
+	#define CORE_CONF_DEBUG_SEL_TST_26_REG_ADDR *(int *) 0x4A002538
+	CORE_CONF_DEBUG_SEL_TST_26_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(26), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_hostdisconnect => Connector J18 - Pin 60 (#I1) \r\n");                    
+}
+
+/*****************************************************************************/
+
+utmi_iddig_dbg27_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg27 to pad SYSCFG_PAD_C2C_DATA11,
+	#define SYSCFG_PAD_C2C_DATA11 *(int *) 0x4A002882
+	muxMode = SYSCFG_PAD_C2C_DATA11;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA11 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(27) on dbg signal hw_dbg27
+	#define CORE_CONF_DEBUG_SEL_TST_27_REG_ADDR *(int *) 0x4A00253C
+	CORE_CONF_DEBUG_SEL_TST_27_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(27), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_iddig => Connector J22 - Pin 13 (#G6) \r\n");      
+}
+
+/*****************************************************************************/
+
+utmi_avalid_dbg28_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg28 to pad SYSCFG_PAD_C2C_DATA12,
+	#define SYSCFG_PAD_C2C_DATA12 *(int *) 0x4A002884
+	muxMode = SYSCFG_PAD_C2C_DATA12;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA12 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(28) on dbg signal hw_dbg28
+	#define CORE_CONF_DEBUG_SEL_TST_28_REG_ADDR *(int *) 0x4A002540
+	CORE_CONF_DEBUG_SEL_TST_28_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(28), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_avalid => Connector J18 - Pin 53 (#H2) \r\n");  
+}
+
+/*****************************************************************************/
+
+utmi_bvalid_dbg29_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg29 to pad SYSCFG_PAD_C2C_DATA13,
+	#define SYSCFG_PAD_C2C_DATA13 *(int *) 0x4A002886
+	muxMode = SYSCFG_PAD_C2C_DATA13;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA13 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(29) on dbg signal hw_dbg29
+	#define CORE_CONF_DEBUG_SEL_TST_29_REG_ADDR *(int *) 0x4A002544
+	CORE_CONF_DEBUG_SEL_TST_29_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(29), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_bvalid => Connector J18 - Pin 54 (#H1) \r\n"); 
+}
+
+/*****************************************************************************/
+
+utmi_vbusvalid_dbg30_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg30 to pad SYSCFG_PAD_C2C_DATA14,
+	#define SYSCFG_PAD_C2C_DATA14 *(int *) 0x4A002888
+	muxMode = SYSCFG_PAD_C2C_DATA14;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA14 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(30) on dbg signal hw_dbg30
+	#define CORE_CONF_DEBUG_SEL_TST_30_REG_ADDR *(int *) 0x4A002548
+	CORE_CONF_DEBUG_SEL_TST_30_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(30), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_vbusvalid => Connector J18 - Pin 47 (#G2) \r\n");   
+}
+
+/*****************************************************************************/
+
+utmi_sessend_dbg31_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg31 to pad SYSCFG_PAD_C2C_DATA15,
+	#define SYSCFG_PAD_C2C_DATA15 *(int *) 0x4A00288A
+	muxMode = SYSCFG_PAD_C2C_DATA15;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA15 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(31) on dbg signal hw_dbg31
+	#define CORE_CONF_DEBUG_SEL_TST_31_REG_ADDR *(int *) 0x4A00254C
+	CORE_CONF_DEBUG_SEL_TST_31_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 1
+	// to go to hwobs_debug_usb(31), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x1;
+        
+        GEL_TextOut("\n utmi_sessend => Connector J18 - Pin 45 (#J4) \r\n"); 
+}
+
+/*****************************************************************************/
+
+hotmenu UTMI_Debug_Observability()
+{
+  	/* utmi_clk signal on WKDBG0 Debug Pin */
+        utmi_clk_Wkdbg0_Debug_Observability();
+        
+        /* utmi_databus16_8 signal on WKDBG1 Debug Pin */
+        utmi_databus16_8_Wkdbg1_Debug_Observability();
+        
+        /* utmi_txvalid signal on WKDBG2 Debug Pin */
+        utmi_txvalid_Wkdbg2_Debug_Observability();
+         
+        /* utmi_txvalidh signal on WKDBG3 Debug Pin */
+        utmi_txvalidh_Wkdbg3_Debug_Observability();
+        
+        /* utmi_txready signal on WKDBG4 Debug Pin */
+        utmi_txready_Wkdbg4_Debug_Observability();
+        
+        /* utmi_rxactive signal on WKDBG5 Debug Pin */
+        utmi_rxactive_Wkdbg5_Debug_Observability();
+        
+        /* utmi_rxvalid signal on WKDBG6 Debug Pin */
+        utmi_rxvalid_Wkdbg6_Debug_Observability();
+        
+        /* utmi_rxvalidh signal on WKDBG7 Debug Pin */
+        utmi_rxvalidh_Wkdbg7_Debug_Observability();
+        
+        /* utmi_rxerror signal on WKDBG8 Debug Pin */
+        utmi_rxerror_Wkdbg8_Debug_Observability();
+        
+        /* utmi_reset signal on WKDBG9 Debug Pin */
+        utmi_reset_Wkdbg9_Debug_Observability();
+        
+        /* utmi_suspendm signal on WKDBG10 Debug Pin */
+        utmi_suspendm_Wkdbg10_Debug_Observability();
+        
+        /* utmi_xcvrselect[0] signal on WKDBG11 Debug Pin */
+        utmi_xcvrselect0_Wkdbg11_Debug_Observability();
+        
+        /* utmi_xcvrselect[1] signal on WKDBG12 Debug Pin */
+        utmi_xcvrselect1_Wkdbg12_Debug_Observability();
+        
+        /* utmi_termselect signal on WKDBG13 Debug Pin */
+        utmi_termselect_Wkdbg13_Debug_Observability();
+        
+        /* utmi_opmode[0] signal on WKDBG14 Debug Pin */
+        utmi_opmode0_Wkdbg14_Debug_Observability();
+        
+        /* utmi_opmode[1] signal on WKDBG15 Debug Pin */
+        utmi_opmode1_Wkdbg15_Debug_Observability();
+        
+        /* utmi_linestate[0] signal on DBG16 Debug Pin */
+        utmi_linestate0_dbg16_Debug_Observability();                
+
+        /* utmi_linestate[1] signal on DBG17 Debug Pin */
+        utmi_linestate1_dbg17_Debug_Observability();  
+        
+        /* utmi_idpullup signal on DBG18 Debug Pin */
+        utmi_idpullup_dbg18_Debug_Observability(); 
+        
+        /* utmi_dppulldown signal on DBG19 Debug Pin */
+        utmi_dppulldown_dbg19_Debug_Observability();  
+        
+        /* utmi_dmpulldown signal on DBG20 Debug Pin */
+        utmi_dmpulldown_dbg20_Debug_Observability();
+        
+        /* utmi_drvvbus signal on DBG21 Debug Pin */
+        utmi_drvvbus_dbg21_Debug_Observability(); 
+        
+        /* utmi_chrgvbus signal on DBG22 Debug Pin */
+        utmi_chrgvbus_dbg22_Debug_Observability(); 
+        
+        /* utmi_dischrgvbus signal on DBG23 Debug Pin */
+        utmi_dischrgvbus_dbg23_Debug_Observability();
+        
+        /* utmi_txbitstuffenable signal on DBG24 Debug Pin */
+        utmi_txbitstuffenable_dbg24_Debug_Observability();
+        
+        /* utmi_txbitstuffenableh signal on DBG25 Debug Pin */
+        utmi_txbitstuffenableh_dbg25_Debug_Observability();
+        
+        /* utmi_hostdisconnect signal on DBG26 Debug Pin */
+        utmi_hostdisconnect_dbg26_Debug_Observability(); 
+        
+        /* utmi_iddig signal on DBG27 Debug Pin */
+        utmi_iddig_dbg27_Debug_Observability(); 
+        
+        /* utmi_avalid signal on DBG28 Debug Pin */
+        utmi_avalid_dbg28_Debug_Observability(); 
+        
+        /* utmi_bvalid signal on DBG29 Debug Pin */
+        utmi_bvalid_dbg29_Debug_Observability(); 
+        
+        /* utmi_vbusvalid signal on DBG30 Debug Pin */
+        utmi_vbusvalid_dbg30_Debug_Observability();     
+
+        /* utmi_sessend signal on DBG31 Debug Pin */
+        utmi_sessend_dbg31_Debug_Observability();
+   
+} /* hotmenu UTMI_Debug_Observability() */
+
+/**********************************************************************/
+
+/*********************************************/
+/*****                                ********/
+/*****    PPP    I   PPP     EEEE     ********/
+/*****    P  P   I   P  P    E        ********/
+/*****    PPP    I   PPP     EE       ********/
+/*****    P      I   P       E        ********/
+/*****    P      I   P       EEEE     ********/
+/*****                                ********/
+/*********************************************/
+
+
+pipe_txpclk_Wkdbg0_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg0 to pad SYSCFG_PAD_SYS_BOOT0,
+	#define SYSCFG_PAD_SYS_BOOT0 *(int *) 0x4AE0C870
+	muxMode = SYSCFG_PAD_SYS_BOOT0;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT0 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(0) on dbg signal hw_dbg0
+	#define CORE_CONF_DEBUG_SEL_TST_0_REG_ADDR *(int *) 0x4A0024D0
+	CORE_CONF_DEBUG_SEL_TST_0_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(0), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txpclk => Connector J16 - Pin 15 (#E4) \r\n");        
+}
+
+/*****************************************************************************/
+
+pipe_txdatak0_Wkdbg1_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg1 to pad SYSCFG_PAD_SYS_BOOT1,
+	#define SYSCFG_PAD_SYS_BOOT1 *(int *) 0x4AE0C872
+	muxMode = SYSCFG_PAD_SYS_BOOT1;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT1 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(1) on dbg signal hw_dbg1
+	#define CORE_CONF_DEBUG_SEL_TST_1_REG_ADDR *(int *) 0x4A0024D4
+	CORE_CONF_DEBUG_SEL_TST_1_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(1), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+ 
+        GEL_TextOut("\n pipe_txdatak[0] => Connector J16 - Pin 24 (#C1) \r\n");   
+}
+
+/*****************************************************************************/
+
+pipe_txdatak1_Wkdbg2_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg2 to pad SYSCFG_PAD_SYS_BOOT2,
+	#define SYSCFG_PAD_SYS_BOOT2 *(int *) 0x4AE0C874
+	muxMode = SYSCFG_PAD_SYS_BOOT2;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT2 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(2) on dbg signal hw_dbg2
+	#define CORE_CONF_DEBUG_SEL_TST_2_REG_ADDR *(int *) 0x4A0024D8
+	CORE_CONF_DEBUG_SEL_TST_2_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(2), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txdatak[1] => Connector J16 - Pin 30 (#D1) \r\n");                            
+}
+
+/*****************************************************************************/
+
+pipe_txdatak2_Wkdbg3_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg3 to pad SYSCFG_PAD_SYS_BOOT3,
+	#define SYSCFG_PAD_SYS_BOOT3 *(int *) 0x4AE0C876
+	muxMode = SYSCFG_PAD_SYS_BOOT3;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT3 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(3) on dbg signal hw_dbg3
+	#define CORE_CONF_DEBUG_SEL_TST_3_REG_ADDR *(int *) 0x4A0024DC
+	CORE_CONF_DEBUG_SEL_TST_3_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(3), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txdatak[2] => Connector J16 - Pin 20 (#G3) \r\n"); 
+}
+
+/*****************************************************************************/
+
+pipe_txdatak3_Wkdbg4_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg4 to pad SYSCFG_PAD_SYS_BOOT4,
+	#define SYSCFG_PAD_SYS_BOOT4 *(int *) 0x4AE0C878
+	muxMode = SYSCFG_PAD_SYS_BOOT4;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT4 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(4) on dbg signal hw_dbg4
+	#define CORE_CONF_DEBUG_SEL_TST_4_REG_ADDR *(int *) 0x4A0024E0
+	CORE_CONF_DEBUG_SEL_TST_4_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(4), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txdatak[3] => Connector J16 - Pin 14 (#E3) \r\n"); 
+}
+
+/*****************************************************************************/
+
+pipe_elasticitybuffermode_Wkdbg5_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg5 to pad SYSCFG_PAD_FREF_CLK1_OUT,
+	#define SYSCFG_PAD_FREF_CLK1_OUT *(int *) 0x4AE0C85A
+	muxMode = SYSCFG_PAD_FREF_CLK1_OUT;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK1_OUT = muxMode;
+ 
+	// getting signal hwobs_debug_usb(5) on dbg signal hw_dbg5
+	#define CORE_CONF_DEBUG_SEL_TST_5_REG_ADDR *(int *) 0x4A0024E4
+	CORE_CONF_DEBUG_SEL_TST_5_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(5), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_elasticitybuffermode => Connector J16 - Pin 8 (#E5) \r\n");  
+}
+
+/*****************************************************************************/
+
+pipe_txdetectrxloopback_Wkdbg6_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg6 to pad SYSCFG_PAD_DRM_EMU0,
+	#define SYSCFG_PAD_DRM_EMU0 *(int *) 0x4AE0C844
+	muxMode = SYSCFG_PAD_DRM_EMU0;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_DRM_EMU0 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(6) on dbg signal hw_dbg6
+	#define CORE_CONF_DEBUG_SEL_TST_6_REG_ADDR *(int *) 0x4A0024E8
+	CORE_CONF_DEBUG_SEL_TST_6_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(6), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txdetectrxloopback => Connector J18 - Pin 105 (#R4) \r\n");     
+}
+
+/*****************************************************************************/
+
+pipe_txelecidle_Wkdbg7_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg7 to pad SYSCFG_PAD_DRM_EMU1,
+	#define SYSCFG_PAD_DRM_EMU1 *(int *) 0x4AE0C846
+	muxMode = SYSCFG_PAD_DRM_EMU1;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_DRM_EMU1 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(7) on dbg signal hw_dbg7
+	#define CORE_CONF_DEBUG_SEL_TST_7_REG_ADDR *(int *) 0x4A0024EC
+	CORE_CONF_DEBUG_SEL_TST_7_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(7), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txelecidle => Connector J18 - Pin 111 (#R6) \r\n");     
+}
+
+/*****************************************************************************/
+
+pipe_txoneszeros_Wkdbg8_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg8 to pad SYSCFG_PAD_SYS_BOOT5,
+	#define SYSCFG_PAD_SYS_BOOT5 *(int *) 0x4AE0C87A
+	muxMode = SYSCFG_PAD_SYS_BOOT5;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT5 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(8) on dbg signal hw_dbg8
+	#define CORE_CONF_DEBUG_SEL_TST_8_REG_ADDR *(int *) 0x4A0024F0
+	CORE_CONF_DEBUG_SEL_TST_8_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(8), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txoneszeros => Connector J16 - Pin 17 (#C3) \r\n");    
+}
+
+/*****************************************************************************/
+
+pipe_rxpolarity_Wkdbg9_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg9 to pad SYSCFG_PAD_FREF_CLK0_OUT,
+	#define SYSCFG_PAD_FREF_CLK0_OUT *(int *) 0x4AE0C858
+	muxMode = SYSCFG_PAD_FREF_CLK0_OUT;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK0_OUT = muxMode;
+ 
+	// getting signal hwobs_debug_usb(9) on dbg signal hw_dbg9
+	#define CORE_CONF_DEBUG_SEL_TST_9_REG_ADDR *(int *) 0x4A0024F4
+	CORE_CONF_DEBUG_SEL_TST_9_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(9), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_rxpolarity => Connector J16 - Pin 13 (#G6) \r\n");     
+}
+
+/*****************************************************************************/
+
+pipe_rxeqtraining_Wkdbg10_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg10 to pad SYSCFG_PAD_FREF_CLK2_OUT,
+	#define SYSCFG_PAD_FREF_CLK2_OUT *(int *) 0x4AE0C85C
+	muxMode = SYSCFG_PAD_FREF_CLK2_OUT;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK2_OUT = muxMode;
+ 
+	// getting signal hwobs_debug_usb(10) on dbg signal hw_dbg10
+	#define CORE_CONF_DEBUG_SEL_TST_10_REG_ADDR *(int *) 0x4A0024F8
+	CORE_CONF_DEBUG_SEL_TST_10_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(10), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_rxeqtraining => Connector J16 - Pin 9 (#F8) \r\n");          
+}
+
+/*****************************************************************************/
+
+pipe_reset_n_Wkdbg11_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg11 to pad SYSCFG_PAD_FREF_CLK2_REQ,
+	#define SYSCFG_PAD_FREF_CLK2_REQ *(int *) 0x4AE0C85E
+	muxMode = SYSCFG_PAD_FREF_CLK2_REQ;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK2_REQ = muxMode;
+ 
+	// getting signal hwobs_debug_usb(11) on dbg signal hw_dbg11
+	#define CORE_CONF_DEBUG_SEL_TST_11_REG_ADDR *(int *) 0x4A0024FC
+	CORE_CONF_DEBUG_SEL_TST_11_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(11), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_reset_n => Connector J16 - Pin 19 (#G5) \r\n");       
+}
+
+/*****************************************************************************/
+
+pipe_powerdown0_Wkdbg12_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg12 to pad SYSCFG_PAD_FREF_CLK1_REQ,
+	#define SYSCFG_PAD_FREF_CLK1_REQ *(int *) 0x4AE0C860
+	muxMode = SYSCFG_PAD_FREF_CLK1_REQ;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK1_REQ = muxMode;
+ 
+	// getting signal hwobs_debug_usb(12) on dbg signal hw_dbg12
+	#define CORE_CONF_DEBUG_SEL_TST_12_REG_ADDR *(int *) 0x4A002500
+	CORE_CONF_DEBUG_SEL_TST_12_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(12), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_powerdown[0] => Connector J16 - Pin 25 (#H6) \r\n");     
+}
+
+/*****************************************************************************/
+
+pipe_powerdown1_Wkdbg13_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg13 to pad SYSCFG_PAD_LLIB_WAKEREQIN,
+	#define SYSCFG_PAD_LLIB_WAKEREQIN *(int *) 0x4AE0C842
+	muxMode = SYSCFG_PAD_LLIB_WAKEREQIN;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_LLIB_WAKEREQIN = muxMode;
+ 
+	// getting signal hwobs_debug_usb(13) on dbg signal hw_dbg13
+	#define CORE_CONF_DEBUG_SEL_TST_13_REG_ADDR *(int *) 0x4A002504
+	CORE_CONF_DEBUG_SEL_TST_13_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(13), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_powerdown[1] => Connector J18 - Pin 115 (#O6) \r\n");          
+}
+
+/*****************************************************************************/
+
+pipe_txdeemph0_Wkdbg14_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg14 to pad SYSCFG_PAD_LLIA_WAKEREQIN,
+	#define SYSCFG_PAD_LLIA_WAKEREQIN *(int *) 0x4AE0C840
+	muxMode = SYSCFG_PAD_LLIA_WAKEREQIN;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_LLIA_WAKEREQIN = muxMode;
+ 
+	// getting signal hwobs_debug_usb(14) on dbg signal hw_dbg14
+	#define CORE_CONF_DEBUG_SEL_TST_14_REG_ADDR *(int *) 0x4A002508
+	CORE_CONF_DEBUG_SEL_TST_14_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(14), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txdeemph[0] => Connector J18 - Pin 103 (#N6) \r\n");    
+}
+
+/*****************************************************************************/
+
+pipe_txdeemph1_Wkdbg15_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg15 to pad SYSCFG_PAD_SYS_PWR_REQ,
+	#define SYSCFG_PAD_SYS_PWR_REQ *(int *) 0x4AE0C866
+	muxMode = SYSCFG_PAD_SYS_PWR_REQ;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_PWR_REQ = muxMode;
+ 
+	// getting signal hwobs_debug_usb(15) on dbg signal hw_dbg15
+	#define CORE_CONF_DEBUG_SEL_TST_15_REG_ADDR *(int *) 0x4A00250C
+	CORE_CONF_DEBUG_SEL_TST_15_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(15), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txdeemph[1] => Connector J16 - Pin 21 (#G4) \r\n");    
+}
+
+/*****************************************************************************/
+
+pipe_txmargin0_dbg16_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg16 to pad SYSCFG_PAD_C2C_DATAOUT0,
+	#define SYSCFG_PAD_C2C_DATAOUT0 *(int *) 0x4A00286C
+	muxMode = SYSCFG_PAD_C2C_DATAOUT0;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT0 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(16) on dbg signal hw_dbg16
+	#define CORE_CONF_DEBUG_SEL_TST_16_REG_ADDR *(int *) 0x4A002510
+	CORE_CONF_DEBUG_SEL_TST_16_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(16), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txmargin[0] => Connector J18 - Pin 2 (#E6) \r\n");    
+}
+
+/*****************************************************************************/
+
+pipe_txmargin1_dbg17_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg17 to pad SYSCFG_PAD_C2C_DATAOUT1,
+	#define SYSCFG_PAD_C2C_DATAOUT1 *(int *) 0x4A00286E
+	muxMode = SYSCFG_PAD_C2C_DATAOUT1;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT1 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(17) on dbg signal hw_dbg17
+	#define CORE_CONF_DEBUG_SEL_TST_17_REG_ADDR *(int *) 0x4A002514
+	CORE_CONF_DEBUG_SEL_TST_17_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(17), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txmargin[1] => Connector J18 - Pin 1 (#F6) \r\n");      
+}
+
+/*****************************************************************************/
+
+pipe_txmargin2_dbg18_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg18 to pad SYSCFG_PAD_C2C_DATAOUT2,
+	#define SYSCFG_PAD_C2C_DATAOUT2 *(int *) 0x4A002870
+	muxMode = SYSCFG_PAD_C2C_DATAOUT2;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT2 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(18) on dbg signal hw_dbg18
+	#define CORE_CONF_DEBUG_SEL_TST_18_REG_ADDR *(int *) 0x4A002518
+	CORE_CONF_DEBUG_SEL_TST_18_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(18), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txmargin[2] => Connector J18 - Pin 81 (#P4) \r\n");         
+}
+
+/*****************************************************************************/
+
+pipe_txswing_dbg19_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg19 to pad SYSCFG_PAD_C2C_DATAOUT3,
+	#define SYSCFG_PAD_C2C_DATAOUT3 *(int *) 0x4A002872
+	muxMode = SYSCFG_PAD_C2C_DATAOUT3;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT3 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(19) on dbg signal hw_dbg19
+	#define CORE_CONF_DEBUG_SEL_TST_19_REG_ADDR *(int *) 0x4A00251C
+	CORE_CONF_DEBUG_SEL_TST_19_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(19), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_txswing => Connector J18 - Pin 8 (#E5) \r\n");      
+}
+
+/*****************************************************************************/
+
+pipe_rxtermination_dbg20_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg20 to pad SYSCFG_PAD_C2C_DATAOUT4,
+	#define SYSCFG_PAD_C2C_DATAOUT4 *(int *) 0x4A002874
+	muxMode = SYSCFG_PAD_C2C_DATAOUT4;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT4 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(20) on dbg signal hw_dbg20
+	#define CORE_CONF_DEBUG_SEL_TST_20_REG_ADDR *(int *) 0x4A002520
+	CORE_CONF_DEBUG_SEL_TST_20_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(20), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_rxtermination => Connector J19 - Pin 57 (#L4) \r\n");      
+}
+
+/*****************************************************************************/
+
+pipe_rxpclk_dbg21_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg21 to pad SYSCFG_PAD_C2C_DATAOUT5,
+	#define SYSCFG_PAD_C2C_DATAOUT5 *(int *) 0x4A002876
+	muxMode = SYSCFG_PAD_C2C_DATAOUT5;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT5 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(21) on dbg signal hw_dbg21
+	#define CORE_CONF_DEBUG_SEL_TST_21_REG_ADDR *(int *) 0x4A002524
+	CORE_CONF_DEBUG_SEL_TST_21_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(21), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        	
+        GEL_TextOut("\n pipe_rxpclk => Connector J19 - Pin 35 (#E2) \r\n");         
+}
+
+/*****************************************************************************/
+
+pipe_rxdatak0_dbg22_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg22 to pad SYSCFG_PAD_C2C_DATAOUT6,
+	#define SYSCFG_PAD_C2C_DATAOUT6 *(int *) 0x4A002878
+	muxMode = SYSCFG_PAD_C2C_DATAOUT6;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT6 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(22) on dbg signal hw_dbg22
+	#define CORE_CONF_DEBUG_SEL_TST_22_REG_ADDR *(int *) 0x4A002528
+	CORE_CONF_DEBUG_SEL_TST_22_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(22), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_rxdatak[0] => Connector J18 - Pin 72 (#M1) \r\n");       
+}
+
+/*****************************************************************************/
+
+pipe_rxdatak1_dbg23_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg23 to pad SYSCFG_PAD_C2C_DATAOUT7,
+	#define SYSCFG_PAD_C2C_DATAOUT7 *(int *) 0x4A00287A
+	muxMode = SYSCFG_PAD_C2C_DATAOUT7;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT7 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(23) on dbg signal hw_dbg23
+	#define CORE_CONF_DEBUG_SEL_TST_23_REG_ADDR *(int *) 0x4A00252C
+	CORE_CONF_DEBUG_SEL_TST_23_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(23), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_rxdatak[1] => Connector J18 - Pin 64 (#J2) \r\n");     
+}
+
+/*****************************************************************************/
+
+pipe_rxdatak2_dbg24_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg24 to pad SYSCFG_PAD_C2C_DATA8,
+	#define SYSCFG_PAD_C2C_DATA8 *(int *) 0x4A00287C
+	muxMode = SYSCFG_PAD_C2C_DATA8;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA8 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(24) on dbg signal hw_dbg24
+	#define CORE_CONF_DEBUG_SEL_TST_24_REG_ADDR *(int *) 0x4A002530
+	CORE_CONF_DEBUG_SEL_TST_24_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(24), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_rxdatak[2] => Connector J18 - Pin 57 (#L4) \r\n");   
+}
+
+/*****************************************************************************/
+
+pipe_rxdatak3_dbg25_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg25 to pad SYSCFG_PAD_C2C_DATA9,
+	#define SYSCFG_PAD_C2C_DATA9 *(int *) 0x4A00287E
+	muxMode = SYSCFG_PAD_C2C_DATA9;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA9 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(25) on dbg signal hw_dbg25
+	#define CORE_CONF_DEBUG_SEL_TST_25_REG_ADDR *(int *) 0x4A002534
+	CORE_CONF_DEBUG_SEL_TST_25_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(25), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_rxdatak[3] => Connector J19 - Pin 64 (#J2) \r\n");  
+}
+
+/*****************************************************************************/
+pipe_rxvalid_dbg26_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg26 to pad SYSCFG_PAD_C2C_DATA10,
+	#define SYSCFG_PAD_C2C_DATA10 *(int *) 0x4A002880
+	muxMode = SYSCFG_PAD_C2C_DATA10;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA10 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(26) on dbg signal hw_dbg26
+	#define CORE_CONF_DEBUG_SEL_TST_26_REG_ADDR *(int *) 0x4A002538
+	CORE_CONF_DEBUG_SEL_TST_26_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(26), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_rxvalid => Connector J18 - Pin 60 (#I1) \r\n");    
+}
+
+/*****************************************************************************/
+
+pipe_phystatus_dbg27_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg27 to pad SYSCFG_PAD_C2C_DATA11,
+	#define SYSCFG_PAD_C2C_DATA11 *(int *) 0x4A002882
+	muxMode = SYSCFG_PAD_C2C_DATA11;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA11 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(27) on dbg signal hw_dbg27
+	#define CORE_CONF_DEBUG_SEL_TST_27_REG_ADDR *(int *) 0x4A00253C
+	CORE_CONF_DEBUG_SEL_TST_27_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(27), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_phystatus => Connector J22 - Pin 13 (#G6) \r\n"); 
+}
+
+/*****************************************************************************/
+pipe_elecidle_dbg28_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg28 to pad SYSCFG_PAD_C2C_DATA12,
+	#define SYSCFG_PAD_C2C_DATA12 *(int *) 0x4A002884
+	muxMode = SYSCFG_PAD_C2C_DATA12;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA12 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(28) on dbg signal hw_dbg28
+	#define CORE_CONF_DEBUG_SEL_TST_28_REG_ADDR *(int *) 0x4A002540
+	CORE_CONF_DEBUG_SEL_TST_28_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(28), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_elecidle => Connector J18 - Pin 53 (#H2) \r\n");  
+}
+
+/*****************************************************************************/
+pipe_rxstatus0_dbg29_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg29 to pad SYSCFG_PAD_C2C_DATA13,
+	#define SYSCFG_PAD_C2C_DATA13 *(int *) 0x4A002886
+	muxMode = SYSCFG_PAD_C2C_DATA13;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA13 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(29) on dbg signal hw_dbg29
+	#define CORE_CONF_DEBUG_SEL_TST_29_REG_ADDR *(int *) 0x4A002544
+	CORE_CONF_DEBUG_SEL_TST_29_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(29), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+ 
+        GEL_TextOut("\n pipe_rxstatus[0] => Connector J18 - Pin 54 (#H1) \r\n");  
+}
+
+/*****************************************************************************/
+
+pipe_rxstatus1_dbg30_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg30 to pad SYSCFG_PAD_C2C_DATA14,
+	#define SYSCFG_PAD_C2C_DATA14 *(int *) 0x4A002888
+	muxMode = SYSCFG_PAD_C2C_DATA14;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA14 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(30) on dbg signal hw_dbg30
+	#define CORE_CONF_DEBUG_SEL_TST_30_REG_ADDR *(int *) 0x4A002548
+	CORE_CONF_DEBUG_SEL_TST_30_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(30), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_rxstatus[1] => Connector J18 - Pin 47 (#G2) \r\n");   
+}
+
+/*****************************************************************************/
+
+pipe_rxstatus2_dbg31_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg31 to pad SYSCFG_PAD_C2C_DATA15,
+	#define SYSCFG_PAD_C2C_DATA15 *(int *) 0x4A00288A
+	muxMode = SYSCFG_PAD_C2C_DATA15;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA15 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(31) on dbg signal hw_dbg31
+	#define CORE_CONF_DEBUG_SEL_TST_31_REG_ADDR *(int *) 0x4A00254C
+	CORE_CONF_DEBUG_SEL_TST_31_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 2
+	// to go to hwobs_debug_usb(31), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x2;
+        
+        GEL_TextOut("\n pipe_rxstatus[2] => Connector J18 - Pin 45 (#J4) \r\n");  
+}
+
+/*****************************************************************************/
+
+hotmenu  PIPE_Debug_Observability()                
+{
+    
+        /* pipe_txpclk signal on WKDBG0 Debug Pin */
+	pipe_txpclk_Wkdbg0_Debug_Observability();
+
+	/* pipe_txdatak[0] signal on WKDBG1 Debug Pin */       
+	pipe_txdatak0_Wkdbg1_Debug_Observability();
+
+	/* pipe_txdatak[1] signal on WKDBG2 Debug Pin */
+	pipe_txdatak1_Wkdbg2_Debug_Observability();  
+
+	/* pipe_txdatak[2] signal on WKDBG3 Debug Pin */
+	pipe_txdatak2_Wkdbg3_Debug_Observability(); 
+
+	/* pipe_txdatak[2] signal on WKDBG4 Debug Pin */
+	pipe_txdatak3_Wkdbg4_Debug_Observability(); 
+
+	/* pipe_elasticitybuffermode signal on WKDBG5 Debug Pin */
+	pipe_elasticitybuffermode_Wkdbg5_Debug_Observability();
+
+	/* pipe_txdetectrxloopback signal on WKDBG6 Debug Pin */
+	pipe_txdetectrxloopback_Wkdbg6_Debug_Observability();
+
+	/* pipe_txelecidle signal on WKDBG7 Debug Pin */
+	pipe_txelecidle_Wkdbg7_Debug_Observability();
+
+	/* pipe_txoneszeros signal on WKDBG8 Debug Pin */
+	pipe_txoneszeros_Wkdbg8_Debug_Observability();
+
+	/* pipe_rxpolarity signal on WKDBG9 Debug Pin */ 
+	pipe_rxpolarity_Wkdbg9_Debug_Observability();        
+        
+	/* pipe_rxeqtraining signal on WKDBG10 Debug Pin */
+	pipe_rxeqtraining_Wkdbg10_Debug_Observability();       
+        
+	/* pipe_reset_n signal on WKDBG11 Debug Pin */       
+	pipe_reset_n_Wkdbg11_Debug_Observability();
+
+	/* pipe_powerdown[0] signal on WKDBG12 Debug Pin */        
+	pipe_powerdown0_Wkdbg12_Debug_Observability();
+
+	/* pipe_powerdown[1] signal on WKDBG13 Debug Pin */
+	pipe_powerdown1_Wkdbg13_Debug_Observability();      
+        
+	/* pipe_txdeemph[0] signal on WKDBG14 Debug Pin */       
+	pipe_txdeemph0_Wkdbg14_Debug_Observability();        
+       
+	/* pipe_txdeemph[1] signal on WKDBG15 Debug Pin */       
+	pipe_txdeemph1_Wkdbg15_Debug_Observability();        
+        
+	/* pipe_txmargin[0] signal on DBG16 Debug Pin */
+	pipe_txmargin0_dbg16_Debug_Observability();
+
+	/* pipe_txmargin[1] signal on DBG17 Debug Pin */        
+	pipe_txmargin1_dbg17_Debug_Observability();
+     
+	/* pipe_txmargin[2] signal on DBG18 Debug Pin */       
+	pipe_txmargin2_dbg18_Debug_Observability();        
+
+	/* pipe_txswing signal on DBG19 Debug Pin */
+	pipe_txswing_dbg19_Debug_Observability();        
+        
+	/* pipe_rxtermination signal on DBG20 Debug Pin */
+	pipe_rxtermination_dbg20_Debug_Observability();
+
+	/* pipe_rxpclk signal on DBG21 Debug Pin */
+	pipe_rxpclk_dbg21_Debug_Observability();
+
+	/* pipe_rxdatak[0] signal on DBG22 Debug Pin */
+	pipe_rxdatak0_dbg22_Debug_Observability();
+
+	/* pipe_rxdatak[1] signal on DBG23 Debug Pin */
+	pipe_rxdatak1_dbg23_Debug_Observability();        
+
+	/* pipe_rxdatak[2] signal on DBG24 Debug Pin */
+	pipe_rxdatak2_dbg24_Debug_Observability();
+
+	/* pipe_rxdatak[3] signal on DBG25 Debug Pin */
+	pipe_rxdatak3_dbg25_Debug_Observability();
+
+	/* pipe_rxvalid signal on DBG26 Debug Pin */
+	pipe_rxvalid_dbg26_Debug_Observability();
+
+	/* pipe_phystatus signal on DBG27 Debug Pin */
+	pipe_phystatus_dbg27_Debug_Observability();
+
+	/* pipe_elecidle signal on DBG28 Debug Pin */
+	pipe_elecidle_dbg28_Debug_Observability();
+
+	/* pipe_rxstatus[0] signal on DBG29 Debug Pin */
+	pipe_rxstatus0_dbg29_Debug_Observability();
+
+	/* pipe_rxstatus[1] signal on DBG30 Debug Pin */
+	pipe_rxstatus1_dbg30_Debug_Observability();
+
+	/* pipe_rxstatus[2] signal on DBG31 Debug Pin */
+	pipe_rxstatus2_dbg31_Debug_Observability();                
+           
+} /* hotmenu  PIPE_Debug_Observability() */
+
+/*****************************************************************************/
+
+
+/*************************************************/
+/*****                                    ********/
+/*****     CCCC    OOO    RPPR    EEEE    ********/
+/*****    C       O   O   R   R   E       ********/
+/*****    C       O   O   RRRR    EE      ********/
+/*****    C       O   O   R  R    E       ********/
+/*****     CCCC    OOO    R   R   EEEE    ********/
+/*****                                    ********/
+/*************************************************/
+
+
+core_ltdb_substate0_Wkdbg0_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg0 to pad SYSCFG_PAD_SYS_BOOT0,
+	#define SYSCFG_PAD_SYS_BOOT0 *(int *) 0x4AE0C870
+	muxMode = SYSCFG_PAD_SYS_BOOT0;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT0 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(0) on dbg signal hw_dbg0
+	#define CORE_CONF_DEBUG_SEL_TST_0_REG_ADDR *(int *) 0x4A0024D0
+	CORE_CONF_DEBUG_SEL_TST_0_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(0), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_ltdb_substate[0]  => Connector J16 - Pin 15 (#E4) \r\n");   
+}
+
+/*****************************************************************************/
+
+core_ltdb_substate1_Wkdbg1_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg1 to pad SYSCFG_PAD_SYS_BOOT1,
+	#define SYSCFG_PAD_SYS_BOOT1 *(int *) 0x4AE0C872
+	muxMode = SYSCFG_PAD_SYS_BOOT1;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT1 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(1) on dbg signal hw_dbg1
+	#define CORE_CONF_DEBUG_SEL_TST_1_REG_ADDR *(int *) 0x4A0024D4
+	CORE_CONF_DEBUG_SEL_TST_1_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(1), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_ltdb_substate[1] => Connector J16 - Pin 24 (#C1) \r\n");   
+}
+
+/*****************************************************************************/
+
+core_ltdb_substate2_Wkdbg2_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg2 to pad SYSCFG_PAD_SYS_BOOT2,
+	#define SYSCFG_PAD_SYS_BOOT2 *(int *) 0x4AE0C874
+	muxMode = SYSCFG_PAD_SYS_BOOT2;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT2 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(2) on dbg signal hw_dbg2
+	#define CORE_CONF_DEBUG_SEL_TST_2_REG_ADDR *(int *) 0x4A0024D8
+	CORE_CONF_DEBUG_SEL_TST_2_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(2), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_ltdb_substate[2] => Connector J16 - Pin 30 (#D1) \r\n");  
+}
+
+/*****************************************************************************/
+
+core_ltdb_substate3_Wkdbg3_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg3 to pad SYSCFG_PAD_SYS_BOOT3,
+	#define SYSCFG_PAD_SYS_BOOT3 *(int *) 0x4AE0C876
+	muxMode = SYSCFG_PAD_SYS_BOOT3;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT3 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(3) on dbg signal hw_dbg3
+	#define CORE_CONF_DEBUG_SEL_TST_3_REG_ADDR *(int *) 0x4A0024DC
+	CORE_CONF_DEBUG_SEL_TST_3_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(3), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_ltdb_substate[3] => Connector J16 - Pin 20 (#G3) \r\n");  
+}
+
+/*****************************************************************************/
+
+core_ltdb_link_state0_Wkdbg4_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg4 to pad SYSCFG_PAD_SYS_BOOT4,
+	#define SYSCFG_PAD_SYS_BOOT4 *(int *) 0x4AE0C878
+	muxMode = SYSCFG_PAD_SYS_BOOT4;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT4 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(4) on dbg signal hw_dbg4
+	#define CORE_CONF_DEBUG_SEL_TST_4_REG_ADDR *(int *) 0x4A0024E0
+	CORE_CONF_DEBUG_SEL_TST_4_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(4), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_ltdb_link_state[0] => Connector J16 - Pin 14 (#E3) \r\n");   
+}
+
+/*****************************************************************************/
+
+core_ltdb_link_state1_Wkdbg5_Debug_Observability()
+{
+		int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg5 to pad SYSCFG_PAD_FREF_CLK1_OUT,
+	#define SYSCFG_PAD_FREF_CLK1_OUT *(int *) 0x4AE0C85A
+	muxMode = SYSCFG_PAD_FREF_CLK1_OUT;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK1_OUT = muxMode;
+ 
+	// getting signal hwobs_debug_usb(5) on dbg signal hw_dbg5
+	#define CORE_CONF_DEBUG_SEL_TST_5_REG_ADDR *(int *) 0x4A0024E4
+	CORE_CONF_DEBUG_SEL_TST_5_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(5), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_ltdb_link_state[1] => Connector J16 - Pin 8 (#E5) \r\n");   
+}
+
+/*****************************************************************************/
+
+core_ltdb_link_state2_Wkdbg6_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg6 to pad SYSCFG_PAD_DRM_EMU0,
+	#define SYSCFG_PAD_DRM_EMU0 *(int *) 0x4AE0C844
+	muxMode = SYSCFG_PAD_DRM_EMU0;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_DRM_EMU0 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(6) on dbg signal hw_dbg6
+	#define CORE_CONF_DEBUG_SEL_TST_6_REG_ADDR *(int *) 0x4A0024E8
+	CORE_CONF_DEBUG_SEL_TST_6_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(6), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_ltdb_link_state[2] => Connector J18 - Pin 105 (#R4) \r\n");     
+}
+
+/*****************************************************************************/
+
+core_ltdb_link_state3_Wkdbg7_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg7 to pad SYSCFG_PAD_DRM_EMU1,
+	#define SYSCFG_PAD_DRM_EMU1 *(int *) 0x4AE0C846
+	muxMode = SYSCFG_PAD_DRM_EMU1;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_DRM_EMU1 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(7) on dbg signal hw_dbg7
+	#define CORE_CONF_DEBUG_SEL_TST_7_REG_ADDR *(int *) 0x4A0024EC
+	CORE_CONF_DEBUG_SEL_TST_7_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(7), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_ltdb_link_state[3] => Connector J18 - Pin 111 (#R6) \r\n");     
+}
+
+/*****************************************************************************/
+
+debug_mclk_usof_number0_Wkdbg8_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg8 to pad SYSCFG_PAD_SYS_BOOT5,
+	#define SYSCFG_PAD_SYS_BOOT5 *(int *) 0x4AE0C87A
+	muxMode = SYSCFG_PAD_SYS_BOOT5;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_BOOT5 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(8) on dbg signal hw_dbg8
+	#define CORE_CONF_DEBUG_SEL_TST_8_REG_ADDR *(int *) 0x4A0024F0
+	CORE_CONF_DEBUG_SEL_TST_8_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(8), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;        
+
+        GEL_TextOut("\n debug_mclk_usof_number[0] => Connector J16 - Pin 24 (#C1) \r\n");	
+}
+
+/*****************************************************************************/
+
+core_gsts_buserraddvld_Wkdbg9_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg9 to pad SYSCFG_PAD_FREF_CLK0_OUT,
+	#define SYSCFG_PAD_FREF_CLK0_OUT *(int *) 0x4AE0C858
+	muxMode = SYSCFG_PAD_FREF_CLK0_OUT;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK0_OUT = muxMode;
+ 
+	// getting signal hwobs_debug_usb(9) on dbg signal hw_dbg9
+	#define CORE_CONF_DEBUG_SEL_TST_9_REG_ADDR *(int *) 0x4A0024F4
+	CORE_CONF_DEBUG_SEL_TST_9_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(9), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_gsts_buserraddvld => Connector J16 - Pin 13 (#G6) \r\n");     
+}
+
+/*****************************************************************************/
+
+core_u2_prt_state0_Wkdbg10_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg10 to pad SYSCFG_PAD_FREF_CLK2_OUT,
+	#define SYSCFG_PAD_FREF_CLK2_OUT *(int *) 0x4AE0C85C
+	muxMode = SYSCFG_PAD_FREF_CLK2_OUT;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK2_OUT = muxMode;
+ 
+	// getting signal hwobs_debug_usb(10) on dbg signal hw_dbg10
+	#define CORE_CONF_DEBUG_SEL_TST_10_REG_ADDR *(int *) 0x4A0024F8
+	CORE_CONF_DEBUG_SEL_TST_10_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(10), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n  core_u2_prt_state[0] => Connector J16 - Pin 9 (#F8) \r\n");          
+}
+
+/*****************************************************************************/
+
+core_u2_prt_state1_Wkdbg11_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg11 to pad SYSCFG_PAD_FREF_CLK2_REQ,
+	#define SYSCFG_PAD_FREF_CLK2_REQ *(int *) 0x4AE0C85E
+	muxMode = SYSCFG_PAD_FREF_CLK2_REQ;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK2_REQ = muxMode;
+ 
+	// getting signal hwobs_debug_usb(11) on dbg signal hw_dbg11
+	#define CORE_CONF_DEBUG_SEL_TST_11_REG_ADDR *(int *) 0x4A0024FC
+	CORE_CONF_DEBUG_SEL_TST_11_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(11), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2_prt_state[1] => Connector J16 - Pin 19 (#G5) \r\n");     
+}
+
+/*****************************************************************************/
+
+core_u2_prt_state2_Wkdbg12_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg12 to pad SYSCFG_PAD_FREF_CLK1_REQ,
+	#define SYSCFG_PAD_FREF_CLK1_REQ *(int *) 0x4AE0C860
+	muxMode = SYSCFG_PAD_FREF_CLK1_REQ;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_FREF_CLK1_REQ = muxMode;
+ 
+	// getting signal hwobs_debug_usb(12) on dbg signal hw_dbg12
+	#define CORE_CONF_DEBUG_SEL_TST_12_REG_ADDR *(int *) 0x4A002500
+	CORE_CONF_DEBUG_SEL_TST_12_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(12), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2_prt_state[2] => Connector J16 - Pin 25 (#H6) \r\n");      
+}
+
+/*****************************************************************************/
+
+core_u2_prt_state3_Wkdbg13_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg13 to pad SYSCFG_PAD_LLIB_WAKEREQIN,
+	#define SYSCFG_PAD_LLIB_WAKEREQIN *(int *) 0x4AE0C842
+	muxMode = SYSCFG_PAD_LLIB_WAKEREQIN;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_LLIB_WAKEREQIN = muxMode;
+ 
+	// getting signal hwobs_debug_usb(13) on dbg signal hw_dbg13
+	#define CORE_CONF_DEBUG_SEL_TST_13_REG_ADDR *(int *) 0x4A002504
+	CORE_CONF_DEBUG_SEL_TST_13_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(13), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2_prt_state[3] => Connector J18 - Pin 115 (#O6) \r\n");        
+}
+
+/*****************************************************************************/
+
+core_u2_prt_state4_Wkdbg14_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg14 to pad SYSCFG_PAD_LLIA_WAKEREQIN,
+	#define SYSCFG_PAD_LLIA_WAKEREQIN *(int *) 0x4AE0C840
+	muxMode = SYSCFG_PAD_LLIA_WAKEREQIN;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_LLIA_WAKEREQIN = muxMode;
+ 
+	// getting signal hwobs_debug_usb(14) on dbg signal hw_dbg14
+	#define CORE_CONF_DEBUG_SEL_TST_14_REG_ADDR *(int *) 0x4A002508
+	CORE_CONF_DEBUG_SEL_TST_14_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(14), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2_prt_state[4] => Connector J18 - Pin 103 (#N6) \r\n");    
+}
+
+/*****************************************************************************/
+
+core_u2mac_txrx_state_0_0_Wkdbg15_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg15 to pad SYSCFG_PAD_SYS_PWR_REQ,
+	#define SYSCFG_PAD_SYS_PWR_REQ *(int *) 0x4AE0C866
+	muxMode = SYSCFG_PAD_SYS_PWR_REQ;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_SYS_PWR_REQ = muxMode;
+ 
+	// getting signal hwobs_debug_usb(15) on dbg signal hw_dbg15
+	#define CORE_CONF_DEBUG_SEL_TST_15_REG_ADDR *(int *) 0x4A00250C
+	CORE_CONF_DEBUG_SEL_TST_15_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(15), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2mac_txrx_state_0[0] => Connector J16 - Pin 21 (#G4) \r\n");    
+}
+
+/*****************************************************************************/
+
+core_u2mac_txrx_state_0_1_dbg16_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg16 to pad SYSCFG_PAD_C2C_DATAOUT0,
+	#define SYSCFG_PAD_C2C_DATAOUT0 *(int *) 0x4A00286C
+	muxMode = SYSCFG_PAD_C2C_DATAOUT0;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT0 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(16) on dbg signal hw_dbg16
+	#define CORE_CONF_DEBUG_SEL_TST_16_REG_ADDR *(int *) 0x4A002510
+	CORE_CONF_DEBUG_SEL_TST_16_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(16), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2mac_txrx_state_0[1] => Connector J18 - Pin 2 (#E6) \r\n");             
+}
+
+/*****************************************************************************/
+
+core_u2mac_txrx_state_0_2_dbg17_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg17 to pad SYSCFG_PAD_C2C_DATAOUT1,
+	#define SYSCFG_PAD_C2C_DATAOUT1 *(int *) 0x4A00286E
+	muxMode = SYSCFG_PAD_C2C_DATAOUT1;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT1 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(17) on dbg signal hw_dbg17
+	#define CORE_CONF_DEBUG_SEL_TST_17_REG_ADDR *(int *) 0x4A002514
+	CORE_CONF_DEBUG_SEL_TST_17_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(17), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2mac_txrx_state_0[2] => Connector J18 - Pin 1 (#F6) \r\n");             
+}
+
+/*****************************************************************************/
+
+core_u2mac_txrx_state_0_3_dbg18_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg18 to pad SYSCFG_PAD_C2C_DATAOUT2,
+	#define SYSCFG_PAD_C2C_DATAOUT2 *(int *) 0x4A002870
+	muxMode = SYSCFG_PAD_C2C_DATAOUT2;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT2 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(18) on dbg signal hw_dbg18
+	#define CORE_CONF_DEBUG_SEL_TST_18_REG_ADDR *(int *) 0x4A002518
+	CORE_CONF_DEBUG_SEL_TST_18_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(18), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2mac_txrx_state_0[3] => Connector J18 - Pin 81 (#P4) \r\n");                       
+}
+
+/*****************************************************************************/
+
+core_u2mac_txrx_state_0_4_dbg19_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg19 to pad SYSCFG_PAD_C2C_DATAOUT3,
+	#define SYSCFG_PAD_C2C_DATAOUT3 *(int *) 0x4A002872
+	muxMode = SYSCFG_PAD_C2C_DATAOUT3;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT3 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(19) on dbg signal hw_dbg19
+	#define CORE_CONF_DEBUG_SEL_TST_19_REG_ADDR *(int *) 0x4A00251C
+	CORE_CONF_DEBUG_SEL_TST_19_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(19), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2mac_txrx_state_0[4] => Connector J18 - Pin 8 (#E5) \r\n");              
+}
+
+/*****************************************************************************/
+
+core_u2mac_txrx_state_1_0_dbg20_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg20 to pad SYSCFG_PAD_C2C_DATAOUT4,
+	#define SYSCFG_PAD_C2C_DATAOUT4 *(int *) 0x4A002874
+	muxMode = SYSCFG_PAD_C2C_DATAOUT4;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT4 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(20) on dbg signal hw_dbg20
+	#define CORE_CONF_DEBUG_SEL_TST_20_REG_ADDR *(int *) 0x4A002520
+	CORE_CONF_DEBUG_SEL_TST_20_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(20), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2mac_txrx_state_1[0] => Connector J19 - Pin 57 (#L4) \r\n");           
+}
+
+/*****************************************************************************/
+
+core_u2mac_txrx_state_1_1_dbg21_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg21 to pad SYSCFG_PAD_C2C_DATAOUT5,
+	#define SYSCFG_PAD_C2C_DATAOUT5 *(int *) 0x4A002876
+	muxMode = SYSCFG_PAD_C2C_DATAOUT5;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT5 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(21) on dbg signal hw_dbg21
+	#define CORE_CONF_DEBUG_SEL_TST_21_REG_ADDR *(int *) 0x4A002524
+	CORE_CONF_DEBUG_SEL_TST_21_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(21), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        	
+        GEL_TextOut("\n core_u2mac_txrx_state_1[1] => Connector J19 - Pin 35 (#E2) \r\n");                
+}
+
+/*****************************************************************************/
+
+core_u2mac_txrx_state_1_2_dbg22_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg22 to pad SYSCFG_PAD_C2C_DATAOUT6,
+	#define SYSCFG_PAD_C2C_DATAOUT6 *(int *) 0x4A002878
+	muxMode = SYSCFG_PAD_C2C_DATAOUT6;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT6 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(22) on dbg signal hw_dbg22
+	#define CORE_CONF_DEBUG_SEL_TST_22_REG_ADDR *(int *) 0x4A002528
+	CORE_CONF_DEBUG_SEL_TST_22_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(22), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2mac_txrx_state_1[2] => Connector J18 - Pin 72 (#M1) \r\n");            
+}
+
+/*****************************************************************************/
+
+core_u2mac_txrx_state_1_3_dbg23_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg23 to pad SYSCFG_PAD_C2C_DATAOUT7,
+	#define SYSCFG_PAD_C2C_DATAOUT7 *(int *) 0x4A00287A
+	muxMode = SYSCFG_PAD_C2C_DATAOUT7;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATAOUT7 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(23) on dbg signal hw_dbg23
+	#define CORE_CONF_DEBUG_SEL_TST_23_REG_ADDR *(int *) 0x4A00252C
+	CORE_CONF_DEBUG_SEL_TST_23_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(23), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2mac_txrx_state_1[3] => Connector J18 - Pin 64 (#J2) \r\n");      
+}
+
+/*****************************************************************************/
+
+core_u2mac_txrx_state_1_4_dbg24_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg24 to pad SYSCFG_PAD_C2C_DATA8,
+	#define SYSCFG_PAD_C2C_DATA8 *(int *) 0x4A00287C
+	muxMode = SYSCFG_PAD_C2C_DATA8;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA8 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(24) on dbg signal hw_dbg24
+	#define CORE_CONF_DEBUG_SEL_TST_24_REG_ADDR *(int *) 0x4A002530
+	CORE_CONF_DEBUG_SEL_TST_24_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(24), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2mac_txrx_state_1[4] => Connector J18 - Pin 57 (#L4) \r\n");    
+}
+
+/*****************************************************************************/
+
+core_u2_dssr_state0_dbg25_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg25 to pad SYSCFG_PAD_C2C_DATA9,
+	#define SYSCFG_PAD_C2C_DATA9 *(int *) 0x4A00287E
+	muxMode = SYSCFG_PAD_C2C_DATA9;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA9 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(25) on dbg signal hw_dbg25
+	#define CORE_CONF_DEBUG_SEL_TST_25_REG_ADDR *(int *) 0x4A002534
+	CORE_CONF_DEBUG_SEL_TST_25_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(25), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2_dssr_state[0] => Connector J19 - Pin 64 (#J2) \r\n");              
+}
+
+/*****************************************************************************/
+
+core_u2_dssr_state1_dbg26_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg26 to pad SYSCFG_PAD_C2C_DATA10,
+	#define SYSCFG_PAD_C2C_DATA10 *(int *) 0x4A002880
+	muxMode = SYSCFG_PAD_C2C_DATA10;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA10 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(26) on dbg signal hw_dbg26
+	#define CORE_CONF_DEBUG_SEL_TST_26_REG_ADDR *(int *) 0x4A002538
+	CORE_CONF_DEBUG_SEL_TST_26_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(26), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2_dssr_state[1] => Connector J18 - Pin 60 (#I1) \r\n");               
+}
+
+/*****************************************************************************/
+
+core_u2_dssr_state2_dbg27_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg27 to pad SYSCFG_PAD_C2C_DATA11,
+	#define SYSCFG_PAD_C2C_DATA11 *(int *) 0x4A002882
+	muxMode = SYSCFG_PAD_C2C_DATA11;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA11 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(27) on dbg signal hw_dbg27
+	#define CORE_CONF_DEBUG_SEL_TST_27_REG_ADDR *(int *) 0x4A00253C
+	CORE_CONF_DEBUG_SEL_TST_27_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(27), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_u2_dssr_state[2] => Connector J22 - Pin 13 (#G6) \r\n");            
+}
+
+/*****************************************************************************/
+
+core_u2_dssr_state3_dbg28_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg28 to pad SYSCFG_PAD_C2C_DATA12,
+	#define SYSCFG_PAD_C2C_DATA12 *(int *) 0x4A002884
+	muxMode = SYSCFG_PAD_C2C_DATA12;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA12 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(28) on dbg signal hw_dbg28
+	#define CORE_CONF_DEBUG_SEL_TST_28_REG_ADDR *(int *) 0x4A002540
+	CORE_CONF_DEBUG_SEL_TST_28_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(28), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n pipe_elecidle => Connector J18 - Pin 53 (#H2) \r\n");  
+}
+
+/*****************************************************************************/
+
+core_suspend_com_n_dbg29_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg29 to pad SYSCFG_PAD_C2C_DATA13,
+	#define SYSCFG_PAD_C2C_DATA13 *(int *) 0x4A002886
+	muxMode = SYSCFG_PAD_C2C_DATA13;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA13 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(29) on dbg signal hw_dbg29
+	#define CORE_CONF_DEBUG_SEL_TST_29_REG_ADDR *(int *) 0x4A002544
+	CORE_CONF_DEBUG_SEL_TST_29_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(29), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+ 
+        GEL_TextOut("\n core_suspend_com_n => Connector J18 - Pin 54 (#H1) \r\n"); 
+}
+
+/*****************************************************************************/
+
+core_l1_suspend_com_n_dbg30_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg30 to pad SYSCFG_PAD_C2C_DATA14,
+	#define SYSCFG_PAD_C2C_DATA14 *(int *) 0x4A002888
+	muxMode = SYSCFG_PAD_C2C_DATA14;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA14 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(30) on dbg signal hw_dbg30
+	#define CORE_CONF_DEBUG_SEL_TST_30_REG_ADDR *(int *) 0x4A002548
+	CORE_CONF_DEBUG_SEL_TST_30_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(30), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_l1_suspend_com_n => Connector J18 - Pin 47 (#G2) \r\n"); 
+}
+
+/*****************************************************************************/
+
+core_sm2bl_cur_mode_dbg31_Debug_Observability()
+{
+	int hwobsControl = 0;
+	int muxMode = 0;
+	int regValue = 0;
+ 
+	// initializing all muxing paths from subsystem to pads 
+ 
+	// putting clkdiv sel to 1 (mandatory - means outputs are not divided)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFF07) | 0x00000008;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// putting hwobs force bits to 0 (no forcing active)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFF9) | 0x00000000;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// enabling hwobs in macro cells (subsystem level)
+	hwobsControl = HWOBS_CONTROL_REG_ADDR;
+	hwobsControl = (hwobsControl & 0xFFFFFFFE) | 0x00000001;
+	HWOBS_CONTROL_REG_ADDR = hwobsControl;
+ 
+	// selecting all bits to come from core domain in final mux
+	DEBOBS_FINAL_MUX_SEL_REG_ADDR = 0xFFFFFFFF;
+ 
+	// getting signal hw_dbg31 to pad SYSCFG_PAD_C2C_DATA15,
+	#define SYSCFG_PAD_C2C_DATA15 *(int *) 0x4A00288A
+	muxMode = SYSCFG_PAD_C2C_DATA15;
+	muxMode = (muxMode & 0xFFFFFFF8) | 0x5;
+	SYSCFG_PAD_C2C_DATA15 = muxMode;
+ 
+	// getting signal hwobs_debug_usb(31) on dbg signal hw_dbg31
+	#define CORE_CONF_DEBUG_SEL_TST_31_REG_ADDR *(int *) 0x4A00254C
+	CORE_CONF_DEBUG_SEL_TST_31_REG_ADDR = 0xA;
+ 
+	// selecting input signal(s) from USB obs bus mode 3
+	// to go to hwobs_debug_usb(31), 
+	#define DEBUG_CFG_REG_ADDR *(int *) 0x4A020108
+	DEBUG_CFG_REG_ADDR = 0x3;
+        
+        GEL_TextOut("\n core_sm2bl_cur_mode => Connector J18 - Pin 45 (#J4) \r\n"); 
+}
+
+/*****************************************************************************/
+
+hotmenu CORE_Debug_Observability()                
+{
+
+        /* core_ltdb_substate[0] signal on WKDBG0 Debug Pin */
+        core_ltdb_substate0_Wkdbg0_Debug_Observability();
+        
+        /* core_ltdb_substate[1] signal on WKDBG1 Debug Pin */
+	core_ltdb_substate1_Wkdbg1_Debug_Observability();
+
+        /* core_ltdb_substate[2] signal on WKDBG2 Debug Pin */
+	core_ltdb_substate2_Wkdbg2_Debug_Observability();
+        
+        /* core_ltdb_substate[3] signal on WKDBG3 Debug Pin */
+	core_ltdb_substate3_Wkdbg3_Debug_Observability();
+        
+        /* core_ltdb_link_state[0] signal on WKDBG4 Debug Pin */
+	core_ltdb_link_state0_Wkdbg4_Debug_Observability();
+        
+        /* core_ltdb_link_state[1] signal on WKDBG5 Debug Pin */
+	core_ltdb_link_state1_Wkdbg5_Debug_Observability();
+        
+        /* core_ltdb_link_state[2] signal on WKDBG6 Debug Pin */
+	core_ltdb_link_state2_Wkdbg6_Debug_Observability();
+        
+        /* core_ltdb_link_state[3] signal on WKDBG7 Debug Pin */
+	core_ltdb_link_state3_Wkdbg7_Debug_Observability();
+        
+        /* debug_mclk_usof_number[0] signal on WKDBG8 Debug Pin */
+	debug_mclk_usof_number0_Wkdbg8_Debug_Observability();
+        
+        /* core_gsts_buserraddvld signal on WKDBG9 Debug Pin */
+	core_gsts_buserraddvld_Wkdbg9_Debug_Observability();
+        
+        /* core_u2_prt_state[0] signal on WKDBG10 Debug Pin */
+	core_u2_prt_state0_Wkdbg10_Debug_Observability();
+        
+        /* core_u2_prt_state[1] signal on WKDBG11 Debug Pin */
+	core_u2_prt_state1_Wkdbg11_Debug_Observability();
+
+        /* core_u2_prt_state[2] signal on WKDBG12 Debug Pin */
+	core_u2_prt_state2_Wkdbg12_Debug_Observability();
+
+	/* core_u2_prt_state[3] signal on WKDBG13 Debug Pin */
+	core_u2_prt_state3_Wkdbg13_Debug_Observability();
+
+	/* core_u2_prt_state[4] signal on WKDBG14 Debug Pin */
+	core_u2_prt_state4_Wkdbg14_Debug_Observability();
+        
+        /* core_u2mac_txrx_state_0[0] signal on WKDBG15 Debug Pin */
+	core_u2mac_txrx_state_0_0_Wkdbg15_Debug_Observability();
+
+	/* core_u2mac_txrx_state_0[1] signal on WKDBG16 Debug Pin */
+	core_u2mac_txrx_state_0_1_dbg16_Debug_Observability();
+        
+        /* core_u2mac_txrx_state_0[2] signal on WKDBG17 Debug Pin */
+	core_u2mac_txrx_state_0_2_dbg17_Debug_Observability();
+        
+        /* core_u2mac_txrx_state_0[3] signal on WKDBG18 Debug Pin */
+	core_u2mac_txrx_state_0_3_dbg18_Debug_Observability();
+
+	/* core_u2mac_txrx_state_0[4] signal on WKDBG19 Debug Pin */
+	core_u2mac_txrx_state_0_4_dbg19_Debug_Observability();
+
+	/* core_u2mac_txrx_state_1[0] signal on WKDBG20 Debug Pin */
+	core_u2mac_txrx_state_1_0_dbg20_Debug_Observability();
+
+	/* core_u2mac_txrx_state_1[1] signal on WKDBG21 Debug Pin */
+	core_u2mac_txrx_state_1_1_dbg21_Debug_Observability();
+        
+       	/* core_u2mac_txrx_state_1[2] signal on WKDBG22 Debug Pin */
+	core_u2mac_txrx_state_1_2_dbg22_Debug_Observability();
+ 
+  	/* core_u2mac_txrx_state_1[3] signal on WKDBG23 Debug Pin */
+	core_u2mac_txrx_state_1_3_dbg23_Debug_Observability();
+
+	/* core_u2mac_txrx_state_1[4] signal on WKDBG24 Debug Pin */
+	core_u2mac_txrx_state_1_4_dbg24_Debug_Observability();
+
+	/* core_u2_dssr_state[0] signal on WKDBG25 Debug Pin */
+	core_u2_dssr_state0_dbg25_Debug_Observability();
+
+	/* core_u2_dssr_state[1] signal on WKDBG26 Debug Pin */
+	core_u2_dssr_state1_dbg26_Debug_Observability();
+
+	/* core_u2_dssr_state[2] signal on WKDBG27 Debug Pin */
+	core_u2_dssr_state2_dbg27_Debug_Observability();
+
+        /* core_u2_dssr_state[3] signal on WKDBG28 Debug Pin */
+	core_u2_dssr_state3_dbg28_Debug_Observability();
+ 
+	/* core_suspend_com_n signal on WKDBG29 Debug Pin */
+	core_suspend_com_n_dbg29_Debug_Observability();
+
+      	/* core_l1_suspend_com_n signal on WKDBG30 Debug Pin */
+	core_l1_suspend_com_n_dbg30_Debug_Observability();
+   
+	/* core_sm2bl_cur_mode signal on WKDBG31 Debug Pin */
+	core_sm2bl_cur_mode_dbg31_Debug_Observability();
+        
+} /* hotmenu CORE_Debug_Observability */

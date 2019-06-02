@@ -1,0 +1,75 @@
+/*******************************************************************/ 
+/* This GEL file allows to set the SYSCLK to output pads FREF_CLKx */
+/* [0-5]                    	                                   */
+/* Author: Isabelle Deville                              	   */
+/*******************************************************************/
+ 
+menuitem "Set FREF_CLK"
+int previous_val1 = *(int*)0x4A31E054 ; /* 0 */
+int previous_val2 = *(int*)0x4A30A310 ;
+int previous_val3 = *(int*)0x4A100198 ; /* 1 */
+int previous_val4 = *(int*)0x4A30A314 ;
+int previous_val5 = *(int*)0x4A10019c ; /* 2 */
+int previous_val6 = *(int*)0x4A30A318 ;
+int previous_val7 = *(int*)0x4A31E058 ; /* 3 */
+int previous_val8 = *(int*)0x4A30A31c ;  
+int previous_val9 = *(int*)0x4A31E05c ; /* 4 */
+int previous_val10 = *(int*)0x4A30A320 ;  
+int previous_val11 = *(int*)0x4A31E058 ; /* 5 */
+int previous_val12 = *(int*)0x4A30A324 ;
+     
+hotmenu Set_FREF_CLK0()
+{
+
+    *(int*)0x4A31E054 = 0x00010000; /* Set SYSLCK on FREF_CLK0 */ 
+    *(int*)0x4A30A310 = 0x00000100; /* Set divider to 1 */
+    
+}
+
+hotmenu Set_FREF_CLK1()
+{
+
+    *(int*)0x4A100198 = 0x00000000; /* Set SYSLCK on FREF_CLK1 */ 
+    *(int*)0x4A30A314 = 0x00000100; /* Set divider to 1 */
+}
+
+hotmenu Set_FREF_CLK2()
+{
+    *(int*)0x4A10019c = (previous_val5 & 0xFFFF0000); /* Set SYSLCK on FREF_CLK2 + keep IRQ1*/ 
+    *(int*)0x4A30A318 = 0x00000100; /* Set divider to 1 */
+}
+
+hotmenu Set_FREF_CLK3()
+{
+    *(int*)0x4A31E058 = 0x00010000; /* Set SYSLCK on FREF_CLK3 */ 
+    *(int*)0x4A30A31c = 0x00000100; /* Set divider to 1 */
+}
+
+hotmenu Set_FREF_CLK4()
+{
+    *(int*)0x4A31E05c = 0x00010000; /* Set SYSLCK on FREF_CLK4 */ 
+    *(int*)0x4A30A320 = 0x00000100; /* Set divider to 1 */
+}
+
+hotmenu Set_FREF_CLK5()
+{
+    *(int*)0x4A31E058 = 0x00010000; /* Set SYSLCK on FREF_CLK5 */ 
+    *(int*)0x4A30A324 = 0x00000100; /* Set divider to 1 */
+}
+
+hotmenu Reset_all()
+{
+    *(int*)0x4A31E054 = previous_val1;
+    *(int*)0x4A30A310 = previous_val2;
+    *(int*)0x4A100198 = previous_val3;
+    *(int*)0x4A30A314 = previous_val4;
+    *(int*)0x4A10019c = previous_val5;
+    *(int*)0x4A30A318 = previous_val6;
+    *(int*)0x4A31E058 = previous_val7;
+    *(int*)0x4A30A31c = previous_val8;
+    *(int*)0x4A31E05c = previous_val9;
+    *(int*)0x4A30A320 = previous_val10;
+    *(int*)0x4A31E058 = previous_val11;
+    *(int*)0x4A30A324 = previous_val12;
+
+}

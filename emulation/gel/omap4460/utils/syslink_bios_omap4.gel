@@ -1,0 +1,1243 @@
+#define BIT_ONE(bit) (1<<bit)
+#define BIT_ZERO     (0)
+
+// translate    - enable AMMU page translation
+#define AMMU_PAGE_TRANSLATE_YES                     BIT_ZERO
+#define AMMU_PAGE_TRANSLATE_NO                      BIT_ONE(0)
+
+// enable       - enable page (0=page not enabled, 1=page enabled) R/W 0x0
+#define AMMU_PAGE_ENABLE_YES                        BIT_ONE(0)
+#define AMMU_PAGE_ENABLE_NO                         BIT_ZERO
+
+// size         - size of page (RTL configurable) R/W 0x0
+//--- LARGE ---
+#define AMMU_LARGE_PAGE_SIZE_31M                    BIT_ZERO
+#define AMMU_LARGE_PAGE_SIZE_512                    BIT_ONE(1)
+
+//--- MEDIUM ---
+#define AMMU_MEDIUM_PAGE_128K                       BIT_ZERO
+#define AMMU_MEDIUM_PAGE_256K                       BIT_ONE(1)
+
+//--- SMALL ---
+#define AMMU_SMALL_PAGE_4K                          BIT_ZERO
+#define AMMU_SMALL_PAGE_16K                         BIT_ONE(1)
+
+// endianism    - endianism (0=big endian, 1=little endian) R/W 0x0
+#define AMMU_ENDIANISM_BIG                          BIT_ZERO
+#define AMMU_ENDIANISM_LITTLE                       BIT_ONE(2)
+
+// volatile     - volatile qualifier, see policy matrix (0=do not follow volatile qualifer, 1=follow volatile qualifier) R/W 0x0
+#define AMMU_VOLATILE_YES                           BIT_ONE(3)
+#define AMMU_VOLATILE_NO                            BIT_ZERO
+
+// execute      - execute only (see read/execute table) R/W 0x0
+#define AMMU_EXECUTE_ONLY_YES                       BIT_ONE(4)
+#define AMMU_EXECUTE_ONLY_NO                        BIT_ZERO
+
+// read         - read only (see read/execute table) R/W 0x0
+#define AMMU_READ_ONLY_YES                          BIT_ONE(5)
+#define AMMU_READ_ONLY_NO                           BIT_ZERO
+
+// preload      - preload region (0=do not preload, 1=preload) R/W 0x0
+#define AMMU_PREFETCH_ENABLE                        BIT_ONE(6)
+#define AMMU_PREFETCH_ENABLE_NO                     BIT_ZERO
+
+// exclusion    - cache exclusion (0=do not send exclusion sideband, 1=send exclusion sideband) R/W 0x0
+#define AMMU_EXCLUSION_SEND                         BIT_ONE(7)
+#define AMMU_EXCLUSION_NOT_SEND                     BIT_ZERO
+
+// coherency    - cache coherent region (0=not coherent, 1=coherent) R/W 0x0
+#define AMMU_COHERENCY_YES                          BIT_ONE(8)
+#define AMMU_COHERENCY_NO                           BIT_ZERO
+
+// L1 cacheable - L1 cache policy (0=non-cacheable, 1=cacheable) R/W 0x0
+#define AMMU_L1_CACHE_POLICY_CACHEABLE              BIT_ONE(16)
+#define AMMU_L1_CACHE_POLICY_NON_CACHEABLE          BIT_ZERO
+
+// L1 posted    - L1 posted policy (0=non-posted 1=posted) R/W 0x0
+#define AMMU_L1_POSTED_POLICY_POSTED                BIT_ONE(17)
+#define AMMU_L1_POSTED_POLICY_NON_POSTED            BIT_ZERO
+
+// L1 allocate  - L1 allocate policy (0=non-allocate 1=allocate) R/W 0x0
+#define AMMU_L1_ALLOCATE_POLICY_ALLOCATE            BIT_ONE(18)
+#define AMMU_L1_ALLOCATE_POLICY_NON_ALLOCATE        BIT_ZERO
+
+// L1 write     - L1 write policy (0=write through, 1=write back) R/W 0x0
+#define AMMU_L1_WRITE_POLICY_WRITE_BACK             BIT_ONE(19)
+#define AMMU_L1_WRITE_POLICY_WRITE_THROUGH          BIT_ZERO
+
+// L2 cacheable - L2 cache policy (0=non-cacheable, 1=cacheable) R/W 0x0
+#define AMMU_L2_CACHE_POLICY_CACHEABLE              BIT_ONE(20)
+#define AMMU_L2_CACHE_POLICY_NON_CACHEABLE          BIT_ZERO
+
+// L2 posted    - L2 posted policy (0=non-posted 1=posted) R/W 0x0
+#define AMMU_L2_POSTED_POLICY_POSTED                BIT_ONE(21)
+#define AMMU_L2_POSTED_POLICY_NON_POSTED            BIT_ZERO
+
+// L2 allocate  - L2 allocate policy (0=non-allocate 1=allocate) R/W 0x0
+#define AMMU_L2_ALLOCATE_POLICY_ALLOCATE            BIT_ONE(22)
+#define AMMU_L2_ALLOCATE_POLICY_NON_ALLOCATE        BIT_ZERO
+
+// L2 write     - L2 write policy (0=write through, 1=write back) 
+#define AMMU_L2_WRITE_POLICY_WRITE_BACK             BIT_ONE(23)
+#define AMMU_L2_WRITE_POLICY_WRITE_THROUGH          BIT_ZERO
+
+//preload    - preload page (0=do nothing, preload done, 1=preload) R/W 0x0
+#define AMMU_SMALL_MAINT_PRELOAD_YES                BIT_ONE(0)
+#define AMMU_SMALL_MAINT_PRELOAD_NO                 BIT_ZERO
+
+//lock       - lock page (0=do nothing, lock done, 1=lock) R/W 0x0
+#define AMMU_SMALL_MAINT_LOCK_YES                   BIT_ONE(1)
+#define AMMU_SMALL_MAINT_LOCK_NO                    BIT_ZERO
+
+//clean      - evict page (0=do nothing, clean done, 1=clean) R/W 0x0
+#define AMMU_SMALL_MAINT_CLEAN_YES                   BIT_ONE(2)
+#define AMMU_SMALL_MAINT_CLEAN_NO                    BIT_ZERO
+
+//invalidate - invalidate page (0=do nothing, invalidate done, 1=invalidate) R/W 0x0
+#define AMMU_SMALL_MAINT_INVALIDATE_YES                   BIT_ONE(3)
+#define AMMU_SMALL_MAINT_INVALIDATE_NO                    BIT_ZERO
+
+//interrupt  - generate interrupt when maintenance operation is complete (0=do not generate interrupt, 1=generate interrupt) R/W 0x0
+#define AMMU_SMALL_MAINT_INTERRUPT_YES                   BIT_ONE(4)
+#define AMMU_SMALL_MAINT_INTERRUPT_NO                    BIT_ZERO
+
+//#define AMMU_BASE_ADDRESS 0x55080800
+#define AMMU_BASE_ADDRESS 0x40000800
+
+// OMAP4
+#define AMMU_LARGE_IDX_ADDR(page_no)   (*((unsigned long*)(AMMU_BASE_ADDRESS + 4*page_no + 0)))
+#define AMMU_LARGE_IDX_XLTE(page_no)   (*((unsigned long*)(AMMU_BASE_ADDRESS + 4*page_no + 0x20)))
+#define AMMU_LARGE_IDX_PLOY(page_no)   (*((unsigned long*)(AMMU_BASE_ADDRESS + 4*page_no + 0x40)))
+
+#define AMMU_MEDIUM_IDX_ADDR(page_no)  (*((unsigned long*)(AMMU_BASE_ADDRESS + 4*page_no + 0x60)))
+#define AMMU_MEDIUM_IDX_XLTE(page_no)  (*((unsigned long*)(AMMU_BASE_ADDRESS + 4*page_no + 0xA0)))
+#define AMMU_MEDIUM_IDX_PLOY(page_no)  (*((unsigned long*)(AMMU_BASE_ADDRESS + 4*page_no + 0xE0)))
+
+#define AMMU_SMALL_IDX_ADDR(page_no)   (*((unsigned long*)(AMMU_BASE_ADDRESS + 4*page_no + 0x120)))
+#define AMMU_SMALL_IDX_XLTE(page_no)   (*((unsigned long*)(AMMU_BASE_ADDRESS + 4*page_no + 0x1A0)))
+#define AMMU_SMALL_IDX_PLOY(page_no)   (*((unsigned long*)(AMMU_BASE_ADDRESS + 4*page_no + 0x220)))
+#define AMMU_SMALL_IDX_MAINT(page_no)  (*((unsigned long*)(AMMU_BASE_ADDRESS + 4*page_no + 0x2A0)))
+
+
+#define DDR_BASE 0x80000000
+
+#define EMIF_BASE 0x4c000000
+#define EMIF4D__SDRAM_REF_CTRL              (unsigned int*)(EMIF_BASE + 0x10)
+#define EMIF4D__SDRAM_REF_CTRL_SHDW         (unsigned int*)(EMIF_BASE + 0x14)
+#define EMIF4D__SDRAM_TIM_1                 (unsigned int*)(EMIF_BASE + 0x18)
+#define EMIF4D__SDRAM_TIM_2                 (unsigned int*)(EMIF_BASE + 0x20)
+#define EMIF4D__SDRAM_TIM_3                 (unsigned int*)(EMIF_BASE + 0x28)
+#define EMIF4D__SDRAM_TIM_1_SHDW            (unsigned int*)(EMIF_BASE + 0x1c)
+#define EMIF4D__SDRAM_TIM_2_SHDW            (unsigned int*)(EMIF_BASE + 0x24)
+#define EMIF4D__SDRAM_TIM_3_SHDW            (unsigned int*)(EMIF_BASE + 0x2c)
+#define EMIF4D__SDRAM_CONFIG                (unsigned int*)(EMIF_BASE + 0x08)
+#define EMIF4D__DDR_PHY_CTRL_1              (unsigned int*)(EMIF_BASE + 0xe4)
+#define EMIF4D__DDR_PHY_CTRL_2              (unsigned int*)(EMIF_BASE + 0xec)
+#define EMIF4D__DDR_PHY_CTRL_1_SHDW         (unsigned int*)(EMIF_BASE + 0xe8)
+#define EMIF4D__PWR_MGMT_CTRL               (unsigned int*)(EMIF_BASE + 0x38)
+#define EMIF4D__LPDDR2_MODE_REG_CFG         (unsigned int*)(EMIF_BASE + 0x50)
+#define EMIF4D__LPDDR2_MODE_REG_DATA        (unsigned int*)(EMIF_BASE + 0x40)
+
+
+#define CKGEN_CM1_BASE 0x4A004100
+#define CKGEN_CM1__CM_SHADOW_FREQ_CONFIG1 (unsigned int*)(EMIF_BASE + 0x160)
+
+// Emif power managment states
+#define    EMIF4D_FORCE_IDLE     0x0    
+#define    EMIF4D_NO_IDLE        0x1    
+#define    EMIF4D_SMART_IDLE     0x2
+
+#define    EMIF4D_LPM_DISABLE    0x0    
+#define    EMIF4D_CLOCK_STOP     0x1    
+#define    EMIF4D_SELF_REFRESH   0x2    
+#define    EMIF4D_POWER_DOWN     0x3
+
+//Current EMIF power MGMT state
+#define    EMIF4D_IDLEMODE EMIF4D_NO_IDLE
+#define    EMIF4D_LPMODE EMIF4D_LPM_DISABLE
+#define    EMIF4D_PMTIMER  0x15     
+//EMIF4D_NO_WAIT=0x0,16=0x1,32=0x2,64=0x3,128=0x4,256=0x5,512=0x6,1024=0x7,2048=0x8,4096=0x9,8192=0x10,16384=0x11,32768=0x12,65536=0x13,131072=0x14,262144=0x15
+
+
+//MMU Config address
+#define AMMU_LARGE_ADDR__0     0x40000800
+#define AMMU_LARGE_XLTE__0     0x40000820
+#define AMMU_LARGE_POLICY__0   0x40000840
+#define AMMU_MED_ADDR__0       0x40000860
+#define AMMU_MED_XLTE__0       0x400008A0
+#define AMMU_MED_POLICY__0     0x400008E0
+#define AMMU_SMALL_POLICY__0   0x40000A20
+
+#define AMMU_LARGE_ADDR__1     (unsigned int*)(L1MMU_LARGE_ADDR__0 + 0x4)
+#define AMMU_SMALL_POLICY__1   (unsigned int*)(L1MMU_SMALL_POLICY__0 + 0x4)
+#define AMMU_MED_ADDR__1       (unsigned int*)(L1MMU_MED_ADDR__0 + 0x4)
+#define AMMU_MED_XLTE__1       (unsigned int*)(L1MMU_MED_XLTE__0 + 0x4)
+#define AMMU_MED_POLICY__1     (unsigned int*)(L1MMU_MED_POLICY__0 + 0x4)
+#define AMMU_LARGE_ADDR__1     (unsigned int*)(L1MMU_LARGE_ADDR__0 + 0x4)
+#define AMMU_LARGE_ADDR__2     (unsigned int*)(L1MMU_LARGE_ADDR__0 + 0x8)
+#define AMMU_LARGE_ADDR__3     (unsigned int*)(L1MMU_LARGE_ADDR__0 + 0xc)
+#define AMMU_LARGE_XLTE__1     (unsigned int*)(L1MMU_LARGE_XLTE__0 + 0x4)
+#define AMMU_LARGE_XLTE__2     (unsigned int*)(L1MMU_LARGE_XLTE__0 + 0x8)
+#define AMMU_LARGE_XLTE__3     (unsigned int*)(L1MMU_LARGE_XLTE__0 + 0xc)
+#define AMMU_LARGE_POLICY__1   (unsigned int*)(L1MMU_LARGE_POLICY__0 + 0x4)
+#define AMMU_LARGE_POLICY__2   (unsigned int*)(L1MMU_LARGE_POLICY__0 + 0x8)
+#define AMMU_LARGE_POLICY__3   (unsigned int*)(L1MMU_LARGE_POLICY__0 + 0xc)
+
+#define L2MMU_TTB_ADDR    0x8FB00000
+#define L2MMU_DESC_ADDR(va)    (*((unsigned int*)(L2MMU_TTB_ADDR + ((va & 0xFFF00000) >> 18))))
+//#define L2MMU_DESC_1MB_VALUE(pa)    ((pa & 0xFFF00000) | 0x20402)
+//#define L2MMU_DESC_1MB_VALUE(pa)    ((pa & 0xFFF00000) | 0x20C02)
+#define L2MMU_DESC_1MB_VALUE(pa)    ((pa & 0xFFF00000) | 0x2)
+
+menuitem"BasicInitialization";
+
+/*
+StartUp()
+{
+  //GEL_MapOff();
+  //GEL_MapReset();
+  //memorymap_init();
+  //GEL_MapOn();
+}
+
+OnTargetConnect()
+{
+  //GEL_MapOff();
+  //GEL_MapReset();
+  //memorymap_init();
+  //GEL_MapOn();
+}
+*/
+
+/*
+hotmenu 
+InitPRCM()
+{
+*(unsigned int*) 0x4a307800 = 0x3;
+*(unsigned int*) 0x4a307830 = 0x2;
+*(unsigned int*) 0x4a307838 = 0x102;
+*(unsigned int*) 0x4a307840 = 0x01000002;
+*(unsigned int*) 0x4a307858 = 0x2;
+*(unsigned int*) 0x4a307878 = 0x2;
+*(unsigned int*) 0x4a307880 = 0x1;
+ ;
+*(unsigned int*) 0x4A004500 = 0x3;
+*(unsigned int*) 0x4A004528 = 0x2;
+*(unsigned int*) 0x4A004530 = 0x2;
+*(unsigned int*) 0x4A004538 = 0x2;
+*(unsigned int*) 0x4A004540 = 0x2;
+*(unsigned int*) 0x4A004548 = 0x2;
+*(unsigned int*) 0x4A004550 = 0x2;
+*(unsigned int*) 0x4A004558 = 0x2;
+*(unsigned int*) 0x4A004560 = 0xf02;
+*(unsigned int*) 0x4A004568 = 0x2;
+*(unsigned int*) 0x4A004570 = 0x2;
+*(unsigned int*) 0x4A004578 = 0x2;
+*(unsigned int*) 0x4A004580 = 0x2;
+*(unsigned int*) 0x4A004588 = 0x2;
+ ;
+*(unsigned int*) 0x4A008900 = 0x2;
+*(unsigned int*) 0x4A008a00 = 0x2;
+*(unsigned int*) 0x4A008b00 = 0x2;
+*(unsigned int*) 0x4A008c00 = 0x2;
+ ;
+*(unsigned int*) 0x4A008900 = 0x3;
+*(unsigned int*) 0x4A008a00 = 0x0;
+*(unsigned int*) 0x4A008b00 = 0x3;
+*(unsigned int*) 0x4A008c00 = 0x3;
+ ;
+*(unsigned int*) 0x4A008828 = 0x1;
+*(unsigned int*) 0x4A008920 = 0x1;
+ ;
+ ;
+*(unsigned int*) 0x4A008F00 = 0x2;
+*(unsigned int*) 0x4A008F00 = 0x3;
+*(unsigned int*) 0x4A008F20 = 0x1;
+*(unsigned int*) 0x4A008F28 = 0x1;
+ ;
+ ;
+*(unsigned int*) 0x4A009000 = 0x2;
+*(unsigned int*) 0x4A009000 = 0x3;
+*(unsigned int*) 0x4A009020 = 0x102;
+*(unsigned int*) 0x4A009028 = 0x2;
+ ;
+*(unsigned int*) 0x4A009100 = 0x2;
+*(unsigned int*) 0x4A009100 = 0x3;
+*(unsigned int*) 0x4A009120 = 0xf02;
+*(unsigned int*) 0x4A009128 = 0x2;
+ ;
+*(unsigned int*) 0x4A009200 = 0x2;
+*(unsigned int*) 0x4A009200 = 0x3;
+*(unsigned int*) 0x4A009220 = 0x2;
+ ;
+*(unsigned int*) 0x4A009300 = 0x3;
+*(unsigned int*) 0x4A009328 = 0x2;
+*(unsigned int*) 0x4A009330 = 0x2;
+*(unsigned int*) 0x4A009338 = 0x2;
+*(unsigned int*) 0x4A009340 = 0x102;
+*(unsigned int*) 0x4A009358 = 0xff02;
+*(unsigned int*) 0x4A009360 = 0x102;
+*(unsigned int*) 0x4A009368 = 0x712;
+*(unsigned int*) 0x4A009380 = 0x2;
+*(unsigned int*) 0x4A009388 = 0x2;
+*(unsigned int*) 0x4A009390 = 0x2;
+*(unsigned int*) 0x4A009398 = 0x2;
+*(unsigned int*) 0x4A0093A8 = 0x2;
+*(unsigned int*) 0x4A0093C0 = 0x2;
+*(unsigned int*) 0x4A0093C8 = 0x2;
+*(unsigned int*) 0x4A0093D0 = 0x2;
+*(unsigned int*) 0x4A0093E0 = 0x2;
+ ;
+*(unsigned int*) 0x4A009400 = 0x2;
+*(unsigned int*) 0x4A009580 = 0x2;
+*(unsigned int*) 0x4A009400 = 0x3;
+*(unsigned int*) 0x4A009580 = 0x3;
+*(unsigned int*) 0x4A009420 = 0x2;
+*(unsigned int*) 0x4A009428 = 0x2;
+*(unsigned int*) 0x4A009430 = 0x2;
+*(unsigned int*) 0x4A009438 = 0x2;
+*(unsigned int*) 0x4A009440 = 0x2;
+*(unsigned int*) 0x4A009448 = 0x2;
+*(unsigned int*) 0x4A009450 = 0x2;
+*(unsigned int*) 0x4A009458 = 0x2;
+*(unsigned int*) 0x4A009460 = 0x102;
+*(unsigned int*) 0x4A009468 = 0x102;
+*(unsigned int*) 0x4A009470 = 0x102;
+*(unsigned int*) 0x4A009478 = 0x102;
+*(unsigned int*) 0x4A009480 = 0x102;
+*(unsigned int*) 0x4A009488 = 0x2;
+*(unsigned int*) 0x4A009490 = 0x2;
+*(unsigned int*) 0x4A009498 = 0x2;
+*(unsigned int*) 0x4A0094A0 = 0x2;
+*(unsigned int*) 0x4A0094A8 = 0x2;
+*(unsigned int*) 0x4A0094B0 = 0x2;
+*(unsigned int*) 0x4A0094B8 = 0x2;
+*(unsigned int*) 0x4A0094D0 = 0x2;
+*(unsigned int*) 0x4A0094D8 = 0x2;
+*(unsigned int*) 0x4A0094E0 = 0x2;
+*(unsigned int*) 0x4A0094E8 = 0x2;
+*(unsigned int*) 0x4A0094F0 = 0x2;
+*(unsigned int*) 0x4A0094F8 = 0x2;
+*(unsigned int*) 0x4A009500 = 0x2;
+*(unsigned int*) 0x4A009508 = 0x2;
+*(unsigned int*) 0x4A009520 = 0x2;
+*(unsigned int*) 0x4A009528 = 0x2;
+*(unsigned int*) 0x4A009530 = 0x2;
+*(unsigned int*) 0x4A009538 = 0x702;
+*(unsigned int*) 0x4A009540 = 0x2;
+*(unsigned int*) 0x4A009548 = 0x2;
+*(unsigned int*) 0x4A009550 = 0x2;
+*(unsigned int*) 0x4A009558 = 0x2;
+*(unsigned int*) 0x4A009560 = 0x2;
+*(unsigned int*) 0x4A0095A0 = 0x2;
+*(unsigned int*) 0x4A0095A8 = 0x2;
+*(unsigned int*) 0x4A0095B0 = 0x2;
+*(unsigned int*) 0x4A0095B8 = 0x2;
+*(unsigned int*) 0x4A0095C0 = 0x2;
+*(unsigned int*) 0x4A0095C8 = 0x2;
+}
+*/
+
+
+/************************/
+/* Memory Map Functions */
+/************************/
+MemorymapOn_CortexM3_Sys()
+{
+
+    GEL_MapOn();
+    GEL_MapReset();
+    GEL_MapAdd( 0x00000000, 0, 0x00004000, 1, 0 );  // ARM Instruction ROM
+    GEL_MapAdd( 0x20000000, 0, 0x00010000, 1, 1 );  // ARM RAM
+    GEL_MapAdd( 0x40000000, 0, 0x20000000, 1, 1 );  // L3
+    //GEL_MapAdd( 0x55040000, 0, 0x00020000, 1, 1 );  // ISP5
+    //GEL_MapAdd( 0x55060000, 0, 0x00020000, 1, 1 );  // Simcop
+    //GEL_MapAdd( 0x55080000, 0, 0x00001000, 1, 1 );  // Unicache,MMU Config
+    //GEL_MapAdd( 0x55081000, 0, 0x00001000, 1, 1 );  // PRCM,WKUPGEN
+    //GEL_MapAdd( 0x55082000, 0, 0x00001000, 1, 1 );  // L3 master
+    //GEL_MapAdd( 0xE0001000, 0, 0x00001000, 1, 1 );  // DWT
+    //GEL_MapAdd( 0xE0002000, 0, 0x00001000, 1, 1 );  // FPB
+    //GEL_MapAdd( 0xE000E000, 0, 0x00001000, 1, 1 );  // NVIC
+    //GEL_MapAdd( 0xE00F2000, 0, 0x00001000, 1, 1 );  // Icecrusher
+    //GEL_MapAdd( 0xE0043000, 0, 0x000BB000, 1, 1 );  // Peripheral
+    GEL_MapAdd( 0x60000000, 0, 0x20000000, 1, 1 );  // DMM
+    GEL_MapAdd( 0x80000000, 0, 0x20000000, 1, 1 );  // EMIF
+}
+
+
+memorymap_init_old()
+{
+    /* 64-bit OCP Master Port */
+    GEL_MapAddStr(0x00000000, 0, 0x00004000, "R|W|AS4", 0); 	/* Boot space - 16KBytes */
+    //GEL_MapAddStr(0x00004000, 0, 0x0FFFC000, "R|W|AS4", 0); 	/* L3 space - 1.5GBytes */
+    GEL_MapAddStr(0x00004000, 0, 0x001FC000, "R|W|AS4", 0); 	/* L3 space - SysM3 Image */
+    GEL_MapAddStr(0x00800000, 0, 0x00200000, "R|W|AS4", 0); 	/* L3 space - AppM3 Image */
+
+    /* Private memory map */
+    GEL_MapAddStr(0x55000000, 0, 0x00004000, "R|W|AS4", 0);  	/* ROM - 16KBytes */
+    GEL_MapAddStr(0x55020000, 0, 0x00010000, "R|W|AS4", 0);  	/* RAM - 64KBytes */
+    GEL_MapAddStr(0x55040000, 0, 0x00020000, "R|W|AS4", 0);  	/* ISP5 - 128KBytes */
+    GEL_MapAddStr(0x55060000, 0, 0x00020000, "R|W|AS4", 0);  	/* SIMCOP - 128KBytes */
+    GEL_MapAddStr(0x55080000, 0, 0x00001000, "R|W|AS4", 0);  	/* Unicache MMU - 4KBytes */
+    GEL_MapAddStr(0x55081000, 0, 0x00001000, "R|W|AS4", 0); 	/* Local PRCM register- 4KBytes */
+
+    GEL_MapAddStr(0x55082000, 0, 0x00001000, "R|W|AS4", 0); 	/* L2 MMU- 4KBytes */
+
+    /* Bit band mapping */
+    //GEL_MapAddStr(0x20000000, 0, 0x00100000, "R|W|AS4", 0); 	/* Bit band region 1- 1MBytes */
+    //GEL_MapAddStr(0x22000000, 0, 0x02000000, "R|W|AS4", 0); 	/* Bit band alias 1- 32MBytes */
+    //GEL_MapAddStr(0x40000000, 0, 0x00100000, "R|W|AS4", 0); 	/* Bit band region 2- 1MBytes */
+    //GEL_MapAddStr(0x42000000, 0, 0x02000000, "R|W|AS4", 0); 	/* Bit band alias 2- 32MBytes */
+
+    /* AMMU translated map */
+    GEL_MapAddStr(0x20000000, 0, 0x00010000, "R|W|AS4", 0); 	/* AMMU translated L2RAM - 64KBytes */
+    GEL_MapAddStr(0x50000000, 0, 0x00040000, "R|W|AS4", 0); 	/* AMMU translated ISS - 256KBytes */
+    GEL_MapAddStr(0x40000000, 0, 0x00100000, "R|W|AS4", 0); 	/* Bit band region 2- 1MBytes */
+
+    /* 64-bit OCP Master Port */
+    GEL_MapAddStr(0x60000000, 0, 0x20000000, "R|W|AS4", 0); 	/* Tiler space - 512MBytes */
+    GEL_MapAddStr(0x80000000, 0, 0x00400000, "R|W|AS4", 0); 	/* SW DMM Region - 4 MB */
+    GEL_MapAddStr(0x84000000, 0, 0x00200000, "R|W|AS4", 0); 	/* SysM3 Data Region - 2 MB */
+    GEL_MapAddStr(0x8A000000, 0, 0x00200000, "R|W|AS4", 0); 	/* AppM3 Data Region - 2 MB */
+    GEL_MapAddStr(0x90000000, 0, 0x00100000, "R|W|AS4", 0); 	/* SysM3-AppM3 Region - 1 MB */
+    GEL_MapAddStr(0x98000000, 0, 0x00100000, "R|W|AS4", 0); 	/* OMAP4 IPC Region - 1 MB */
+
+    GEL_MapAddStr(0x87000000, 0, 0x4000, "R|W|AS4", 0); 	/* EMIF - 128 MB */
+    //GEL_MapAddStr(0x80000000, 0, 0x08000000, "R|W|AS4", 0); 	/* EMIF - 128 MB */
+    //GEL_MapAddStr(0x80000000, 0, 0x80000000, "R|W|AS4", 0); 	/* EMIF - 2GBytes */
+    //GEL_MapAddStr(0x80000000, 0, 0x20000000, "R|W|AS4", 0); 	/* EMIF - 512MBytes */
+
+    /* Private peripheral map (different view from each cortexM3 */
+    GEL_MapAddStr(0xE0001000, 0, 0x00001000, "R|W|AS4", 0); 	/* DWT- 4KBytes */
+    GEL_MapAddStr(0xE0002000, 0, 0x00001000, "R|W|AS4", 0); 	/* FPB- 4KBytes */
+    GEL_MapAddStr(0xE000E000, 0, 0x00001000, "R|W|AS4", 0); 	/* NVIC- 4KBytes */
+    GEL_MapAddStr(0xE0042000, 0, 0x00001000, "R|W|AS4", 0); 	/* IceCrusher Space- 4KBytes */
+    GEL_MapAddStr(0xE00FE000, 0, 0x00001000, "R|W|AS4", 0); 	/* RW table- 4KBytes */
+    GEL_MapAddStr(0xE00FF000, 0, 0x00001000, "R|W|AS4", 0); 	/* ROM table- 4KBytes */      
+}
+
+memorymap_init1()
+{
+    /* 64-bit OCP Master Port */
+    GEL_MapAddStr(0x00000000, 0, 0x00004000, "R|W|AS4", 0); 	/* Boot space - 16KBytes */
+    GEL_MapAddStr(0x00004000, 0, 0x001FC000, "R|W|AS4", 0); 	/* L3 space - SysM3 Image */
+    GEL_MapAddStr(0x00800000, 0, 0x00200000, "R|W|AS4", 0); 	/* L3 space - AppM3 Image */
+    //GEL_MapAddStr(0x00000000, 0, 0x01000000, "R|W|AS4", 0); 	/* Entire mapped Code Space - 16MB */
+
+    /* Private memory map */
+    GEL_MapAddStr(0x55000000, 0, 0x00004000, "R|W|AS4", 0);  	/* ROM - 16KBytes */
+    GEL_MapAddStr(0x55020000, 0, 0x00010000, "R|W|AS4", 0);  	/* RAM - 64KBytes */
+    GEL_MapAddStr(0x55040000, 0, 0x00020000, "R|W|AS4", 0);  	/* ISP5 - 128KBytes */
+    GEL_MapAddStr(0x55060000, 0, 0x00020000, "R|W|AS4", 0);  	/* SIMCOP - 128KBytes */
+    GEL_MapAddStr(0x55080000, 0, 0x00001000, "R|W|AS4", 0);  	/* Unicache MMU - 4KBytes */
+    GEL_MapAddStr(0x55081000, 0, 0x00001000, "R|W|AS4", 0); 	/* Local PRCM register- 4KBytes */
+    GEL_MapAddStr(0x55082000, 0, 0x00001000, "R|W|AS4", 0); 	/* L2 MMU- 4KBytes */
+
+    /* Bit band mapping */
+    //GEL_MapAddStr(0x20000000, 0, 0x00100000, "R|W|AS4", 0); 	/* Bit band region 1- 1MBytes */
+    //GEL_MapAddStr(0x22000000, 0, 0x02000000, "R|W|AS4", 0); 	/* Bit band alias 1- 32MBytes */
+    //GEL_MapAddStr(0x40000000, 0, 0x00100000, "R|W|AS4", 0); 	/* Bit band region 2- 1MBytes */
+    //GEL_MapAddStr(0x42000000, 0, 0x02000000, "R|W|AS4", 0); 	/* Bit band alias 2- 32MBytes */
+
+    /* AMMU translated map */
+    GEL_MapAddStr(0x20000000, 0, 0x00010000, "R|W|AS4", 0); 	/* AMMU translated L2RAM - 64KBytes */
+    GEL_MapAddStr(0x50000000, 0, 0x00040000, "R|W|AS4", 0); 	/* AMMU translated ISS - 256KBytes */
+    GEL_MapAddStr(0x40000000, 0, 0x00004000, "R|W|AS4", 0); 	/* Bit band region 2- 1MBytes */
+
+    /* L3 Tiler space mapping */
+    GEL_MapAddStr(0x60000000, 0, 0x10000000, "R|W|AS4", 0); 	/* Tiler space (8-bit and 16-bit) - 256 MB */
+    GEL_MapAddStr(0x78000000, 0, 0x08000000, "R|W|AS4", 0); 	/* Tiler space (Paged mode) - 128MB */
+
+    /* L3 External SDRAM Memory */
+    GEL_MapAddStr(0x80000000, 0, 0x02000000, "R|W|AS4", 0); 	/* Entire EXTMEM region - 32 MB */
+    GEL_MapAddStr(0xA0000000, 0, 0x00100000, "R|W|AS4", 0); 	/* Syslink IPC region - 1 MB */
+
+    /* L3 External SDRAM Memory - Alternate individual memory mappings */
+    //GEL_MapAddStr(0x80000000, 0, 0x00100000, "R|W|AS4", 0); 	/* MEM_CONST_SYSM3 - 1 MB */
+    //GEL_MapAddStr(0x80100000, 0, 0x00100000, "R|W|AS4", 0); 	/* MEM_CONST_APPM3 - 1 MB */
+    //GEL_MapAddStr(0x80200000, 0, 0x00100000, "R|W|AS4", 0); 	/* MEM_HEAP_SYSM3 - 1 MB */
+    //GEL_MapAddStr(0x80300000, 0, 0x01000000, "R|W|AS4", 0); 	/* MEM_HEAP_APPM3 - 16 MB */
+    //GEL_MapAddStr(0x81300000, 0, 0x00C00000, "R|W|AS4", 0); 	/* MEM_MPU_DUCATI_SHMEM - 12 MB */
+    //GEL_MapAddStr(0x81F00000, 0, 0x00100000, "R|W|AS4", 0); 	/* MEM_IPC_SHMEM - 12 MB */
+    //GEL_MapAddStr(0xA0000000, 0, 0x00100000, "R|W|AS4", 0); 	/* Syslink IPC region - 1 MB */
+
+
+    /* L3/L4 Peripherals */
+    GEL_MapAddStr(0xA8000000, 0, 0x01000000, "R|W|AS4", 0); 	/* L4_PER region - 16 MB */
+    GEL_MapAddStr(0xAA000000, 0, 0x01000000, "R|W|AS4", 0); 	/* L4_CFG region- 16 MB */
+    GEL_MapAddStr(0xBA000000, 0, 0x01000000, "R|W|AS4", 0); 	/* IVAHD_CONFIG region- 16 MB */
+    GEL_MapAddStr(0xBB000000, 0, 0x00C00000, "R|W|AS4", 0); 	/* IVAHD_SL2 region - 16 MB */
+
+    /* Private peripheral map (different view from each cortexM3 */
+    GEL_MapAddStr(0xE0001000, 0, 0x00001000, "R|W|AS4", 0); 	/* DWT- 4KBytes */
+    GEL_MapAddStr(0xE0002000, 0, 0x00001000, "R|W|AS4", 0); 	/* FPB- 4KBytes */
+    GEL_MapAddStr(0xE000E000, 0, 0x00001000, "R|W|AS4", 0); 	/* NVIC- 4KBytes */
+    GEL_MapAddStr(0xE0042000, 0, 0x00001000, "R|W|AS4", 0); 	/* IceCrusher Space- 4KBytes */
+    GEL_MapAddStr(0xE00FE000, 0, 0x00001000, "R|W|AS4", 0); 	/* RW table- 4KBytes */
+    GEL_MapAddStr(0xE00FF000, 0, 0x00001000, "R|W|AS4", 0); 	/* ROM table- 4KBytes */      
+}
+
+menuitem "Ducati";
+hotmenu set_MemoryMap_ccs()
+{
+    GEL_MapOff();
+    GEL_MapReset();
+    memorymap_init1();
+    GEL_MapOn();
+}
+
+hotmenu dump_L2MMU_tlbs()
+{
+    int ramv;
+    int camv;
+
+    int i;
+    int tmp;
+
+    GEL_TextOut("\n\n         ducatiMMU Configuration         \n");
+    GEL_TextOut(    "======================================\n");
+    GEL_TextOut(    "  Curr         CAM            RAM     \n");
+    GEL_TextOut(    "--------------------------------------\n");
+    for ( i = 0; i < 32; i ++ )
+    {
+        tmp = i << 4;
+        *(int *)0x40002050 = tmp;
+        camv = *(int *)0x40002068;
+        ramv = *(int *)0x4000206C;
+        GEL_TextOut("%x:  %x     %x\n",,,,,i,camv, ramv);
+    }
+
+    GEL_TextOut(    "======================================\n");
+}
+
+/* Use this with SiVal StandAlone environment and loading into EXTMEM using TLBs */
+hotmenu 
+reconfigure_AMMU_L2MMU()
+{
+		*(int*)0x400009A0 = 0x0;
+}
+
+/* Use this with SiVal StandAlone environment and loading into EXTMEM using TLBs */
+hotmenu 
+program_AMMU_reinitialize()
+{
+    GEL_TextOut("program_AMMU called \n");
+
+//------------------------- Page0 remap ----------------------------------------------------
+    AMMU_SMALL_IDX_ADDR(0) = 0;
+    AMMU_SMALL_IDX_XLTE(0) =  (0x0| AMMU_PAGE_TRANSLATE_NO);
+    AMMU_SMALL_IDX_PLOY(0) = (AMMU_PAGE_ENABLE_YES                        |
+                                             AMMU_SMALL_PAGE_16K                         |
+                                             AMMU_ENDIANISM_LITTLE                       |
+                                             AMMU_VOLATILE_YES                           |
+                                             AMMU_EXECUTE_ONLY_NO                        |
+                                             AMMU_READ_ONLY_NO                           |
+                                             AMMU_PREFETCH_ENABLE_NO                     |
+                                             AMMU_EXCLUSION_NOT_SEND                     |
+                                             AMMU_COHERENCY_YES                          |
+                                             AMMU_L1_CACHE_POLICY_NON_CACHEABLE              |
+                                             AMMU_L1_POSTED_POLICY_NON_POSTED                |
+                                             AMMU_L1_ALLOCATE_POLICY_NON_ALLOCATE        |
+                                             AMMU_L1_WRITE_POLICY_WRITE_THROUGH             |
+                                             AMMU_L2_CACHE_POLICY_NON_CACHEABLE              |
+                                             AMMU_L2_POSTED_POLICY_NON_POSTED                |
+                                             AMMU_L2_ALLOCATE_POLICY_NON_ALLOCATE        |
+                                             AMMU_L2_WRITE_POLICY_WRITE_THROUGH);
+
+/*
+    AMMU_MEDIUM_IDX_ADDR(0) = AMMU_PAGE_TRANSLATE_NO;
+    AMMU_MEDIUM_IDX_XLTE(0) = 0;
+    AMMU_MEDIUM_IDX_PLOY(0) = AMMU_PAGE_ENABLE_NO;
+
+    AMMU_MEDIUM_IDX_ADDR(1) = AMMU_PAGE_TRANSLATE_NO;
+    AMMU_MEDIUM_IDX_XLTE(1) = 0;
+    AMMU_MEDIUM_IDX_PLOY(1) = AMMU_PAGE_ENABLE_NO;
+
+    AMMU_LARGE_IDX_ADDR(0) = AMMU_PAGE_TRANSLATE_NO;
+    AMMU_LARGE_IDX_XLTE(0) =  0x0;
+    AMMU_LARGE_IDX_PLOY(0) = AMMU_PAGE_ENABLE_NO;
+
+    AMMU_LARGE_IDX_ADDR(1) = AMMU_PAGE_TRANSLATE_NO;
+    AMMU_LARGE_IDX_XLTE(1) =  0x0;
+    AMMU_LARGE_IDX_PLOY(1) = AMMU_PAGE_ENABLE_NO;
+
+    AMMU_LARGE_IDX_ADDR(2) = AMMU_PAGE_TRANSLATE_NO;
+    AMMU_LARGE_IDX_XLTE(2) =  0x0;
+    AMMU_LARGE_IDX_PLOY(2) = AMMU_PAGE_ENABLE_NO;
+
+    AMMU_LARGE_IDX_ADDR(3) = AMMU_PAGE_TRANSLATE_NO;
+    AMMU_LARGE_IDX_XLTE(3) =  0x0;
+    AMMU_LARGE_IDX_PLOY(3) = AMMU_PAGE_ENABLE_NO;
+*/
+
+   /* For testing - AppM3 Boot */	
+   AMMU_LARGE_IDX_ADDR(3) = 0xA0000000;
+   AMMU_LARGE_IDX_XLTE(3) =  (0x0| AMMU_PAGE_TRANSLATE_NO);
+   AMMU_LARGE_IDX_PLOY(3) = (AMMU_PAGE_ENABLE_YES                        |
+                                             AMMU_LARGE_PAGE_SIZE_512                    |
+                                             AMMU_ENDIANISM_LITTLE                       |
+                                             AMMU_VOLATILE_YES                           |
+                                             AMMU_EXECUTE_ONLY_NO                        |
+                                             AMMU_READ_ONLY_NO                           |
+                                             AMMU_PREFETCH_ENABLE_NO                     |
+                                             AMMU_EXCLUSION_NOT_SEND                     |
+                                             AMMU_COHERENCY_YES                          |
+                                             AMMU_L1_CACHE_POLICY_NON_CACHEABLE          |
+                                             AMMU_L1_POSTED_POLICY_NON_POSTED                |
+                                             AMMU_L1_ALLOCATE_POLICY_NON_ALLOCATE        |
+                                             AMMU_L1_WRITE_POLICY_WRITE_THROUGH             |
+                                             AMMU_L2_CACHE_POLICY_NON_CACHEABLE          |
+                                             AMMU_L2_POSTED_POLICY_NON_POSTED                |
+                                             AMMU_L2_ALLOCATE_POLICY_WRITE_THROUGH        |
+                                             AMMU_L2_WRITE_POLICY_WRITE_BACK);
+
+    AMMU_SMALL_IDX_MAINT(0) = 
+                             (AMMU_SMALL_MAINT_PRELOAD_NO       |
+                             AMMU_SMALL_MAINT_LOCK_NO            |
+                             AMMU_SMALL_MAINT_CLEAN_NO           |
+                             AMMU_SMALL_MAINT_INVALIDATE_NO      |
+                             AMMU_SMALL_MAINT_INTERRUPT_NO);
+
+    GEL_TextOut("program_AMMU end \n");
+}
+
+/* MMU programming when using bootargs mem=114M */
+hotmenu
+program_L2MMU_TLBs_old()
+{
+    GEL_TextOut("ducatiProgramL2MMU called \n");
+
+    // disable MMU
+    *(unsigned long*)0x40002044=0x0;
+
+    // EXTMEM_CORE0 first 1M (V:0x00000000 -> P:0x87200000)
+    *(unsigned long*)0x40002058=0x0000000C;
+    *(unsigned long*)0x4000205C=0x872000C0;
+    *(unsigned long*)0x40002050=0x400;
+    *(unsigned long*)0x40002054=0x1;
+
+    // EXTMEM_CORE0 second 1M (V:0x00100000 -> P:0x87300000)
+    *(unsigned long*)0x40002058=0x0010000C;
+    *(unsigned long*)0x4000205C=0x873000C0;
+    *(unsigned long*)0x40002050=0x810;
+    *(unsigned long*)0x40002054=0x1;
+
+    // EXTMEM_CORE1 first 1M (V:0x10000000 -> P:0x87400000)
+    *(unsigned long*)0x40002058=0x1000000C;
+    *(unsigned long*)0x4000205C=0x874000C0;
+    *(unsigned long*)0x40002050=0xC20;
+    *(unsigned long*)0x40002054=0x1;
+
+    // EXTMEM_CORE1 second 1M (V:0x10100000 -> P:0x87500000)
+    *(unsigned long*)0x40002058=0x1010000C;
+    *(unsigned long*)0x4000205C=0x875000C0;
+    *(unsigned long*)0x40002050=0x1030;
+    *(unsigned long*)0x40002054=0x1;
+
+    // Private M3a data first 1M: 0x84000000->0x87600000
+    *(unsigned long*)0x40002058=0x8400000C;
+    *(unsigned long*)0x4000205C=0x876000C0;
+    *(unsigned long*)0x40002050=0x1440;
+    *(unsigned long*)0x40002054=0x1;
+
+    // Private M3a data second 1M: 0x84100000->0x87700000
+    *(unsigned long*)0x40002058=0x8410000C;
+    *(unsigned long*)0x4000205C=0x877000C0;
+    *(unsigned long*)0x40002050=0x1850;
+    *(unsigned long*)0x40002054=0x1;
+
+    // Private M3b data first 1M: 0x8A000000->0x87800000
+    *(unsigned long*)0x40002058=0x8A00000C;
+    *(unsigned long*)0x4000205C=0x878000C0;
+    *(unsigned long*)0x40002050=0x1C60;
+    *(unsigned long*)0x40002054=0x1;
+
+    // Private M3b data second 1M: 0x8A100000->0x87900000
+    *(unsigned long*)0x40002058=0x8A10000C;
+    *(unsigned long*)0x4000205C=0x879000C0;
+    *(unsigned long*)0x40002050=0x2070;
+    *(unsigned long*)0x40002054=0x1;
+
+    // shared M3a/M3b data second 1M: Inter-M3 IPC:  0x90000000->0x87A00000
+    *(unsigned long*)0x40002058=0x9000000C;
+    *(unsigned long*)0x4000205C=0x87A000C0;
+    *(unsigned long*)0x40002050=0x2480;
+    *(unsigned long*)0x40002054=0x1;
+
+    // Tesla/Ducati/Modena IPC: 0x98000000->0x87B00000
+    *(unsigned long*)0x40002058=0x9800000C;
+    *(unsigned long*)0x4000205C=0x87B000C0;
+    *(unsigned long*)0x40002050=0x2890;
+    *(unsigned long*)0x40002054=0x1;
+
+    // S/W DMM:0x80000000->0x87C00000
+    // 1st 1MB
+    *(unsigned long*)0x40002058=0x8000000C;
+    *(unsigned long*)0x4000205C=0x87C000C0;
+    *(unsigned long*)0x40002050=0x2CA0;
+    *(unsigned long*)0x40002054=0x1;
+    // 2nd 1MB
+    *(unsigned long*)0x40002058=0x8010000C;
+    *(unsigned long*)0x4000205C=0x87D000C0;
+    *(unsigned long*)0x40002050=0x30B0;
+    *(unsigned long*)0x40002054=0x1;
+    // 3rd 1MB
+    *(unsigned long*)0x40002058=0x8020000C;
+    *(unsigned long*)0x4000205C=0x87E000C0;
+    *(unsigned long*)0x40002050=0x34C0;
+    *(unsigned long*)0x40002054=0x1;
+    // 4th 1MB
+    *(unsigned long*)0x40002058=0x8030000C;
+    *(unsigned long*)0x4000205C=0x87F000C0;
+    *(unsigned long*)0x40002050=0x38D0;
+    *(unsigned long*)0x40002054=0x1;
+
+    // CORE_PRM - Map 4K
+    *(unsigned long*)0x40002058=0xAA30600E;
+    *(unsigned long*)0x4000205C=0x4A3060C0;
+    *(unsigned long*)0x40002050=0x3CE0;
+    *(unsigned long*)0x40002054=0x1;
+
+    //I2C memory (V:0x48070000->0xA8070000 )
+    //*(unsigned long*)0x40002058=0xA80700C0;
+    //*(unsigned long*)0x4000205C=0x4807000C;
+    //*(unsigned long*)0x40002050=0x1440;
+    //*(unsigned long*)0x40002054=0x1;
+
+    // enable MMU
+    *(unsigned long*)0x40002044=0x2;
+
+    GEL_TextOut("ducatiProgramL2MMU end \n");
+}
+
+/* MMU programming when using bootargs mem=128M - 24.0.13 release */
+hotmenu
+program_L2MMU_TLBs_24_0_13()
+{
+    GEL_TextOut("ducati_L2MMU_TLB_24_0_13 called \n");
+
+	// Overwrite AMMU SmallPage 0&1 policy register to set for 16K
+    *(unsigned long*)0x40000A20=0xF;
+    *(unsigned long*)0x40000A24=0xF;
+
+    // disable MMU
+    *(unsigned long*)0x40002044=0x0;
+
+    // EXTMEM Code region 16M (V:0x00000000 -> P:0x88000000)
+    *(unsigned long*)0x40002058=0x0000000F;
+    *(unsigned long*)0x4000205C=0x880000C0;
+    *(unsigned long*)0x40002050=0x400;
+    *(unsigned long*)0x40002054=0x1;
+
+    // EXTMEM Const/Heap regions first 16M (V:0x80000000 -> P:0x89000000)
+    *(unsigned long*)0x40002058=0x8000000F;
+    *(unsigned long*)0x4000205C=0x890000C0;
+    *(unsigned long*)0x40002050=0x810;
+    *(unsigned long*)0x40002054=0x1;
+
+    // EXTMEM Heap regions second 16M (V:0x81000000 -> P:0x8A000000)
+    *(unsigned long*)0x40002058=0x8100000F;
+    *(unsigned long*)0x4000205C=0x8A0000C0;
+    *(unsigned long*)0x40002050=0xC20;
+    *(unsigned long*)0x40002054=0x1;
+
+    // Syslink IPC region 1M (V:0xA0000000 -> P:0x8B000000)
+    *(unsigned long*)0x40002058=0xA000000C;
+    *(unsigned long*)0x4000205C=0x8B0000C0;
+    *(unsigned long*)0x40002050=0x1030;
+    *(unsigned long*)0x40002054=0x1;
+
+    // L4_PER space 16M: 0x48000000->0xA8000000
+    *(unsigned long*)0x40002058=0xA800000F;
+    *(unsigned long*)0x4000205C=0x480000C0;
+    *(unsigned long*)0x40002050=0x1440;
+    *(unsigned long*)0x40002054=0x1;
+
+    // L4_CFG space 16M: 0x4A000000->0xAA000000
+    *(unsigned long*)0x40002058=0xAA00000F;
+    *(unsigned long*)0x4000205C=0x4A0000C0;
+    *(unsigned long*)0x40002050=0x1850;
+    *(unsigned long*)0x40002054=0x1;
+
+    // IVAHD_CONFIG space 16M: 0x5A000000->0xBA000000
+    *(unsigned long*)0x40002058=0xBA00000F;
+    *(unsigned long*)0x4000205C=0x5A0000C0;
+    *(unsigned long*)0x40002050=0x1C60;
+    *(unsigned long*)0x40002054=0x1;
+
+    // IVAHD_SL2 space 16M: 0x8A100000->0x87900000
+    *(unsigned long*)0x40002058=0xBB00000F;
+    *(unsigned long*)0x4000205C=0x5B0000C0;
+    *(unsigned long*)0x40002050=0x2070;
+    *(unsigned long*)0x40002054=0x1;
+
+    // TODO: TILER regions - 24 16MB entries
+
+    // enable MMU
+    *(unsigned long*)0x40002044=0x2;
+
+    GEL_TextOut("ducati_L2MMU_TLB_24_0_13 end \n");
+}
+
+hotmenu
+program_L2MMU_TLBs_bios()
+{
+    GEL_TextOut("ducati_L2MMU_TLB_bios called \n");
+
+    // disable MMU
+    *(unsigned long*)0x40002044=0x0;
+
+    // EXTMEM Code region 16M (V:0x00000000 -> P:0x85FFF000)
+    *(unsigned long*)0x40002058=0x0000000E;
+    *(unsigned long*)0x4000205C=0x85FFF0C0;
+    *(unsigned long*)0x40002050=0x400;
+    *(unsigned long*)0x40002054=0x1;
+
+    // EXTMEM Const/Heap regions first 16M (V:0x80000000 -> P:0x86000000)
+    *(unsigned long*)0x40002058=0x8000000F;
+    *(unsigned long*)0x4000205C=0x860000C0;
+    *(unsigned long*)0x40002050=0x810;
+    *(unsigned long*)0x40002054=0x1;
+
+    // EXTMEM Heap regions second 16M (V:0x81000000 -> P:0x87000000)
+    *(unsigned long*)0x40002058=0x8100000F;
+    *(unsigned long*)0x4000205C=0x870000C0;
+    *(unsigned long*)0x40002050=0xC20;
+    *(unsigned long*)0x40002054=0x1;
+
+    // enable MMU
+    *(unsigned long*)0x40002044=0x2;
+
+    GEL_TextOut("ducati_L2MMU_TLB_bios end \n");
+}
+
+
+/* MMU programming for SDC/Wakeup when using bootargs mem=463M */
+hotmenu
+program_L2MMU_TLBs_SDC()
+{
+    GEL_TextOut("ducati_L2MMU_TLB_SDC called \n");
+
+    // disable MMU
+    *(unsigned long*)0x40002044=0x0;
+
+    // Syslink IPC region 1M (V:0xA0000000 -> P:0x9CF00000)
+    *(unsigned long*)0x40002058=0xA000000C;
+    *(unsigned long*)0x4000205C=0x9CF000C0;
+    *(unsigned long*)0x40002050=0x400;
+    *(unsigned long*)0x40002054=0x1;
+
+    // EXTMEM Code region 16M (V:0x00000000 -> P:0x9D000000)
+    *(unsigned long*)0x40002058=0x0000000F;
+    *(unsigned long*)0x4000205C=0x9D0000C0;
+    *(unsigned long*)0x40002050=0x810;
+    *(unsigned long*)0x40002054=0x1;
+
+    // EXTMEM Const/Heap regions first 16M (V:0x80000000 -> P:0x9E000000)
+    *(unsigned long*)0x40002058=0x8000000F;
+    *(unsigned long*)0x4000205C=0x9E0000C0;
+    *(unsigned long*)0x40002050=0xC20;
+    *(unsigned long*)0x40002054=0x1;
+
+    // EXTMEM Heap regions second 16M (V:0x81000000 -> P:0x9F000000)
+    *(unsigned long*)0x40002058=0x8100000F;
+    *(unsigned long*)0x4000205C=0x9F0000C0;
+    *(unsigned long*)0x40002050=0x1030;
+    *(unsigned long*)0x40002054=0x1;
+
+    // L4_PER space 16M: 0x48000000->0xA8000000
+    *(unsigned long*)0x40002058=0xA800000F;
+    *(unsigned long*)0x4000205C=0x480000C0;
+    *(unsigned long*)0x40002050=0x1440;
+    *(unsigned long*)0x40002054=0x1;
+
+    // L4_CFG space 16M: 0x4A000000->0xAA000000
+    *(unsigned long*)0x40002058=0xAA00000F;
+    *(unsigned long*)0x4000205C=0x4A0000C0;
+    *(unsigned long*)0x40002050=0x1850;
+    *(unsigned long*)0x40002054=0x1;
+
+    // IVAHD_CONFIG space 16M: 0x5A000000->0xBA000000
+    *(unsigned long*)0x40002058=0xBA00000F;
+    *(unsigned long*)0x4000205C=0x5A0000C0;
+    *(unsigned long*)0x40002050=0x1C60;
+    *(unsigned long*)0x40002054=0x1;
+
+    // IVAHD_SL2 space 16M: 0x8A100000->0x87900000
+    *(unsigned long*)0x40002058=0xBB00000F;
+    *(unsigned long*)0x4000205C=0x5B0000C0;
+    *(unsigned long*)0x40002050=0x2070;
+    *(unsigned long*)0x40002054=0x1;
+
+    // TODO: TILER regions - 24 16MB entries
+
+    // enable MMU
+    *(unsigned long*)0x40002044=0x2;
+
+    GEL_TextOut("ducati_L2MMU_TLB_SDC end \n");
+}
+
+hotmenu
+reset_TLB_entries()
+{
+    int j = 0;
+
+    // Invalidate all entries manually
+    for(j = 0; j < 32; j++) {
+        *(unsigned long*)0x40002058 = 0x0;
+        *(unsigned long*)0x4000205C = 0x0;
+        *(unsigned long*)0x40002050 = (j << 4);
+        *(unsigned long*)0x40002054 = 0x1;
+    }
+
+    // Set the victim to be zero
+    *(unsigned long*)0x40002050 = 0;
+}
+
+hotmenu
+program_L2MMU_PTEs()
+{
+    GEL_TextOut("program_L2MMU_PTEs called \n");
+
+    // disable MMU
+    *(unsigned long*)0x40002044=0x0;
+
+    // Initialize all L1 descriptors
+    //L1_desc_init();
+
+    reset_TLB_entries();
+
+    // EXTMEM_CORE0 first 1M (V:0x00000000 -> P:0x87200000)
+    L2MMU_DESC_ADDR(0x0) = (L2MMU_DESC_1MB_VALUE(0x87200000));
+
+    // EXTMEM_CORE0 second 1M (V:0x00100000 -> P:0x87300000)
+    L2MMU_DESC_ADDR(0x100000) = (L2MMU_DESC_1MB_VALUE(0x87300000));
+
+    // EXTMEM_CORE1 first 1M (V:0x10000000 -> P:0x87400000)
+    L2MMU_DESC_ADDR(0x10000000) = (L2MMU_DESC_1MB_VALUE(0x87400000));
+
+    // EXTMEM_CORE1 second 1M (V:0x10100000 -> P:0x87500000)
+    L2MMU_DESC_ADDR(0x10100000) = (L2MMU_DESC_1MB_VALUE(0x87500000));
+
+    // Private M3a data first 1M: 0x84000000->0x87600000
+    L2MMU_DESC_ADDR(0x84000000) = (L2MMU_DESC_1MB_VALUE(0x87600000));
+
+    // Private M3a data second 1M: 0x84100000->0x87700000
+    L2MMU_DESC_ADDR(0x84100000) = (L2MMU_DESC_1MB_VALUE(0x87700000));
+
+    // Private M3b data first 1M: 0x8A000000->0x87800000
+    L2MMU_DESC_ADDR(0x8A000000) = (L2MMU_DESC_1MB_VALUE(0x87800000));
+
+    // Private M3b data second 1M: 0x8A100000->0x87900000
+    L2MMU_DESC_ADDR(0x8A100000) = (L2MMU_DESC_1MB_VALUE(0x87900000));
+
+    // shared M3a/M3b data second 1M: Inter-M3 IPC:  0x90000000->0x87A00000
+    L2MMU_DESC_ADDR(0x90000000) = (L2MMU_DESC_1MB_VALUE(0x87A00000));
+
+    // Tesla/Ducati/Modena IPC: 0x98000000->0x87B00000
+    L2MMU_DESC_ADDR(0x98000000) = (L2MMU_DESC_1MB_VALUE(0x87B00000));
+
+    // S/W DMM:0x80000000->0x87C00000
+    // 1st 1MB
+    L2MMU_DESC_ADDR(0x80000000) = (L2MMU_DESC_1MB_VALUE(0x87C00000));
+    // 2nd 1MB
+    L2MMU_DESC_ADDR(0x801000000) = (L2MMU_DESC_1MB_VALUE(0x87D00000));
+    // 3rd 1MB
+    L2MMU_DESC_ADDR(0x80200000) = (L2MMU_DESC_1MB_VALUE(0x87E00000));
+    // 4th 1MB
+    L2MMU_DESC_ADDR(0x80300000) = (L2MMU_DESC_1MB_VALUE(0x87F00000));
+
+    // CORE_PRM - Map 4K
+    //*(unsigned long*)0x40002058=0xAA30600E;
+    //*(unsigned long*)0x4000205C=0x4A3060C0;
+    //*(unsigned long*)0x40002050=0x3CE0;
+    //*(unsigned long*)0x40002054=0x1;
+
+    //I2C memory (V:0x48070000->0xA8070000 )
+    //*(unsigned long*)0x40002058=0xA80700C0;
+    //*(unsigned long*)0x4000205C=0x4807000C;
+    //*(unsigned long*)0x40002050=0x1440;
+    //*(unsigned long*)0x40002054=0x1;
+
+    // set TTB
+    *(unsigned long*)0x4000204C = L2MMU_TTB_ADDR;
+
+    // enable TWL
+    *(unsigned long*)0x40002044 = (0x4);
+    // enable MM
+    *(unsigned long*)0x40002044 = (0x2 | 0x4 | 0x8);
+
+    // Global flush
+    *(unsigned long*)0x40002060 = 1;
+
+    // Enable interrupts
+    *(unsigned long*)0x4000201C = 0x1B;
+
+    GEL_TextOut("program_L2MMU_PTEs end \n");
+}
+
+
+hotmenu reset_ducati()
+{
+    int register1;
+
+    GEL_TextOut(">> START reset_ducati \n");
+
+    // Clear the earlier statuses
+    *(int*)0xAA306914 = 0x00000005;
+
+    // Assert both the Ducati cores
+    *(int*)0xAA306910 = 0x00000003;
+
+    GEL_TextOut(">> END reset_ducati \n");
+}
+
+hotmenu reset_ducati_cortexM3_RTOS()
+{
+    int register1 = 0;
+
+    GEL_TextOut(">> START reset_ducati_cortexM3_RTOS \n");
+
+/*
+    // Release Ducati MMU and Cache interface reset
+    *(int*)0xAA306910 = 0x00000003;
+
+    // read 4 Ducati MMU and Cache interface reset applied
+    while (((*(int*)0xAA306914) & 0x4)& ~0x4) {
+        register1++;
+        GEL_TextOut("* Wait for reset %d *",,,,,register1);
+    }
+*/
+
+    register1 = *(int *)0xaa306914;
+    GEL_TextOut("* DUCATI_RSTST %x *",,,,,register1);
+
+/*
+    // Reset status cleared
+    *(int*)0xAA306914 = 0x00000004;
+*/
+
+    // Release Ducati CortexM3 RTOS (CortexM3 SIMCOP must be released by CortexM3 RTOS)
+    *(int*)0xAA306910 = 0x00000002;
+
+    // wait Ducati CortexM3 RTOS reset applied
+    while (((*(int*)0xAA306914) & 0x1)& ~0x1);
+
+    // Clear reset status
+    *(int*)0xAA306914 = 0x00000001;
+
+    // test that module is fully functional 
+    // while (((*(int*)0x4A008920) & 0x30000)& 0x30000);
+
+    GEL_TextOut(">> END reset_ducati_cortexM3_RTOS \n");
+}
+
+/*
+hotmenu reset_ducati_cortexM3_SIMCOP()
+{
+    GEL_TextOut(">> START reset_ducati_cortexM3_SIMCOP (must be done after CortexM3_RTOS out of reset \n");
+
+    // Release Ducati CortexM3 SIMCOP
+    *(int*)0xAA306910 = 0x00000000;
+
+    // wait Ducati CortexM3 SIMCOP reset applied
+    while (((*(int*)0xAA306914) & 0x2)& ~0x2);
+
+    // Clear reset status
+    *(int*)0xAA306914 = 0x00000002;
+
+    // test that module is fully functional 
+    //while (((*(int*)0x4A008920) & 0x30000)& 0x30000);
+    
+    GEL_TextOut(">> END reset_ducati_cortexM3_SIMCOP \n");
+}
+*/
+
+menuitem "Reset"
+/**********************************************************************
+ *
+ *  FUNCTIONS
+ *
+ **********************************************************************/
+hotmenu reset_tesla_C64()
+{
+    GEL_TextOut(">> START reset_tesla_C64 \n");
+
+    *(int*)0x88000000 = 0;
+    *(int*)0x88000004 = 0;
+    *(int*)0x88000008 = 0;
+    *(int*)0x8800000C = 0;
+    *(int*)0x88000010 = 0;
+    *(int*)0x88000014 = 0;
+    *(int*)0x88000018 = 0;
+    *(int*)0x8800001c = 0;
+    //*(int*)0x88000020 = 0x0FFB0120;
+    *(int*)0x88000020 = 0x0FFfff12;
+
+    // Set tesla boot address
+    //*(int*)0x4A002304 = 0x40200000;
+    //*(int*)0x4A002304 = 0x40200000;
+
+    *(int*)0x4A002304 = 0x88000000;
+
+    // DSP reset
+    // RM_TESLA_RSTCTRL (MMU and DSP RESET)
+    *(int*)0x4A306410 = 0x00000000;
+
+    /* wait Tesla reset applied */
+    while (((*(int*)0x4A306414) & 0x0001)& ~0x0001);
+
+    /* Read 0x0 : test that module is fully functional */
+    while (((*(int*)0x4A004420) & 0x30000)& ~0x30000);
+
+    GEL_TextOut(">> END reset_tesla_C64 \n");
+}
+
+hotmenu reset_ivahd_iCont1()
+{
+    GEL_TextOut(">> START reset_ivahd_iCont1 \n");
+
+    // Icont1 reset
+    *(int*)0x4A306F10 = 0x00000002;
+
+    /* wait iCont1 reset applied */
+    while (((*(int*)0x4A306F14) & 0x0005)& ~0x0005);
+
+    /* Reset status cleared */
+    *(int*)0x4A306F14 = 0x00000007;
+
+    /* Read 0x0 : test that IVAHD is fully functional */
+    while (((*(int*)0x4A008F20) & 0x30000)& ~0x30000);
+
+    /* Read 0x0 : test that SL2 is fully functional */
+    while (((*(int*)0x4A008F28) & 0x30000)& ~0x30000);
+
+    GEL_TextOut(">> END reset_ivahd_iCont1 \n");
+}
+
+hotmenu reset_ivahd_iCont2()
+{
+    GEL_TextOut(">> START reset_ivahd_iCont2 \n");
+    // Icont2 reset
+    *(int*)0x4A306F10 = 0x00000001;
+
+    /* wait iCont2 reset applied */
+   while (((*(int*)0x4A306414) & 0x0006)& ~0x0006);
+
+   /* Reset status cleared */
+   *(int*)0x4A306F14 = 0x00000007;
+      /* Read 0x0 : test that IVAHD is fully functional */
+   while (((*(int*)0x4A008F20) & 0x30000)& ~0x30000);
+
+   /* Read 0x0 : test that SL2 is fully functional */
+   while (((*(int*)0x4A008F28) & 0x30000)& ~0x30000);
+
+   GEL_TextOut(">> END reset_ivahd_iCont2 \n");
+}
+
+
+/*******
+ **
+ ******/
+menuitem "Tesla"
+hotmenu dspResetMMU()
+{
+    *(int *)0x4A066010 |= 0x2;
+}
+
+hotmenu dspEnable()
+{
+    *(int *)0x4A066044 |= 0x2;
+}
+
+hotmenu dspDisable()
+{
+    *(int *)0x4A066044 &= ~0x2;
+}
+
+hotmenu dspGetStatus()
+{
+    int status;
+    
+    status = *(int *)0x4A066044;
+    GEL_TextOut("\n\ndspMMU CNTL = %x\n",,,,,status);
+    status = *(int *)0x4A066014;
+    GEL_TextOut("dspMMU SYSS = %x\n",,,,,status);
+    status = *(int *)0x4A066018;
+    GEL_TextOut("dspMMU IRQS = %x\n",,,,,status);
+    if ( (status & 1) == 1 )
+    {
+        GEL_TextOut("    Fault TBLmiss Virtual Address: %x\n\n",,,,,*(int *)0x4A066048);
+    }
+    if ( (status & 4) == 4 )
+    {
+        GEL_TextOut("    Fault EMUTBLmiss Virtual Address: %x\n\n",,,,,*(int *)0x4A066070);
+    }
+}
+
+hotmenu dspProgramMMU()
+{
+    /* L4 Peripherals */
+    *(int *)0x4A066050 = 0x00000000;
+    *(int *)0x4A066058 = 0x0010000C;
+    *(int *)0x4A06605C = 0x480001C0;
+    *(int *)0x4A066054 = 0x00000001;
+
+    /* L3 Peripherals */
+    *(int *)0x4A066050 = 0x00000010;
+    *(int *)0x4A066058 = 0x0030000C;
+    *(int *)0x4A06605C = 0x680001C0;
+    *(int *)0x4A066054 = 0x00000001;
+
+    /* OCMC RAM*/
+    *(int *)0x4A066050 = 0x00000020;
+    *(int *)0x4A066058 = 0x0020000C;
+    *(int *)0x4A06605C = 0x402001C0;
+    *(int *)0x4A066054 = 0x00000001;
+
+    /* SDRAM*/
+    *(int *)0x4A066050 = 0x00000030;
+    *(int *)0x4A066058 = 0x0080000C;
+    *(int *)0x4A06605C = 0x804001C0;
+    *(int *)0x4A066054 = 0x00000001;
+
+    *(int *)0x4A066050 = 0x00000040;
+    *(int *)0x4A066058 = 0x0090000C;
+    *(int *)0x4A06605C = 0x80500000;
+    *(int *)0x4A066054 = 0x00000001;
+
+    *(int *)0x4A066050 = 0x00000050;
+    *(int *)0x4A066058 = 0x00A0000C;
+    *(int *)0x4A06605C = 0x806001C0;
+    *(int *)0x4A066054 = 0x00000001;
+
+    *(int *)0x4A066050 = 0x00000060;
+    *(int *)0x4A066058 = 0x00B0000C;
+    *(int *)0x4A06605C = 0x807001C0;
+    *(int *)0x4A066054 = 0x00000001;
+}
+
+hotmenu dspReadConfig()
+{
+
+    int ramv;
+    int camv;
+
+    int i;
+    int tmp;
+
+    GEL_TextOut("\n\n         dspMMU Configuration         \n");
+    GEL_TextOut(    "======================================\n");
+    GEL_TextOut(    "  Curr         CAM            RAM     \n");
+    GEL_TextOut(    "--------------------------------------\n");
+    for ( i = 0; i < 32; i ++ )
+    {
+        tmp = i << 4;
+        *(int *)0x4A066050 = tmp;
+        camv = *(int *)0x4A066068;
+        ramv = *(int *)0x4A06606C;
+        GEL_TextOut("%x:  %x     %x\n",,,,,i,camv, ramv);
+    }
+    GEL_TextOut(    "======================================\n");
+}

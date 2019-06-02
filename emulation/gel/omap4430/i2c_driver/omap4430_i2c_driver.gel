@@ -1,0 +1,314 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* Author: Salamito thomas                               		   */
+/*******************************************************************/
+
+menuitem "PHOENIX"
+
+/* ============================================================================
+* GLOBAL VARIABLES
+* =============================================================================
+*/
+int Is_PHOENIXI2C_Initialized = 0;
+
+/* ============================================================================
+* LOCAL TYPES
+* =============================================================================
+*/
+#define I2C_BASEADDRESS  	 		0x48070000
+#define I2C_INSTANCE		 		0x14
+#define PHOENIX_I2C_FAST_SPEED_OP 		0x1
+#define MSI2C_FULL_SPEED_MODE 		0x0
+#define MSI2C_NO_START_BYTE_MODE 	0x0
+#define MSI2C_7BIT_ADDRESS_MODE 	0x0
+#define MSI2C_MASTERCODE 			0x5
+#define PHOENIXI2C_INTH_NOT_INSTALLED	0x0
+#define PHOENIX_I2C_SLAVE_ADDRESS		0x4A
+
+
+/* ============================================================================
+* FUNCTIONS
+* =============================================================================
+*/
+//I2C_Init()
+//{	
+//	GEL_TextOut("Start_I2C_Init\n",,2);
+//	PHOENIX_I2C_Init(I2C_BASEADDRESS,I2C_INSTANCE,0x20,PHOENIX_I2C_FAST_SPEED_OP);
+//	GEL_TextOut("Need to define it - End_I2C_Init\n",,2);
+//}
+
+hotmenu omap4430_PHOENIX_Init()
+{
+	GEL_TextOut("Start_Omap4430_PHOENIX_Init\n",,2);
+	
+	PHOENIX_I2C_Init(I2C_BASEADDRESS,I2C_INSTANCE,0x20,PHOENIX_I2C_FAST_SPEED_OP);
+	
+	/* VPLL2 1.2V -> 1.8V */
+	// PHOENIX_I2C_Write8(I2C_PWR, PM_VPLL2_DEDICATED , PM_VPLL2_1_8V);
+	//GEL_TextOut("VPLL2 = 1.8V\n",,2);
+	//PHOENIX_I2C_Write8(0x4B, 0x91 , 0x5);
+	
+	/* VDD2 1.3V -> 1.2V */
+    //PHOENIX_I2C_Write8(I2C_PWR, PM_VDD2_VSEL , PM_VDD_1_2V);
+	//GEL_TextOut("VDD2 = 1.2V\n",,2);
+	//PHOENIX_I2C_Write8(0x4B, 0xC7 , 0x30);
+	
+	GEL_TextOut("End_Omap4430_PHOENIX_Init\n",,2);
+}
+
+hotmenu VMMC1_1_85V()
+{
+	//short ReceivedData = 0x0;
+	GEL_TextOut("VMMC1 = 1.85V\n",,2);
+	PHOENIX_I2C_Write8(0x4B, 0x82, 0x20);
+	PHOENIX_I2C_Write8(0x4B, 0x85, 0x00);
+	
+	//ReceivedData = PHOENIX_I2C_Read8(0x4B, 0x82, 0x0);
+	//GEL_TextOut("ReceivedData %x\n",,,,,ReceivedData);
+}
+
+hotmenu VMMC1_2_85V()
+{
+	GEL_TextOut("VMMC1 = 2.85V\n",,2);
+	PHOENIX_I2C_Write8(0x4B, 0x82, 0x20);
+	PHOENIX_I2C_Write8(0x4B, 0x85, 0x01);
+}
+
+hotmenu VMMC1_3_00V()
+{
+	GEL_TextOut("VMMC1 = 3.00V\n",,2);				
+	PHOENIX_I2C_Write8(0x4B, 0x82, 0x20);
+	PHOENIX_I2C_Write8(0x4B, 0x85, 0x02);
+}
+
+hotmenu VMMC1_3_15V()
+{
+	GEL_TextOut("VMMC1 = 3.15V\n",,2);
+	PHOENIX_I2C_Write8(0x4B, 0x82, 0x20);
+	PHOENIX_I2C_Write8(0x4B, 0x85, 0x03);
+}
+
+/* --------------------------------------------------------------
+  Function Name:	SendCommand
+  Description:		Write PHOENIX Register
+  Parameters: 		param_address: Register offset address
+					param_data: data to be written
+ ------------------------------------------------------------- */
+dialog Send_Command(slave_address "Slave Address", register_address "Register Address", param_data "Data" )
+{
+	char dat    = param_data;
+	short s_add = slave_address;
+	short r_add = register_address;
+	
+	GEL_TextOut("SendCommand Function\n",,1);
+	PHOENIX_I2C_Write8(s_add, r_add, dat);
+}
+
+/* --------------------------------------------------------------
+	Function Name:	ReadCommand
+	Description:	Read PHOENIX Register
+	Parameters: 	param_address: Register offset address
+ ------------------------------------------------------------- */
+dialog Read_Command(slave_address "Slave Address", register_address "Register Address")
+{
+	char dat    = 0x0;
+	short s_add = slave_address;
+	short r_add = register_address;
+	
+	GEL_TextOut("ReadCommand Function\n",,1);
+	PHOENIX_I2C_Read8(s_add, r_add,dat);
+}
+
+/* --------------------------------------------------------------
+	Function Name:	PHOENIX_I2C_Init
+	Description:	Init I2C Link
+	Parameters: 
+ ------------------------------------------------------------- */
+PHOENIX_I2C_Init( int  I2C_baseAddress, int I2C_module, int I2C_ownAddress, int operationI2CMode)
+{
+	GEL_TextOut("PHOENIX_I2C_Init Function\n",,1);
+
+	Is_PHOENIXI2C_Initialized = 1;
+	
+	/* Enable PER DPLL96M */
+	/* Warning can change clock settings */
+	//*(int*)0x49006500 = 0x00000000;
+	//*(int*)0x49006080 = 0x00000001;
+	//*(int*)0x49006540 = 0x01000000;
+	//*(int*)0x49006500 = 0x0000000C;
+	
+	/* Configure PinMuxing */
+	//SYSCFG_WR_CFG_PAD(SYSCFG_PAD_I2C2_SCL, SYSCFG_PULL_DOWN_SELECTED, SYSCFG_PULL_UP_DOWN_DISABLED, SYSCFG_PAD_I2C2_SCL_I2C2_SCL);     
+	//SYSCFG_WR_CFG_PAD(SYSCFG_PAD_I2C2_SDA, SYSCFG_PULL_DOWN_SELECTED, SYSCFG_PULL_UP_DOWN_DISABLED, SYSCFG_PAD_I2C2_SDA_I2C2_SDA);     
+	//*(int*)(0x49002030 + 0x00F3) = 0x0B0B0000;
+	//*(int*)(0x49002030 + 0x00F4) = 0x0B0B0B00;
+		
+	/* Enable I2C Clocks */
+	PRCMLIB_EnableModule();
+	
+    /* Init I2C */
+	MSI2C_Init(			I2C_baseAddress,
+                        3,    /* prescaler     = 3 + 1 = 1 -> ICLK = 24 MHz  */
+                        24,   /* scll period   = 24 + 7 = 31 * ICLKPeriod */
+                        24,   /* sclh period   = 24 + 5 = 29 * ICLKPeriod */
+                        8,    /* hsscll period = 8 + 7 = 15  * ICLKPeriod => DONT CARE */
+                        9     /* hssclh period = 9 + 5 = 14  * ICLKPeriod => DONT CARE */
+              );
+    
+    /* Configure MSI2C module */
+	MSI2C_Configure	( 	I2C_baseAddress,
+						MSI2C_FULL_SPEED_MODE,
+						MSI2C_NO_START_BYTE_MODE,
+						MSI2C_7BIT_ADDRESS_MODE,
+						I2C_ownAddress,
+						MSI2C_MASTERCODE
+					);
+	
+	GEL_TextOut("PHOENIX_I2C_Init Done\n",,2);
+}
+
+/* --------------------------------------------------------------
+	Function Name:	PHOENIX_I2C_Read
+	Description:	Read PHOENIX Register
+	Parameters:
+ ------------------------------------------------------------- */
+PHOENIX_I2C_Read8( short slaveAddress, char RegAddress, char pReceivedData )
+{
+	short data = 0x0;
+	GEL_TextOut("PHOENIX_I2C_Read8 Function\n",,1);
+
+	if(Is_PHOENIXI2C_Initialized==0)
+	{
+		PHOENIX_I2C_Init(I2C_BASEADDRESS,I2C_INSTANCE,0x20,PHOENIX_I2C_FAST_SPEED_OP);
+	}
+	
+	data = PHOENIX_I2C_Read	(	I2C_BASEADDRESS, 			/* processor base address */
+               				I2C_INSTANCE,    			/* instance number */
+							slaveAddress,    			/* slave address */  
+							RegAddress,      			/* reg address */   
+							1,               			/* data number */ 
+							pReceivedData,				/* Not Used in GEL Driver */
+							PHOENIXI2C_INTH_NOT_INSTALLED	/* int status */
+						);
+	GEL_TextOut("I2C Read Done [Read %x at Slave@ %x Reg@ %x]\n",,2,,,(char)data,(char)slaveAddress,(char)RegAddress);				
+
+	return data;
+}
+
+/* --------------------------------------------------------------
+	Function Name:	PHOENIX_I2C_Write
+	Description:	Write PHOENIX Register
+	Parameters: 
+ ------------------------------------------------------------- */
+PHOENIX_I2C_Write8( short slaveAddress, short RegAddress, char SentData )
+{		
+	GEL_TextOut("PHOENIX_I2C_Write8 Function\n",,1);
+
+	if(Is_PHOENIXI2C_Initialized==0)
+	{
+		PHOENIX_I2C_Init(I2C_BASEADDRESS,I2C_INSTANCE,0x20,PHOENIX_I2C_FAST_SPEED_OP);
+	}
+	
+	PHOENIX_I2C_Write(	I2C_BASEADDRESS,            /* processor base address */
+                    I2C_INSTANCE,               /* instance number */ 
+                    slaveAddress,               /* slave address */       
+                    RegAddress,                 /* reg address */  
+                    1,                 			/* data number */  
+                    SentData,
+                    PHOENIXI2C_INTH_NOT_INSTALLED    /* int status */
+				);
+
+	GEL_TextOut("I2C Write Done [Write %x at Slave@ %x Reg@ %x]\n",,2,,,(char)SentData,(char)slaveAddress,(char)RegAddress);				
+}
+
+/* --------------------------------------------------------------
+	Function Name:	PHOENIX_I2C_Read
+	Description:	Read PHOENIX Register
+	Parameters: 	
+ ------------------------------------------------------------- */
+PHOENIX_I2C_Read( 	int I2C_baseAddress,
+				char I2C_instNum,
+				short slaveAddress,
+				char RegAddress,
+				short dataNumber,
+				char pReceivedData,
+				char inthStatus )
+{
+	short data = 0x0;
+	
+	GEL_TextOut("PHOENIX_I2C_Read Function\n",,1);
+
+	if(inthStatus == PHOENIXI2C_INTH_NOT_INSTALLED)
+	{
+		MSI2C_MasterSendPolling( 	I2C_baseAddress,
+                             		slaveAddress,
+									RegAddress,
+                             		0x0, /* no data to send */
+                             		1);
+
+
+
+		data = MSI2C_MasterReceivePolling(	I2C_baseAddress,       
+                                			slaveAddress,   
+                                			pReceivedData, /* Not use in GEL Driver */
+                                			dataNumber);
+	}
+
+	return data;
+}
+
+/* --------------------------------------------------------------
+	Function Name:	PHOENIX_I2C_Write
+	Description:	Write PHOENIX Register
+	Parameters: 	
+ ------------------------------------------------------------- */
+PHOENIX_I2C_Write(	int	I2C_baseAddress,
+          		char I2C_instNum,
+          		short slaveAddress,
+         		char RegAddress,
+          		short dataNumber,
+       			char pSentData,
+        		char inthStatus )
+{
+
+	GEL_TextOut("PHOENIX_I2C_Write Function\n",,1);
+
+	//GEL_TextOut("I2C_baseAddress %x\n",,,,,I2C_baseAddress);
+	//GEL_TextOut("I2C_instNum %x\n",,,,,RegAddress);
+	//GEL_TextOut("slaveAddress %x\n",,,,,slaveAddress);
+	//GEL_TextOut("RegAddress %x\n",,,,,RegAddress);
+	//GEL_TextOut("dataNumber %x\n",,,,,dataNumber);
+	//GEL_TextOut("pSentData %x\n",,,,,pSentData);
+	//GEL_TextOut("inthStatus %x\n",,,,,inthStatus);
+
+	if(inthStatus == PHOENIXI2C_INTH_NOT_INSTALLED)
+	{
+		MSI2C_MasterSendPolling( 	I2C_baseAddress,
+                             		slaveAddress,
+									RegAddress,
+                             		pSentData,
+                             		dataNumber+1);
+	}
+}
+
+/* --------------------------------------------------------------
+	Function Name:	PRCMLIB_EnableModule
+	Description:	Enable I2C2 Clocks
+	Parameters: 	
+ ------------------------------------------------------------- */
+PRCMLIB_EnableModule()
+{
+	GEL_TextOut("Start_PRCMLIB_EnableModule Function\n",,1);
+
+	// Enable I2C1 
+	*(int*)0x4A0094A0 |= 0x2;
+	
+	/* Wait I2C1 is accessible */
+	while( ( (*(int*)(0x4A0094A0)) & 0x30000 ) != 0x0);
+	
+	GEL_TextOut("End_PRCMLIB_EnableModule Function\n",,1);
+}

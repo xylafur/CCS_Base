@@ -1,0 +1,1701 @@
+/* ------------------------------------------------------------------------ *
+ *                                                                          *
+ *  evm816x.gel                                                             *
+ *  Version 1.02                                                            *
+ *                                                                          *
+ *  This GEL file is designed to be used in conjunction with                *
+ *  CCStudio 4.2+ and the 816x based EVMs.                                  *
+ *                                                                          *
+ *  Version History                                                         *
+ *  0.01 Initial Release                                                    *
+ *  0.02 Added PRCM setup for I2C0, I2C1, UARTs                             *
+ *  0.03 Added PRCM setup for most on-board peripherals                     *
+ *  0.04 Added TI 1.5 AVV GEL file hotmenu options                          *
+ *  0.05 Added masks to PRCM setup checking                                 *
+ *  0.06 Added DDR PLL setup                                                *
+ *  0.07 Set EVM_1V0_AVS supply to 1.0V                                     *
+ *  0.08 Main PLL divider lowered, Cleanup                                  *
+ *  0.09 Added Pad Control Setup for EMAC1                                  *
+ *  0.10 Added Pad Control Setup for GPMC NOR Flash                         *
+ *  0.11 Added DDR2 Initialization                                          *
+ *  0.12 GEL file Cleanup                                                   *
+ *  1.00 Public Release                                                     *
+ *  1.01 New DDR2 and DDR3 Setup                                            *
+ *  1.02 Updated Memory Map and Cleanup                                     *
+ * ------------------------------------------------------------------------ */
+#define PG1_0_DDR2  1          // Set to 0 for PG 1.1
+#define DDR2        1          // Set to 1 for DDR2 board
+#define DDR3        0          // Set to 1 for DDR3 board
+#define DDR_FREQ    400        // Define frequency
+                               //   Options:
+                               //           DDR3 - 400, 531, 621, 634, 648, 675, 
+                               //                  702, 729, 756, 783, 796 (796.5)
+/* ------------------------------------------------------------------------ *
+ *                                                                          *
+ *  OnTargetConnect( )                                                      *
+ *      Setup PADCTRL, Power, PLLs, DDR, & EMIF                             *
+ *                                                                          *
+ * ------------------------------------------------------------------------ */
+OnTargetConnect( )
+{
+    GEL_TextOut( "\EVM816x Startup Sequence\n\n" );
+
+    Setup_PRCM();
+    Setup_Power();
+    Setup_PADCTRL();
+    Setup_MainPLL();
+    Setup_DDR();
+
+    GEL_TextOut( "Startup Complete.\n\n" );
+}
+
+/* ------------------------------------------------------------------------ *
+ *                                                                          *
+ *  StartUp( )                                                              *
+ *      Setup Memory Map                                                    *
+ *                                                                          *
+ * ------------------------------------------------------------------------ */
+StartUp( )
+{
+    Setup_Memory_Map( );
+}
+
+/* ------------------------------------------------------------------------ *
+ *                                                                          *
+ *  OnPreFileLoaded( )                                                      *
+ *      This function is called automatically when the 'Load Program'       *
+ *      Menu item is selected.                                              *
+ *                                                                          *
+ * ------------------------------------------------------------------------ */
+OnPreFileLoaded( )
+{
+    /*
+     *  GEL_Reset() is used to deal with the worst case senario of
+     *  unknown target state.  If for some reason a reset is not desired
+     *  upon target connection, GEL_Reset() may be removed and replaced
+     *  with something "less brutal" like a cache initialization
+     *  function.
+     */
+    GEL_Reset( );
+    GEL_TextOut( "GEL Reset\n" );
+}
+
+/* ------------------------------------------------------------------------ *
+ *                                                                          *
+ *  OnRestart( )                                                            *
+ *      This function is called by CCS when you do Debug->Restart.          *
+ *                                                                          *
+ * ------------------------------------------------------------------------ */
+OnRestart( int nErrorCode )
+{
+}
+
+menuitem "Memory Map";
+/* ------------------------------------------------------------------------ *
+ *                                                                          *
+ *  Setup_Memory_Map( )                                                     *
+ *      Setup the Memory Map for the Cortex A8                              *
+ *                                                                          *
+ * ------------------------------------------------------------------------ */
+hotmenu
+Setup_Memory_Map( )
+{
+    GEL_MapOn( );
+    GEL_MapReset( );
+
+    /* Device Memory Map */
+
+    /* L3 Memory Map */
+    GEL_MapAddStr( 0x00000000, 0, 0x20000000, "R|W|AS4", 0 );  // GPMC
+    GEL_MapAddStr( 0x20000000, 0, 0x10000000, "R|W|AS4", 0 );  // PCIe Gen2
+    GEL_MapAddStr( 0x40300000, 0, 0x00040000, "R|W|AS4", 0 );  // L3 OCMC0 SRAM
+    GEL_MapAddStr( 0x40400000, 0, 0x00040000, "R|W|AS4", 0 );  // L3 OCMC1 SRAM
+    GEL_MapAddStr( 0x40800000, 0, 0x00040000, "R|W|AS4", 0 );  // C674x UMAP0 (L2 RAM)
+    GEL_MapAddStr( 0x40E00000, 0, 0x00008000, "R|W|AS4", 0 );  // C674x L1P Cache/RAM
+    GEL_MapAddStr( 0x40F00000, 0, 0x00008000, "R|W|AS4", 0 );  // C674x L1D Cache/RAM
+    GEL_MapAddStr( 0x44000000, 0, 0x00400000, "R|W|AS4", 0 );  // L3Fast configuration registers
+    GEL_MapAddStr( 0x44400000, 0, 0x00400000, "R|W|AS4", 0 );  // L3Mid configuration registers
+    GEL_MapAddStr( 0x44800000, 0, 0x00400000, "R|W|AS4", 0 );  // L3Slow configuration registers
+    GEL_MapAddStr( 0x46000000, 0, 0x00400000, "R|W|AS4", 0 );  // McASP0
+    GEL_MapAddStr( 0x46400000, 0, 0x00400000, "R|W|AS4", 0 );  // McASP1
+    GEL_MapAddStr( 0x46800000, 0, 0x00400000, "R|W|AS4", 0 );  // McASP2
+    GEL_MapAddStr( 0x46C00000, 0, 0x00400000, "R|W|AS4", 0 );  // HDMI 1.3 Tx
+    GEL_MapAddStr( 0x47000000, 0, 0x00400000, "R|W|AS4", 0 );  // McBSP
+    GEL_MapAddStr( 0x47400000, 0, 0x00400000, "R|W|AS4", 0 );  // USB2.0 Registers / CPPI
+    GEL_MapAddStr( 0x49000000, 0, 0x00100000, "R|W|AS4", 0 );  // EDMA TPCC Registers
+    GEL_MapAddStr( 0x49800000, 0, 0x00100000, "R|W|AS4", 0 );  // EDMA TPTC0 Registers
+    GEL_MapAddStr( 0x49900000, 0, 0x00100000, "R|W|AS4", 0 );  // EDMA TPTC1 Registers
+    GEL_MapAddStr( 0x49A00000, 0, 0x00100000, "R|W|AS4", 0 );  // EDMA TPTC2 Registers
+    GEL_MapAddStr( 0x49B00000, 0, 0x00100000, "R|W|AS4", 0 );  // EDMA TPTC3 Registers
+    GEL_MapAddStr( 0x4B000000, 0, 0x01000000, "R|W|AS4", 0 );  // EMU Subsystem region
+    GEL_MapAddStr( 0x4C000000, 0, 0x01000000, "R|W|AS4", 0 );  // EMIF0 Configuration registers
+    GEL_MapAddStr( 0x4D000000, 0, 0x01000000, "R|W|AS4", 0 );  // EMIF1 Configuration registers
+    GEL_MapAddStr( 0x4E000000, 0, 0x02000000, "R|W|AS4", 0 );  // DMM Configuration registers
+    GEL_MapAddStr( 0x50000000, 0, 0x01000000, "R|W|AS4", 0 );  // GPMC Configuration registers
+    GEL_MapAddStr( 0x51000000, 0, 0x01000000, "R|W|AS4", 0 );  // PCIE Gen2 Configuration registers
+    GEL_MapAddStr( 0x53000000, 0, 0x01000000, "R|W|AS4", 0 );  // IVA-HD 2 Host Port
+    GEL_MapAddStr( 0x54000000, 0, 0x01000000, "R|W|AS4", 0 );  // IVA-HD 2 SL2 Port
+    GEL_MapAddStr( 0x55000000, 0, 0x01000000, "R|W|AS4", 0 );  // Ducati Slave Port
+    GEL_MapAddStr( 0x56000000, 0, 0x01000000, "R|W|AS4", 0 );  // SGX530 Slave Port
+    GEL_MapAddStr( 0x57000000, 0, 0x01000000, "R|W|AS4", 0 );  // TPPSS Slave Port
+    GEL_MapAddStr( 0x58000000, 0, 0x01000000, "R|W|AS4", 0 );  // IVA-HD 0 Host Port
+    GEL_MapAddStr( 0x59000000, 0, 0x01000000, "R|W|AS4", 0 );  // IVA-HD 0 SL2 Port
+    GEL_MapAddStr( 0x5A000000, 0, 0x01000000, "R|W|AS4", 0 );  // IVA-HD Host Port
+    GEL_MapAddStr( 0x5B000000, 0, 0x01000000, "R|W|AS4", 0 );  // IVA-HD 1 SL2 Port
+    GEL_MapAddStr( 0x60000000, 0, 0x20000000, "R|W|AS4", 0 );  // Tiler
+
+    /* DDR Data */
+    // Addresses may be contiguous interleaved, depending on configuration of DMM.
+    GEL_MapAddStr( 0x80000000, 0, 0x40000000, "R|W|AS4", 0 );  // DDR EMIF0/1
+    GEL_MapAddStr( 0xC0000000, 0, 0x40000000, "R|W|AS4", 0 );  // DDR EMIF0/1
+
+    /* Firewall Configuration domain */
+    //GEL_MapAddStr( 0x47C00000, 0, 0x00400000, "R|W|AS4", 0 );  // Firewall Configuration domain 
+    GEL_MapAddStr( 0x47C00000, 0, 0x00000800, "R|W|AS4", 0 );  // L4_Firewall configuration-Address/Protection (AP)
+    GEL_MapAddStr( 0x47C00800, 0, 0x00000800, "R|W|AS4", 0 );  // L4_Firewall configuration-Link Agent (LA)
+    GEL_MapAddStr( 0x47C01000, 0, 0x00000400, "R|W|AS4", 0 );  // L4_Firewall configuration-Initiator Port (IP0)
+    GEL_MapAddStr( 0x47C06000, 0, 0x00001000, "R|W|AS4", 0 );  // VLYNQ-T Firewall-Module
+    GEL_MapAddStr( 0x47C07000, 0, 0x00001000, "R|W|AS4", 0 );  // VLYNQ-T Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C0C000, 0, 0x00001000, "R|W|AS4", 0 );  // DDR EMIF Firewall-Module
+    GEL_MapAddStr( 0x47C0D000, 0, 0x00001000, "R|W|AS4", 0 );  // DDR EMIF Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C0E000, 0, 0x00001000, "R|W|AS4", 0 );  // GPMC Firewall-Module
+    GEL_MapAddStr( 0x47C0F000, 0, 0x00001000, "R|W|AS4", 0 );  // GPMC Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C10000, 0, 0x00001000, "R|W|AS4", 0 );  // OCMC RAM0 Firewall-Module
+    GEL_MapAddStr( 0x47C11000, 0, 0x00001000, "R|W|AS4", 0 );  // OCMC RAM0 Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C12000, 0, 0x00001000, "R|W|AS4", 0 );  // OCMC RAM1 Firewall-Module
+    GEL_MapAddStr( 0x47C13000, 0, 0x00001000, "R|W|AS4", 0 );  // OCMC RAM1 Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C14000, 0, 0x00001000, "R|W|AS4", 0 );  // SGX530-T Firewall-Module
+    GEL_MapAddStr( 0x47C15000, 0, 0x00001000, "R|W|AS4", 0 );  // SGX530-T Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C16000, 0, 0x00001000, "R|W|AS4", 0 );  // C674x+™SDMA Firewall-Module
+    GEL_MapAddStr( 0x47C17000, 0, 0x00001000, "R|W|AS4", 0 );  // C674x+™SDMA Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C18000, 0, 0x00001000, "R|W|AS4", 0 );  // Media Ctrl-T Firewall-Module
+    GEL_MapAddStr( 0x47C19000, 0, 0x00001000, "R|W|AS4", 0 );  // Media Ctrl-T Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C1A000, 0, 0x00001000, "R|W|AS4", 0 );  // PCIe Gen2-T Firewall-Module
+    GEL_MapAddStr( 0x47C1B000, 0, 0x00001000, "R|W|AS4", 0 );  // PCIe Gen2-T Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C1C000, 0, 0x00001000, "R|W|AS4", 0 );  // TPPSS-T Firewall-Module
+    GEL_MapAddStr( 0x47C1D000, 0, 0x00001000, "R|W|AS4", 0 );  // TPPSS-T Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C1E000, 0, 0x00001000, "R|W|AS4", 0 );  // IVA-HD SL2-T Firewall-Module
+    GEL_MapAddStr( 0x47C1F000, 0, 0x00001000, "R|W|AS4", 0 );  // IVA-HD SL2-T Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C20000, 0, 0x00001000, "R|W|AS4", 0 );  // IVA-HD CFG-T Firewall-Module
+    GEL_MapAddStr( 0x47C21000, 0, 0x00001000, "R|W|AS4", 0 );  // IVA-HD CFG-T Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C28000, 0, 0x00001000, "R|W|AS4", 0 );  // McASP Firewall-Module
+    GEL_MapAddStr( 0x47C29000, 0, 0x00001000, "R|W|AS4", 0 );  // McASP Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C2A000, 0, 0x00001000, "R|W|AS4", 0 );  // SECSS-T Firewall-Module
+    GEL_MapAddStr( 0x47C2B000, 0, 0x00001000, "R|W|AS4", 0 );  // SECSS-T Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C2C000, 0, 0x00001000, "R|W|AS4", 0 );  // HDMI 1.3 Tx Firewall-Module
+    GEL_MapAddStr( 0x47C2D000, 0, 0x00001000, "R|W|AS4", 0 );  // HDMI 1.3 Tx Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C2E000, 0, 0x00001000, "R|W|AS4", 0 );  // McBSP Firewall-Module
+    GEL_MapAddStr( 0x47C2F000, 0, 0x00001000, "R|W|AS4", 0 );  // McBSP Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C30000, 0, 0x00001000, "R|W|AS4", 0 );  // EDMA TPTC Firewall-Module
+    GEL_MapAddStr( 0x47C31000, 0, 0x00001000, "R|W|AS4", 0 );  // EDMA TPTC Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C38000, 0, 0x00001000, "R|W|AS4", 0 );  // EDMA TPCC Firewall-Module
+    GEL_MapAddStr( 0x47C39000, 0, 0x00001000, "R|W|AS4", 0 );  // EDMA TPCC Firewall-L4 interconnect
+    GEL_MapAddStr( 0x47C3A000, 0, 0x00001000, "R|W|AS4", 0 );  // USB2.0 Firewall-Module
+    GEL_MapAddStr( 0x47C3B000, 0, 0x00001000, "R|W|AS4", 0 );  // USB2.0 Firewall-L4 interconnect
+    
+    /* L4 Memory Map */
+    // L4 Standard Peripheral
+    GEL_MapAddStr( 0x48000000, 0, 0x00000800, "R|W|AS4", 0 );  // L4_Standard Configuration-Address/Protection (AP)
+    GEL_MapAddStr( 0x48000800, 0, 0x00000800, "R|W|AS4", 0 );  // L4_Standard Configuration-Link Agent (LA)
+    GEL_MapAddStr( 0x48001000, 0, 0x00000400, "R|W|AS4", 0 );  // L4_Standard Configuration-Initiator Port (IP0)
+    GEL_MapAddStr( 0x48001400, 0, 0x00000400, "R|W|AS4", 0 );  // L4_Standard Configuration-Initiator Port (IP1)
+    GEL_MapAddStr( 0x48008000, 0, 0x00001000, "R|W|AS4", 0 );  // eFuse Controller Peripheral Registers
+    GEL_MapAddStr( 0x48009000, 0, 0x00001000, "R|W|AS4", 0 );  // eFuse Controller Support Registers
+    GEL_MapAddStr( 0x48010000, 0, 0x00001000, "R|W|AS4", 0 );  // System DEMMU Peripheral Registers
+    GEL_MapAddStr( 0x48011000, 0, 0x00001000, "R|W|AS4", 0 );  // System DEMMU Support Registers
+    GEL_MapAddStr( 0x48020000, 0, 0x00001000, "R|W|AS4", 0 );  // UART0 Peripheral Registers
+    GEL_MapAddStr( 0x48021000, 0, 0x00001000, "R|W|AS4", 0 );  // UART0 Support Registers
+    GEL_MapAddStr( 0x48022000, 0, 0x00001000, "R|W|AS4", 0 );  // UART1 Peripheral Registers
+    GEL_MapAddStr( 0x48023000, 0, 0x00001000, "R|W|AS4", 0 );  // UART1 Support Registers
+    GEL_MapAddStr( 0x48024000, 0, 0x00001000, "R|W|AS4", 0 );  // UART2 Peripheral Registers
+    GEL_MapAddStr( 0x48025000, 0, 0x00001000, "R|W|AS4", 0 );  // UART2 Support Registers
+    GEL_MapAddStr( 0x48028000, 0, 0x00001000, "R|W|AS4", 0 );  // I2C0 Peripheral Registers
+    GEL_MapAddStr( 0x48029000, 0, 0x00001000, "R|W|AS4", 0 );  // I2C0 Support Registers
+    GEL_MapAddStr( 0x4802A000, 0, 0x00001000, "R|W|AS4", 0 );  // I2C1 Peripheral Registers
+    GEL_MapAddStr( 0x4802B000, 0, 0x00001000, "R|W|AS4", 0 );  // I2C1 Support Registers
+    GEL_MapAddStr( 0x4802E000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER1 Peripheral Registers
+    GEL_MapAddStr( 0x4802F000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER1 Support Registers
+    GEL_MapAddStr( 0x48030000, 0, 0x00001000, "R|W|AS4", 0 );  // SPIOCP Peripheral Registers
+    GEL_MapAddStr( 0x48031000, 0, 0x00001000, "R|W|AS4", 0 );  // SPIOCP Support Registers
+    GEL_MapAddStr( 0x48032000, 0, 0x00001000, "R|W|AS4", 0 );  // GPIO0 Peripheral Registers
+    GEL_MapAddStr( 0x48033000, 0, 0x00001000, "R|W|AS4", 0 );  // GPIO0 Support Registers
+    GEL_MapAddStr( 0x48038000, 0, 0x00002000, "R|W|AS4", 0 );  // McASP0 CFG Peripheral Registers
+    GEL_MapAddStr( 0x4803A000, 0, 0x00001000, "R|W|AS4", 0 );  // McASP0 CFG Support Registers
+    GEL_MapAddStr( 0x4803C000, 0, 0x00002000, "R|W|AS4", 0 );  // McASP1 CFG Peripheral Registers
+    GEL_MapAddStr( 0x4803E000, 0, 0x00001000, "R|W|AS4", 0 );  // McASP1 CFG Support Registers
+    GEL_MapAddStr( 0x48040000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER2 Peripheral Registers
+    GEL_MapAddStr( 0x48041000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER2 Support Registers
+    GEL_MapAddStr( 0x48042000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER3 Peripheral Registers
+    GEL_MapAddStr( 0x48043000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER3 Support Registers
+    GEL_MapAddStr( 0x48044000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER4 Peripheral Registers
+    GEL_MapAddStr( 0x48045000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER4 Support Registers
+    GEL_MapAddStr( 0x48046000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER5 Peripheral Registers
+    GEL_MapAddStr( 0x48047000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER5 Support Registers
+    GEL_MapAddStr( 0x48048000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER6 Peripheral Registers
+    GEL_MapAddStr( 0x48049000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER6 Support Registers
+    GEL_MapAddStr( 0x4804A000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER7 Peripheral Registers
+    GEL_MapAddStr( 0x4804B000, 0, 0x00001000, "R|W|AS4", 0 );  // TIMER7 Support Registers
+    GEL_MapAddStr( 0x4804C000, 0, 0x00001000, "R|W|AS4", 0 );  // GPIO1 Peripheral Registers
+    GEL_MapAddStr( 0x4804D000, 0, 0x00001000, "R|W|AS4", 0 );  // GPIO1 Support Registers
+    GEL_MapAddStr( 0x48050000, 0, 0x00002000, "R|W|AS4", 0 );  // McASP2 CFG-Module
+    GEL_MapAddStr( 0x48052000, 0, 0x00001000, "R|W|AS4", 0 );  // McASP2 CFG-L4 interconnect
+    GEL_MapAddStr( 0x48060000, 0, 0x00010000, "R|W|AS4", 0 );  // SD/SDIO-Registers
+    GEL_MapAddStr( 0x48070000, 0, 0x00001000, "R|W|AS4", 0 );  // SD/SDIO-L4 interconnect
+    GEL_MapAddStr( 0x48080000, 0, 0x00010000, "R|W|AS4", 0 );  // ELM-Error Location Module
+    GEL_MapAddStr( 0x48090000, 0, 0x00001000, "R|W|AS4", 0 );  // ELM-L4 interconnect
+    GEL_MapAddStr( 0x480C0000, 0, 0x00001000, "R|W|AS4", 0 );  // RTC-Module
+    GEL_MapAddStr( 0x480C1000, 0, 0x00001000, "R|W|AS4", 0 );  // RTC-L4 interconnect
+    GEL_MapAddStr( 0x480C2000, 0, 0x00001000, "R|W|AS4", 0 );  // WDT1-Module
+    GEL_MapAddStr( 0x480C3000, 0, 0x00001000, "R|W|AS4", 0 );  // WDT1-L4 interconnect
+    GEL_MapAddStr( 0x480C8000, 0, 0x00001000, "R|W|AS4", 0 );  // Mailbox-Module
+    GEL_MapAddStr( 0x480C9000, 0, 0x00001000, "R|W|AS4", 0 );  // Mailbox-L4 interconnect
+    GEL_MapAddStr( 0x480CA000, 0, 0x00001000, "R|W|AS4", 0 );  // Spinlock-Module
+    GEL_MapAddStr( 0x480CB000, 0, 0x00001000, "R|W|AS4", 0 );  // Spinlock-L4 interconnect
+    GEL_MapAddStr( 0x48100000, 0, 0x00020000, "R|W|AS4", 0 );  // HDVPSS-Module
+    GEL_MapAddStr( 0x48120000, 0, 0x00001000, "R|W|AS4", 0 );  // HDVPSS-L4 interconnect
+    GEL_MapAddStr( 0x48122000, 0, 0x00001000, "R|W|AS4", 0 );  // HDMI 1.3 Tx-Module
+    GEL_MapAddStr( 0x48123000, 0, 0x00001000, "R|W|AS4", 0 );  // HDMI 1.3 Tx-L4 interconnect
+    GEL_MapAddStr( 0x48140000, 0, 0x00020000, "R|W|AS4", 0 );  // Control Module-Module
+    GEL_MapAddStr( 0x48160000, 0, 0x00001000, "R|W|AS4", 0 );  // Control Module-L4 interconnect
+    GEL_MapAddStr( 0x48180000, 0, 0x00003000, "R|W|AS4", 0 );  // PRCM-Module
+    GEL_MapAddStr( 0x48183000, 0, 0x00001000, "R|W|AS4", 0 );  // PRCM-L4 interconnect
+    GEL_MapAddStr( 0x48188000, 0, 0x00001000, "R|W|AS4", 0 );  // SmartReflex0-Module
+    GEL_MapAddStr( 0x48189000, 0, 0x00001000, "R|W|AS4", 0 );  // SmartReflex0-L4 interconnect
+    GEL_MapAddStr( 0x4818A000, 0, 0x00001000, "R|W|AS4", 0 );  // SmartReflex1-Module
+    GEL_MapAddStr( 0x4818B000, 0, 0x00001000, "R|W|AS4", 0 );  // SmartReflex1-L4 interconnect
+    GEL_MapAddStr( 0x4818C000, 0, 0x00001000, "R|W|AS4", 0 );  // OCP Watchpoint-Module
+    GEL_MapAddStr( 0x4818D000, 0, 0x00001000, "R|W|AS4", 0 );  // OCP Watchpoint-L4 interconnect
+    GEL_MapAddStr( 0x48198000, 0, 0x00001000, "R|W|AS4", 0 );  // DDR0 Phy Ctrl Regs-Module
+    GEL_MapAddStr( 0x48199000, 0, 0x00001000, "R|W|AS4", 0 );  // DDR0 Phy Ctrl Regs-L4 interconnect
+    GEL_MapAddStr( 0x4819A000, 0, 0x00001000, "R|W|AS4", 0 );  // DDR1 Phy Ctrl Regs-Module
+    GEL_MapAddStr( 0x4819B000, 0, 0x00001000, "R|W|AS4", 0 );  // DDR1 Phy Ctrl Regs-L4 interconnect
+    GEL_MapAddStr( 0x48200000, 0, 0x00001000, "R|W|AS4", 0 );  // Interrupt controller(Cortex™-A8 Accessible Only)
+    GEL_MapAddStr( 0x48240000, 0, 0x00001000, "R|W|AS4", 0 );  // MPUSS config register(Cortex™-A8 Accessible Only)
+    GEL_MapAddStr( 0x48280000, 0, 0x00001000, "R|W|AS4", 0 );  // SSM(Cortex™-A8 Accessible Only)
+
+    // L4 High Speed Peripheral
+    GEL_MapAddStr( 0x4A000000, 0, 0x00000800, "R|W|AS4", 0 );  // L4_High Speed configuration-Address/Protection (AP)
+    GEL_MapAddStr( 0x4A000800, 0, 0x00000800, "R|W|AS4", 0 );  // L4_High Speed configuration-Link Agent (LA)
+    GEL_MapAddStr( 0x4A001000, 0, 0x00000400, "R|W|AS4", 0 );  // L4_High Speed configuration-Initiator Port (IP0)
+    GEL_MapAddStr( 0x4A001400, 0, 0x00000400, "R|W|AS4", 0 );  // L4_High Speed configuration-Initiator Port (IP1)
+    GEL_MapAddStr( 0x4A100000, 0, 0x00004000, "R|W|AS4", 0 );  // EMAC0-Registers
+    GEL_MapAddStr( 0x4A104000, 0, 0x00001000, "R|W|AS4", 0 );  // EMAC0-L4 Interconnect
+    GEL_MapAddStr( 0x4A120000, 0, 0x00004000, "R|W|AS4", 0 );  // EMAC1-Registers
+    GEL_MapAddStr( 0x4A124000, 0, 0x00001000, "R|W|AS4", 0 );  // EMAC1-L4 Interconnect
+    GEL_MapAddStr( 0x4A140000, 0, 0x00010000, "R|W|AS4", 0 );  // SATA-Registers
+    GEL_MapAddStr( 0x4A150000, 0, 0x00001000, "R|W|AS4", 0 );  // SATA-L4 Interconnect
+
+    /* Cortex™-A8 Memory Map */
+    // L3 Target Space not redefined
+    GEL_MapAddStr( 0x00000000, 0, 0x00100000, "R|W|AS4", 0 );  // Boot Space
+    GEL_MapAddStr( 0x40020000, 0, 0x0000C000, "R|W|AS4", 0 );  // ROM internal
+    GEL_MapAddStr( 0x48200000, 0, 0x00040000, "R|W|AS4", 0 );  // Cortex™-A8 Interrupt Controller
+
+    /* C674x Memory Map */
+    GEL_MapAddStr( 0x00400000, 0, 0x00040000, "R|W|AS4", 0 );  // C674x UMAP1 (HDVICP2-0 SL2)
+    GEL_MapAddStr( 0x00500000, 0, 0x00040000, "R|W|AS4", 0 );  // C674x UMAP1 (HDVICP2-1 SL2)
+    GEL_MapAddStr( 0x00800000, 0, 0x00040000, "R|W|AS4", 0 );  // C674x UMAP0 (L2 RAM)
+    GEL_MapAddStr( 0x00E00000, 0, 0x00008000, "R|W|AS4", 0 );  // C674x L1P Cache/RAM
+    GEL_MapAddStr( 0x00F00000, 0, 0x00008000, "R|W|AS4", 0 );  // C674x L1D Cache/RAM
+    GEL_MapAddStr( 0x01800000, 0, 0x00400000, "R|W|AS4", 0 );  // C674x Internal CFG registers
+    GEL_MapAddStr( 0x08000000, 0, 0x01000000, "R|W|AS4", 0 );  // L4 Standard Domain
+    GEL_MapAddStr( 0x09000000, 0, 0x00100000, "R|W|AS4", 0 );  // EDMA TPCC Registers
+    GEL_MapAddStr( 0x09800000, 0, 0x00100000, "R|W|AS4", 0 );  // EDMA TPTC0 Registers
+    GEL_MapAddStr( 0x09900000, 0, 0x00100000, "R|W|AS4", 0 );  // EDMA TPTC1 Registers
+    GEL_MapAddStr( 0x09A00000, 0, 0x00100000, "R|W|AS4", 0 );  // EDMA TPTC2 Registers
+    GEL_MapAddStr( 0x09B00000, 0, 0x00100000, "R|W|AS4", 0 );  // EDMA TPTC3 Registers
+    GEL_MapAddStr( 0x0A000000, 0, 0x01000000, "R|W|AS4", 0 );  // L4 High-Speed Domain
+    GEL_MapAddStr( 0x10000000, 0, 0x01000000, "R|W|AS4", 0 );  // C674x L1/L2 C674x Internal Global Address
+
+}
+
+/* ------------------------------------------------------------------------ *
+ *                                                                          *
+ *  Clear_Memory_Map( )                                                     *
+ *      Clear the Memory Map                                                *
+ *                                                                          *
+ * ------------------------------------------------------------------------ */
+hotmenu
+Clear_Memory_Map( )
+{
+    GEL_MapOff( );
+    GEL_MapReset( );
+}
+
+#define WR_MEM_32(addr, data)    *(unsigned int*)(addr) =(unsigned int)(data)
+#define RD_MEM_32(addr)          *(unsigned int*)(addr) 
+
+
+/* ------------------------------------------------------------------------ *
+ *  Constant Definitions                                                    *
+ * ------------------------------------------------------------------------ */
+#define SIZE              1
+#define TWO_EMIF          1
+#define SWLEVELINNG       1 // When using DDR3 in sw leveling mode, enable this define
+
+/* EMIF Paramters */
+#define DDR3_WR_DQS_RATIO3          0x20 
+#define DDR3_WR_DQS_RATIO2          0x20
+#define DDR3_WR_DQS_RATIO1          0x20
+#define DDR3_WR_DQS_RATIO0          0x20 
+
+#define DDR3_RD_GATE_RATIO3         0x20
+#define DDR3_RD_GATE_RATIO2         0x20
+#define DDR3_RD_GATE_RATIO1         0x20
+#define DDR3_RD_GATE_RATIO0         0x20
+
+/*
+ * DDR2 EMIF Paramters 400 MHz
+ */
+#define EMIF_TIM1_DDR2    0xAAB15E2
+#define EMIF_TIM2_DDR2    0x423631D2
+#define EMIF_TIM3_DDR2    0x80032F
+#define EMIF_SDREF_DDR2   0x10000C30
+#define EMIF_SDCFG_DDR2   0x43801A3A  // 32 bit ddr2, CL=6, CWL=5, 13 rows, 8 banks, 10 bit column, 2 CS
+#define EMIF_PHYCFG_DDR2  0x0000030B  // local odt = 3, read latency = 11 (max = 12, min=6)
+
+/*
+ * DDR3 EMIF Paramters set for 400 MHz Clock Frequency
+ */
+#define EMIF_TIM1_DDR3_400              0x0CCCE524
+#define EMIF_TIM2_DDR3_400              0x30308023
+#define EMIF_TIM3_DDR3_400              0x009F82CF
+#define EMIF_SDREF_DDR3_400             0x10000C30
+#define EMIF_SDCFG_DDR3_400             0x62A41032  // 32 bit ddr3, CL=11, 8 banks, CWL=8 10 bit column, 2 CS
+#define EMIF_PHYCFG_DDR3_400            0x0000030B  // local odt = 3, read latency = 11 (max = 12, min=6
+
+/*
+ * DDR3 EMIF Paramters set for 531 MHz Clock Frequency
+ */
+#define EMIF_TIM1_DDR3_531              0x0EF136AC
+#define EMIF_TIM2_DDR3_531              0x30408063
+#define EMIF_TIM3_DDR3_531              0x009F83AF
+#define EMIF_SDREF_DDR3_531             0x1000102E
+#define EMIF_SDCFG_DDR3_531             0x62A51832  // 32 bit ddr3, CL=11, 8 banks, CWL=8 10 bit column, 2 CS
+#define EMIF_PHYCFG_DDR3_531            0x0000030C  // local odt = 3, read latency = 11 (max = 12, min=6)
+
+/*
+ * DDR3 EMIF Paramters set for 621 MHz Clock Frequency
+ */
+#define EMIF_TIM1_DDR3_621              0x111567B5
+#define EMIF_TIM2_DDR3_621              0x404B806B
+#define EMIF_TIM3_DDR3_621              0x009F844F
+#define EMIF_SDREF_DDR3_621             0x100012EC
+#define EMIF_SDCFG_DDR3_621             0x62A62832  // 32 bit ddr3, CL=11, 8 banks, CWL=8 10 bit column, 2 CS
+#define EMIF_PHYCFG_DDR3_621            0x0000030E  // local odt = 3, read latency = 11 (max = 12, min=6)
+
+
+/*
+ * DDR3 EMIF Paramters set for 634 MHz Clock Frequency
+ */
+#define EMIF_TIM1_DDR3_634              0x133577F5
+#define EMIF_TIM2_DDR3_634              0x404C806B
+#define EMIF_TIM3_DDR3_634              0x009F845F
+#define EMIF_SDREF_DDR3_634             0x10001356
+#define EMIF_SDCFG_DDR3_634             0x62A63032  // 32 bit ddr3, CL=10, 8 banks, CWL=7 10 bit column, 1 CS
+#define EMIF_PHYCFG_DDR3_634            0x0000030F  // local odt = 3, read latency = 15
+
+/*
+ * DDR3 EMIF Paramters set for 648 MHz Clock Frequency
+ */
+#define EMIF_TIM1_DDR3_648              0x133577F5
+#define EMIF_TIM2_DDR3_648              0x504E806C
+#define EMIF_TIM3_DDR3_648              0x009F847F
+#define EMIF_SDREF_DDR3_648             0x100013BF
+#define EMIF_SDCFG_DDR3_648             0x62A63032  // 32 bit ddr3, CL=10, 8 banks, CWL=7 10 bit column, 1 CS
+#define EMIF_PHYCFG_DDR3_648            0x0000030F  // local odt = 3, read latency = 15
+
+/*
+ * DDR3 EMIF Paramters set for 675 MHz Clock Frequency
+ */
+#define EMIF_TIM1_DDR3_675              0x13358875
+#define EMIF_TIM2_DDR3_675              0x5051806C
+#define EMIF_TIM3_DDR3_675              0x009F84AF
+#define EMIF_SDREF_DDR3_675             0x10001491
+#define EMIF_SDCFG_DDR3_675             0x62A63032  // 32 bit ddr3, CL=10, 8 banks, CWL=7 10 bit column, 1 CS
+#define EMIF_PHYCFG_DDR3_675            0x0000030F  // local odt = 3, read latency = 15
+
+
+/*
+ * DDR3 EMIF Paramters set for 702 MHz Clock Frequency
+ */
+#define EMIF_TIM1_DDR3_702              0x155798BE
+#define EMIF_TIM2_DDR3_702              0x40558074
+#define EMIF_TIM3_DDR3_702              0x009F84DF
+#define EMIF_SDREF_DDR3_702             0x10001564
+#define EMIF_SDCFG_DDR3_702             0x62A73832  // 32 bit ddr3, CL=11, 8 banks, CWL=8 10 bit column, 2 CS
+#define EMIF_PHYCFG_DDR3_702            0x00000310  // local odt = 3, read latency = 11 (max = 12, min=6)
+
+/*
+ * DDR3 EMIF Paramters set for 729 MHz Clock Frequency
+ */
+#define EMIF_TIM1_DDR3_729              0x1557A8FE
+#define EMIF_TIM2_DDR3_729              0x50588074
+#define EMIF_TIM3_DDR3_729              0x009F850F
+#define EMIF_SDREF_DDR3_729             0x10001637
+#define EMIF_SDCFG_DDR3_729             0x62A73832  // 32 bit ddr3, CL=11, 8 banks, CWL=8 10 bit column, 2 CS
+#define EMIF_PHYCFG_DDR3_729            0x00000310  // local odt = 3, read latency = 11 (max = 12, min=6)
+
+/*
+ * DDR3 EMIF Paramters set for 756 MHz Clock Frequency
+ */
+#define EMIF_TIM1_DDR3_756              0x1559B97E
+#define EMIF_TIM2_DDR3_756              0x505B8074
+#define EMIF_TIM3_DDR3_756              0x009F853F
+#define EMIF_SDREF_DDR3_756             0x10001709
+#define EMIF_SDCFG_DDR3_756             0x62A73832  // 32 bit ddr3, CL=11, 8 banks, CWL=8 10 bit column, 2 CS
+#define EMIF_PHYCFG_DDR3_756            0x00000310  // local odt = 3, read latency = 11 (max = 12, min=6)
+
+/*
+ * DDR3 EMIF Paramters set for 783 MHz Clock Frequency
+ */
+#define EMIF_TIM1_DDR3_783              0x1779C9BE
+#define EMIF_TIM2_DDR3_783              0x505E8074
+#define EMIF_TIM3_DDR3_783              0x009F856F
+#define EMIF_SDREF_DDR3_783             0x100017DC
+#define EMIF_SDCFG_DDR3_783             0x62A73832  // 32 bit ddr3, CL=11, 8 banks, CWL=8 10 bit column, 2 CS
+#define EMIF_PHYCFG_DDR3_783            0x00000310  // local odt = 3, read latency = 11 (max = 12, min=6) 
+
+/*
+ * DDR3 EMIF Paramters set for 796.5 MHz Clock Frequency
+ */
+#define EMIF_TIM1_DDR3_796              0x1779C9FE
+#define EMIF_TIM2_DDR3_796              0x50608074
+#define EMIF_TIM3_DDR3_796              0x009F857F
+#define EMIF_SDREF_DDR3_796             0x10001841
+#define EMIF_SDCFG_DDR3_796             0x62A73832  // 32 bit ddr3, CL=11, 8 banks, CWL=8 10 bit column, 2 CS
+#define EMIF_PHYCFG_DDR3_796            0x00000310  // local odt = 3, read latency = 11 (max = 12, min=6)
+
+/* EVM 400 MHz clock Settings */
+#define WR_DQS_RATIO_BYTE_LANE3                 ((0x4a << 10) | 0x4a)
+#define WR_DQS_RATIO_BYTE_LANE2                 ((0x4a << 10) | 0x4a)
+#define WR_DQS_RATIO_BYTE_LANE1                 ((0x4a << 10) | 0x4a)
+#define WR_DQS_RATIO_BYTE_LANE0                 ((0x4a << 10) | 0x4a)
+
+#define WR_DATA_RATIO_BYTE_LANE3                (((0x4a + 0x40) << 10) | (0x4a + 0x40))
+#define WR_DATA_RATIO_BYTE_LANE2                (((0x4a + 0x40) << 10) | (0x4a + 0x40))
+#define WR_DATA_RATIO_BYTE_LANE1                (((0x4a + 0x40) << 10) | (0x4a + 0x40))
+#define WR_DATA_RATIO_BYTE_LANE0                (((0x4a + 0x40) << 10) | (0x4a + 0x40))
+
+#define RD_DQS_RATIO                            ((0x40 << 10) | 0x40)
+
+#define DQS_GATE_BYTE_LANE0                     ((0x13a << 10) | 0x13a)
+#define DQS_GATE_BYTE_LANE1                     ((0x13a << 10) | 0x13a)
+#define DQS_GATE_BYTE_LANE2                     ((0x13a << 10) | 0x13a)
+#define DQS_GATE_BYTE_LANE3                     ((0x13a << 10) | 0x13a)
+#define DDRPHY_CONFIG_BASE                      ((emif == 0) ? 0x48198000 : 0x4819a000)
+
+
+/* ------------------------------------------------------------------------ *
+ *  Register Definitions                                                    *
+ * ------------------------------------------------------------------------ */
+#define PRCM_BASE_ADDR                  0x48180000
+#define DMM_BASE_ADDR                   0x4E000000
+#define EMIF4_0_CFG_BASE_ADDR           0x4C000000
+#define EMIF4_1_CFG_BASE_ADDR           0x4D000000 
+#define DUCATI_BASE_ADDR                0x55020000
+#define DUCATI_MMU_CFG                  0x55080000
+#define CTRL_MODULE_BASE_ADDR           0x48140000
+#define GEM_L2RAM_BASE_ADDR             0x40800000
+#define TPPIRAM_BASE_ADDR               0x57180000
+#define OCMC0RAM_BASE_ADDR              0x40300000
+#define OCMC1RAM_BASE_ADDR              0x40400000
+
+/* Control Module */
+#define DSPBOOTADDR                     (CTRL_MODULE_BASE_ADDR + 0x0048) 
+#define DSPMEM_SLEEP                    (CTRL_MODULE_BASE_ADDR + 0x0650) 
+
+#define CM_ALWON_L3_SLOW_CLKSTCTRL      (PRCM_BASE_ADDR + 0x1400)
+
+/* UART PRCM Memory declarations */
+#define CM_ALWON_UART_0_CLKCTRL         (PRCM_BASE_ADDR + 0x1550)
+#define CM_ALWON_UART_1_CLKCTRL         (PRCM_BASE_ADDR + 0x1554)
+#define CM_ALWON_UART_2_CLKCTRL         (PRCM_BASE_ADDR + 0x1558)
+
+/* Ducati PRCM Memory declarations */
+#define CM_DEFAULT_DUCATI_CLKSTCTRL     (PRCM_BASE_ADDR + 0x0518)
+#define CM_DEFAULT_DUCATI_CLKCTRL       (PRCM_BASE_ADDR + 0x0574)
+#define RM_DEFAULT_RSTCTRL              (PRCM_BASE_ADDR + 0x0B10)
+#define RM_DEFAULT_RSTST                (PRCM_BASE_ADDR + 0x0B14)
+
+/* OCMC PRCM Memory declarations */
+#define CM_ALWON_OCMC_0_CLKSTCTRL       (PRCM_BASE_ADDR + 0x1414) 
+#define CM_ALWON_OCMC_1_CLKSTCTRL       (PRCM_BASE_ADDR + 0x1418) 
+#define CM_ALWON_OCMC_0_CLKCTRL         (PRCM_BASE_ADDR + 0x15B4) 
+#define CM_ALWON_OCMC_1_CLKCTRL         (PRCM_BASE_ADDR + 0x15B8) 
+
+/* IVAHD0 PRCM memory declarations */
+#define CM_IVAHD0_CLKSTCTRL             (PRCM_BASE_ADDR + 0x0600) 
+#define CM_IVAHD0_IVAHD_CLKCTRL         (PRCM_BASE_ADDR + 0x0620) 
+#define CM_IVAHD0_SL2_CLKCTRL           (PRCM_BASE_ADDR + 0x0624)  
+#define PM_IVAHD0_PWRSTST               (PRCM_BASE_ADDR + 0x0C04)  
+#define RM_IVAHD0_RSTCTRL               (PRCM_BASE_ADDR + 0x0C10)  
+#define RM_IVAHD0_RSTST                 (PRCM_BASE_ADDR + 0x0C14)  
+
+/* IVAHD1 PRCM Definition */
+#define CM_IVAHD1_CLKSTCTRL             (PRCM_BASE_ADDR + 0x0700) 
+#define CM_IVAHD1_IVAHD_CLKCTRL         (PRCM_BASE_ADDR + 0x0720) 
+#define CM_IVAHD1_SL2_CLKCTRL           (PRCM_BASE_ADDR + 0x0724)  
+#define PM_IVAHD1_PWRSTST               (PRCM_BASE_ADDR + 0x0D04)  
+#define RM_IVAHD1_RSTCTRL               (PRCM_BASE_ADDR + 0x0D10)  
+#define RM_IVAHD1_RSTST                 (PRCM_BASE_ADDR + 0x0D14)  
+
+/* IVAHD2 PRCM Definition */
+#define CM_IVAHD2_CLKSTCTRL             (PRCM_BASE_ADDR + 0x0800) 
+#define CM_IVAHD2_IVAHD_CLKCTRL         (PRCM_BASE_ADDR + 0x0820) 
+#define CM_IVAHD2_SL2_CLKCTRL           (PRCM_BASE_ADDR + 0x0824)  
+#define PM_IVAHD2_PWRSTST               (PRCM_BASE_ADDR + 0x0E04)  
+#define RM_IVAHD2_RSTCTRL               (PRCM_BASE_ADDR + 0x0E10)  
+#define RM_IVAHD2_RSTST                 (PRCM_BASE_ADDR + 0x0E14)  
+
+/* GEMSS PRCEM definition */
+#define CM_GEM_CLKSTCTRL                (PRCM_BASE_ADDR + 0x0400) 
+#define CM_ACTIVE_GEM_CLKCTRL           (PRCM_BASE_ADDR + 0x0420)
+#define PM_ACTIVE_PWRSTST               (PRCM_BASE_ADDR + 0x0A04)
+#define RM_ACTIVE_RSTCTRL               (PRCM_BASE_ADDR + 0x0A10) 
+#define RM_ACTIVE_RSTST                 (PRCM_BASE_ADDR + 0x0A14) 
+#define CM_MMU_CLKSTCTRL                (PRCM_BASE_ADDR + 0x140C) 
+#define CM_ALWON_MMUDATA_CLKCTRL        (PRCM_BASE_ADDR + 0x159C) 
+#define CM_MMUCFG_CLKSTCTRL             (PRCM_BASE_ADDR + 0x1410) 
+#define CM_ALWON_MMUCFG_CLKCTRL         (PRCM_BASE_ADDR + 0x15A8) 
+
+/* TPPSS PRCEM definition */
+#define CM_DEFAULT_TPPSS_CLKSTCTRL      (PRCM_BASE_ADDR + 0x50C)
+#define CM_DEFAULT_TPPSS_CLKCTRL        (PRCM_BASE_ADDR + 0x554)
+
+/* EMIF4 PRCM Defintion */
+#define CM_DEFAULT_L3_FAST_CLKSTCTRL    (PRCM_BASE_ADDR + 0x0508)    
+#define CM_DEFAULT_EMIF_0_CLKCTRL       (PRCM_BASE_ADDR + 0x0520)
+#define CM_DEFAULT_EMIF_1_CLKCTRL       (PRCM_BASE_ADDR + 0x0524)
+#define CM_DEFAULT_DMM_CLKCTRL          (PRCM_BASE_ADDR + 0x0528)
+#define CM_DEFAULT_FW_CLKCTRL           (PRCM_BASE_ADDR + 0x052C)
+
+/* DMM & EMIF4 MMR Declaration */
+#define DMM_LISA_MAP__0                 (DMM_BASE_ADDR + 0x40)
+#define DMM_LISA_MAP__1                 (DMM_BASE_ADDR + 0x44)
+#define DMM_LISA_MAP__2                 (DMM_BASE_ADDR + 0x48)
+#define DMM_LISA_MAP__3                 (DMM_BASE_ADDR + 0x4C)
+#define DMM_PAT_BASE_ADDR               (DMM_BASE_ADDR + 0x460)
+
+#define EMIF4_0_SDRAM_CONFIG            (EMIF4_0_CFG_BASE_ADDR + 0x08)  
+#define EMIF4_0_SDRAM_CONFIG2           (EMIF4_0_CFG_BASE_ADDR + 0x0C)  
+#define EMIF4_0_SDRAM_REF_CTRL          (EMIF4_0_CFG_BASE_ADDR + 0x10)  
+#define EMIF4_0_SDRAM_REF_CTRL_SHADOW   (EMIF4_0_CFG_BASE_ADDR + 0x14)  
+#define EMIF4_0_SDRAM_TIM_1             (EMIF4_0_CFG_BASE_ADDR + 0x18)  
+#define EMIF4_0_SDRAM_TIM_1_SHADOW      (EMIF4_0_CFG_BASE_ADDR + 0x1C)  
+#define EMIF4_0_SDRAM_TIM_2             (EMIF4_0_CFG_BASE_ADDR + 0x20)  
+#define EMIF4_0_SDRAM_TIM_2_SHADOW      (EMIF4_0_CFG_BASE_ADDR + 0x24)  
+#define EMIF4_0_SDRAM_TIM_3             (EMIF4_0_CFG_BASE_ADDR + 0x28)  
+#define EMIF4_0_SDRAM_TIM_3_SHADOW      (EMIF4_0_CFG_BASE_ADDR + 0x2C)  
+#define EMIF4_0_DDR_PHY_CTRL_1          (EMIF4_0_CFG_BASE_ADDR + 0xE4)  
+#define EMIF4_0_DDR_PHY_CTRL_1_SHADOW   (EMIF4_0_CFG_BASE_ADDR + 0xE8)  
+
+#define EMIF4_1_SDRAM_CONFIG            (EMIF4_1_CFG_BASE_ADDR + 0x08)  
+#define EMIF4_1_SDRAM_CONFIG2           (EMIF4_1_CFG_BASE_ADDR + 0x0C)  
+#define EMIF4_1_SDRAM_REF_CTRL          (EMIF4_1_CFG_BASE_ADDR + 0x10)  
+#define EMIF4_1_SDRAM_REF_CTRL_SHADOW   (EMIF4_1_CFG_BASE_ADDR + 0x14)  
+#define EMIF4_1_SDRAM_TIM_1             (EMIF4_1_CFG_BASE_ADDR + 0x18)  
+#define EMIF4_1_SDRAM_TIM_1_SHADOW      (EMIF4_1_CFG_BASE_ADDR + 0x1C)  
+#define EMIF4_1_SDRAM_TIM_2             (EMIF4_1_CFG_BASE_ADDR + 0x20)  
+#define EMIF4_1_SDRAM_TIM_2_SHADOW      (EMIF4_1_CFG_BASE_ADDR + 0x24)  
+#define EMIF4_1_SDRAM_TIM_3             (EMIF4_1_CFG_BASE_ADDR + 0x28)  
+#define EMIF4_1_SDRAM_TIM_3_SHADOW      (EMIF4_1_CFG_BASE_ADDR + 0x2C)  
+#define EMIF4_1_DDR_PHY_CTRL_1          (EMIF4_1_CFG_BASE_ADDR + 0xE4)   
+#define EMIF4_1_DDR_PHY_CTRL_1_SHADOW   (EMIF4_1_CFG_BASE_ADDR + 0xE8)   
+
+#define MAINPLL_CTRL                    (CTRL_MODULE_BASE_ADDR + 0x400)
+#define MAINPLL_PWD                     (CTRL_MODULE_BASE_ADDR + 0x404)
+#define MAINPLL_FREQ1                   (CTRL_MODULE_BASE_ADDR + 0x408)
+#define MAINPLL_DIV1                    (CTRL_MODULE_BASE_ADDR + 0x40C)
+#define MAINPLL_FREQ2                   (CTRL_MODULE_BASE_ADDR + 0x410)
+#define MAINPLL_DIV2                    (CTRL_MODULE_BASE_ADDR + 0x414)
+#define MAINPLL_FREQ3                   (CTRL_MODULE_BASE_ADDR + 0x418)
+#define MAINPLL_DIV3                    (CTRL_MODULE_BASE_ADDR + 0x41C)
+#define MAINPLL_FREQ4                   (CTRL_MODULE_BASE_ADDR + 0x420)
+#define MAINPLL_DIV4                    (CTRL_MODULE_BASE_ADDR + 0x424)
+#define MAINPLL_FREQ5                   (CTRL_MODULE_BASE_ADDR + 0x428)
+#define MAINPLL_DIV5                    (CTRL_MODULE_BASE_ADDR + 0x42C)
+#define MAINPLL_DIV6                    (CTRL_MODULE_BASE_ADDR + 0x434)
+#define MAINPLL_DIV7                    (CTRL_MODULE_BASE_ADDR + 0x43C)
+
+#define DDRPLL_CTRL                     (CTRL_MODULE_BASE_ADDR + 0x440) 
+#define DDRPLL_PWD                      (CTRL_MODULE_BASE_ADDR + 0x444) 
+#define DDRPLL_DIV1                     (CTRL_MODULE_BASE_ADDR + 0x44C) 
+#define DDRPLL_FREQ2                    (CTRL_MODULE_BASE_ADDR + 0x450) 
+#define DDRPLL_DIV2                     (CTRL_MODULE_BASE_ADDR + 0x454) 
+#define DDRPLL_FREQ3                    (CTRL_MODULE_BASE_ADDR + 0x458) 
+#define DDRPLL_DIV3                     (CTRL_MODULE_BASE_ADDR + 0x45C) 
+#define DDRPLL_FREQ4                    (CTRL_MODULE_BASE_ADDR + 0x460) 
+#define DDRPLL_DIV4                     (CTRL_MODULE_BASE_ADDR + 0x464)  
+#define DDRPLL_FREQ5                    (CTRL_MODULE_BASE_ADDR + 0x468) 
+#define DDRPLL_DIV5                     (CTRL_MODULE_BASE_ADDR + 0x46C) 
+
+#define VIDEOPLL_CTRL                   (CTRL_MODULE_BASE_ADDR + 0x470)
+#define VIDEOPLL_PWD                    (CTRL_MODULE_BASE_ADDR + 0x474)
+#define VIDEOPLL_FREQ1                  (CTRL_MODULE_BASE_ADDR + 0x478)
+#define VIDEOPLL_DIV1                   (CTRL_MODULE_BASE_ADDR + 0x47C)
+#define VIDEOPLL_FREQ2                  (CTRL_MODULE_BASE_ADDR + 0x480)
+#define VIDEOPLL_DIV2                   (CTRL_MODULE_BASE_ADDR + 0x484)
+#define VIDEOPLL_FREQ3                  (CTRL_MODULE_BASE_ADDR + 0x488)
+#define VIDEOPLL_DIV3                   (CTRL_MODULE_BASE_ADDR + 0x48C)
+
+#define AUDIOPLL_CTRL                   (CTRL_MODULE_BASE_ADDR + 0x4A0)
+#define AUDIOPLL_PWD                    (CTRL_MODULE_BASE_ADDR + 0x4A4)
+#define AUDIOPLL_FREQ2                  (CTRL_MODULE_BASE_ADDR + 0x4B0)
+#define AUDIOPLL_DIV2                   (CTRL_MODULE_BASE_ADDR + 0x4B4)
+#define AUDIOPLL_FREQ3                  (CTRL_MODULE_BASE_ADDR + 0x4B8)
+#define AUDIOPLL_DIV3                   (CTRL_MODULE_BASE_ADDR + 0x4BC)
+#define AUDIOPLL_FREQ4                  (CTRL_MODULE_BASE_ADDR + 0x4C0)
+#define AUDIOPLL_DIV4                   (CTRL_MODULE_BASE_ADDR + 0x4C4)
+#define AUDIOPLL_FREQ5                  (CTRL_MODULE_BASE_ADDR + 0x4C8)
+#define AUDIOPLL_DIV5                   (CTRL_MODULE_BASE_ADDR + 0x4CC) 
+
+#define CONTROL_STATUS                  (CTRL_MODULE_BASE_ADDR + 0x040)
+#define DDR_RCD                         (CTRL_MODULE_BASE_ADDR + 0x70C) 
+#define CM_CLKOUT_CTRL                  (PRCM_BASE_ADDR + 0x100)
+
+/* Pad Control Registers */
+#define conf_mtsi_dclk                  (CTRL_MODULE_BASE_ADDR + 0x08C8)
+#define conf_mtsi_data0                 (CTRL_MODULE_BASE_ADDR + 0x08CC)
+#define conf_mtsi_data1                 (CTRL_MODULE_BASE_ADDR + 0x08D0)
+#define conf_mtsi_data2                 (CTRL_MODULE_BASE_ADDR + 0x08D4)
+#define conf_mtsi_data3                 (CTRL_MODULE_BASE_ADDR + 0x08D8)
+#define conf_mtsi_data4                 (CTRL_MODULE_BASE_ADDR + 0x08DC)
+#define conf_mtsi_data5                 (CTRL_MODULE_BASE_ADDR + 0x08E0)
+#define conf_mtsi_data6                 (CTRL_MODULE_BASE_ADDR + 0x08E4)
+#define conf_mtsi_data7                 (CTRL_MODULE_BASE_ADDR + 0x08E8)
+#define conf_mtsi_bytstrt               (CTRL_MODULE_BASE_ADDR + 0x08EC)
+#define conf_mtso_dclk                  (CTRL_MODULE_BASE_ADDR + 0x08F0)
+#define conf_mtso_data0                 (CTRL_MODULE_BASE_ADDR + 0x08F4)
+#define conf_mtso_data1                 (CTRL_MODULE_BASE_ADDR + 0x08F8)
+#define conf_mtso_data2                 (CTRL_MODULE_BASE_ADDR + 0x08FC)
+#define conf_mtso_data3                 (CTRL_MODULE_BASE_ADDR + 0x0900)
+#define conf_mtso_data4                 (CTRL_MODULE_BASE_ADDR + 0x0904)
+#define conf_mtso_data5                 (CTRL_MODULE_BASE_ADDR + 0x0908)
+#define conf_mtso_data6                 (CTRL_MODULE_BASE_ADDR + 0x090C)
+#define conf_mtso_data7                 (CTRL_MODULE_BASE_ADDR + 0x0910)
+#define conf_mtso_bytstrt               (CTRL_MODULE_BASE_ADDR + 0x0914)
+#define conf_mctl_sclk                  (CTRL_MODULE_BASE_ADDR + 0x0918)
+#define conf_mctl_sctl                  (CTRL_MODULE_BASE_ADDR + 0x091C)
+#define conf_mctl_sdi                   (CTRL_MODULE_BASE_ADDR + 0x0920)
+#define conf_mctl_sdo                   (CTRL_MODULE_BASE_ADDR + 0x0924)
+#define conf_spi_scs2                   (CTRL_MODULE_BASE_ADDR + 0x0AA0)
+#define conf_spi_scs3                   (CTRL_MODULE_BASE_ADDR + 0x0AA4)
+#define conf_uart0_dtrn                 (CTRL_MODULE_BASE_ADDR + 0x0AC0)
+#define conf_uart0_dsrn                 (CTRL_MODULE_BASE_ADDR + 0x0AC4)
+#define conf_uart0_dcdn                 (CTRL_MODULE_BASE_ADDR + 0x0AC8)
+#define conf_uart0_rin                  (CTRL_MODULE_BASE_ADDR + 0x0ACC)
+#define conf_uart1_txd                  (CTRL_MODULE_BASE_ADDR + 0x0AD4)
+#define conf_uart1_rtsn                 (CTRL_MODULE_BASE_ADDR + 0x0AD8)
+#define conf_uart1_ctsn                 (CTRL_MODULE_BASE_ADDR + 0x0ADC)
+#define conf_uart2_rtsn                 (CTRL_MODULE_BASE_ADDR + 0x0AE8)
+#define conf_uart2_ctsn                 (CTRL_MODULE_BASE_ADDR + 0x0AEC)
+#define conf_sc0_data                   (CTRL_MODULE_BASE_ADDR + 0x0AFC)
+#define conf_sc1_rst                    (CTRL_MODULE_BASE_ADDR + 0x0B10)
+#define conf_tim6_out                   (CTRL_MODULE_BASE_ADDR + 0x0B30)
+#define conf_tim7_out                   (CTRL_MODULE_BASE_ADDR + 0x0B34)
+#define conf_gpmc_a27                   (CTRL_MODULE_BASE_ADDR + 0x0BA0)
+#define conf_gp0_io6                    (CTRL_MODULE_BASE_ADDR + 0x0CA0)
+
+
+/* ------------------------------------------------------------------------ *
+ *                                                                          *
+ *  Setup_PRCM()                                                            *
+ *      Enable all required PRCM modules.                                   *
+ *                                                                          *
+ * ------------------------------------------------------------------------ */
+Setup_PRCM()
+{
+    /* Enable the OCMC0RAM Clocks */
+    WR_MEM_32(CM_ALWON_OCMC_0_CLKSTCTRL, 2);
+    WR_MEM_32(CM_ALWON_OCMC_0_CLKCTRL,   2);
+    while(((RD_MEM_32(CM_ALWON_OCMC_0_CLKSTCTRL) & 0x100)>>8)!=1);
+    while(((RD_MEM_32(CM_ALWON_OCMC_0_CLKCTRL)&0x30000)>>17)!=0);
+
+    /* Enable the OCMC1RAM Clocks */
+    WR_MEM_32(CM_ALWON_OCMC_1_CLKSTCTRL, 2);
+    WR_MEM_32(CM_ALWON_OCMC_1_CLKCTRL,   2);
+    while(((RD_MEM_32(CM_ALWON_OCMC_1_CLKSTCTRL) & 0x100)>>8)!=1);
+    while(((RD_MEM_32(CM_ALWON_OCMC_1_CLKCTRL)&0x30000)>>17)!=0); 
+
+    WR_MEM_32(CM_ALWON_L3_SLOW_CLKSTCTRL, 0x2); // Enable the Power Domain Transition of L3 Slow Domain Peripheral
+    while((RD_MEM_32(CM_ALWON_L3_SLOW_CLKSTCTRL) & 0x2) !=0x2);
+    WR_MEM_32(CM_ALWON_UART_0_CLKCTRL,    0x2); // Enable UART0 Clock
+    while((RD_MEM_32(CM_ALWON_UART_0_CLKCTRL) & 0x2) !=0x2);
+    WR_MEM_32(CM_ALWON_UART_1_CLKCTRL,    0x2); // Enable UART1 Clock
+    while((RD_MEM_32(CM_ALWON_UART_1_CLKCTRL) & 0x2) !=0x2);
+    WR_MEM_32(CM_ALWON_UART_2_CLKCTRL,    0x2); // Enable UART2 Clock
+    while((RD_MEM_32(CM_ALWON_UART_2_CLKCTRL) & 0x2) !=0x2);
+    WR_MEM_32(0x48181564,                 0x2); // Enable I2C0 Clock
+    while((RD_MEM_32(0x48181564) & 0x3) !=0x2);
+    WR_MEM_32(0x48181568,                 0x2); // Enable I2C1 Clock
+    while((RD_MEM_32(0x48181568) & 0x3) !=0x2);
+    WR_MEM_32(0x48181590,                 0x2); // Enable SPI Clock
+    while((RD_MEM_32(0x48181590) & 0x3) !=0x2);
+    WR_MEM_32(0x481815C4,                 0x2); // Enable Control Module
+    while((RD_MEM_32(0x481815C4) & 0x3) !=0x2);
+    WR_MEM_32(0x48181404,                 0x2); // Enable Ethernet Clock
+    while((RD_MEM_32(0x48181404) & 0x3) !=0x2);
+    WR_MEM_32(0x48181540,                 0x2); // Enable McASP0 Clock
+    while((RD_MEM_32(0x48181540) & 0x3) !=0x2);
+    WR_MEM_32(0x48181544,                 0x2); // Enable McASP1 Clock
+    while((RD_MEM_32(0x48181544) & 0x3) !=0x2);
+    WR_MEM_32(0x48181548,                 0x2); // Enable McASP2 Clock
+    while((RD_MEM_32(0x48181548) & 0x3) !=0x2);
+    WR_MEM_32(0x4818154c,                 0x2); // Enable McBSP Clock
+    while((RD_MEM_32(0x4818154c) & 0x3) !=0x2);
+    WR_MEM_32(0x4818155c,               0x102); // Enable GPIO0 Clock
+    while((RD_MEM_32(0x4818155c) & 0x3) !=0x2);
+    WR_MEM_32(0x48181560,               0x102); // Enable GPIO1 Clock
+    while((RD_MEM_32(0x48181560) & 0x3) !=0x2);
+    WR_MEM_32(0x481815B0,                 0x2); // Enable SDIO Clock
+    while((RD_MEM_32(0x481815B0) & 0x3) !=0x2);
+    WR_MEM_32(0x481815D4,                 0x2); // Enable ENET0 Clock
+    while((RD_MEM_32(0x481815D4) & 0x3) !=0x2);
+    WR_MEM_32(0x481815D8,                 0x2); // Enable ENET1 Clock
+    while((RD_MEM_32(0x481815D8) & 0x3) !=0x2);
+    WR_MEM_32(0x48180558,                 0x2); // Enable USB Clock
+    while((RD_MEM_32(0x48180558) & 0x3) !=0x2);
+    WR_MEM_32(0x48180560,                 0x2); // Enable SATA Clock
+    while((RD_MEM_32(0x48180560) & 0x3) !=0x2);
+    while(RD_MEM_32(CM_ALWON_L3_SLOW_CLKSTCTRL) & 0x2100 !=0x2100);
+
+    GEL_TextOut("PRCM Setup Complete\n");
+}
+
+/* ------------------------------------------------------------------------ *
+ *                                                                          *
+ * Setup_Power()                                                            *
+ *      Set EVM_1V0_AVS to 1.0V                                             *
+ *                                                                          *
+ * ------------------------------------------------------------------------ */
+Setup_Power()
+{
+    *(unsigned int *)0x4803213c = 0x00000001;  // Set GP0_IO0 to 1, GP0_IO1 to GP0_IO3 to 0 for 1.0V
+    *(unsigned int *)0x48032134 = 0xfffffff0;  // Set GP0_IO0 to GP0_IO3 as outputs
+}
+
+/* ------------------------------------------------------------------------ *
+ *                                                                          *
+ *  Setup_PADCTRL( )                                                        *
+ *      Configure Pin Multiplexing                                          *
+ *                                                                          *
+ * ------------------------------------------------------------------------ */
+Setup_PADCTRL( )
+{
+    GEL_TextOut( "Configuring Pad Functions...\n" );
+    
+    /* GPMC NOR */
+    WR_MEM_32(conf_tim7_out      , 1);  // GPMC A12
+    WR_MEM_32(conf_uart1_ctsn    , 1);  // GPMC A13
+    WR_MEM_32(conf_uart1_rtsn    , 1);  // GPMC A14
+    WR_MEM_32(conf_uart2_rtsn    , 1);  // GPMC A15
+    WR_MEM_32(conf_sc1_rst       , 1);  // GPMC A15
+    WR_MEM_32(conf_uart2_ctsn    , 1);  // GPMC A16
+    WR_MEM_32(conf_uart0_rin     , 1);  // GPMC A17
+    WR_MEM_32(conf_uart0_dcdn    , 1);  // GPMC A18
+    WR_MEM_32(conf_uart0_dsrn    , 1);  // GPMC A19
+    WR_MEM_32(conf_uart0_dtrn    , 1);  // GPMC A20
+    WR_MEM_32(conf_spi_scs3      , 1);  // GPMC A21
+    WR_MEM_32(conf_spi_scs2      , 1);  // GPMC A22
+    WR_MEM_32(conf_gp0_io6       , 2);  // GPMC A23
+    WR_MEM_32(conf_tim6_out      , 1);  // GPMC A24
+    WR_MEM_32(conf_sc0_data      , 1);  // GPMC A25
+    WR_MEM_32(conf_uart1_txd     , 1);  // GPMC A25 for catalog card
+    WR_MEM_32(conf_gpmc_a27      , 1);  // GPMC A27 as GPIO to select higher bits    
+    
+    /* EMAC1 */
+    WR_MEM_32(conf_mtsi_dclk    , 1);
+    WR_MEM_32(conf_mtsi_data0   , 1);
+    WR_MEM_32(conf_mtsi_data1   , 1);
+    WR_MEM_32(conf_mtsi_data2   , 1);
+    WR_MEM_32(conf_mtsi_data3   , 1);
+    WR_MEM_32(conf_mtsi_data4   , 1);
+    WR_MEM_32(conf_mtsi_data5   , 1);
+    WR_MEM_32(conf_mtsi_data6   , 1);
+    WR_MEM_32(conf_mtsi_data7   , 1);
+    WR_MEM_32(conf_mtsi_bytstrt , 1);
+    WR_MEM_32(conf_mtso_dclk    , 1);
+    WR_MEM_32(conf_mtso_data0   , 1);
+    WR_MEM_32(conf_mtso_data1   , 1);
+    WR_MEM_32(conf_mtso_data2   , 1);
+    WR_MEM_32(conf_mtso_data3   , 1);
+    WR_MEM_32(conf_mtso_data4   , 1);
+    WR_MEM_32(conf_mtso_data5   , 1);
+    WR_MEM_32(conf_mtso_data6   , 1);
+    WR_MEM_32(conf_mtso_data7   , 1);
+    WR_MEM_32(conf_mtso_bytstrt , 1);
+    WR_MEM_32(conf_mctl_sclk    , 1);
+    WR_MEM_32(conf_mctl_sctl    , 1);
+    WR_MEM_32(conf_mctl_sdi     , 1);
+    WR_MEM_32(conf_mctl_sdo     , 1);  
+}
+
+/* ------------------------------------------------------------------------ *
+ *                                                                          *
+ *  Setup_MainPLL()                                                         *
+ *                                                                          *
+ * ------------------------------------------------------------------------ */
+Setup_MainPLL()
+{
+    GEL_TextOut("\tMain PLL Init is in Progress, Please wait ..... \n","Output",1,1,1);                                         
+    /* mainPLL( MAIN_N,  MAIN_P, MAIN_INTFREQ1, MAIN_FRACFREQ1, MAIN_MDIV1, 
+                MAIN_INTFREQ2, MAIN_FRACFREQ2, MAIN_MDIV2, 
+                MAIN_INTFREQ3, MAIN_FRACFREQ3, MAIN_MDIV3, 
+                MAIN_INTFREQ4, MAIN_FRACFREQ4, MAIN_MDIV4, 
+                MAIN_INTFREQ5, MAIN_FRACFREQ5, MAIN_MDIV5, 
+                MAIN_MDIV6, MAIN_MDIV7)*/
+    mainPLL(64, 0x1, 0x8, 0x800000, 0x2, // 800 MHz GEM
+            0xE, 0x0, 0x1,               // 987 MHz A8, SGX derives from this
+            0x8, 0xAAAAB0, 0x3,          // 530 MHz IVA
+            0x9, 0x55554F, 0x3,          // 493 MHz L3
+            0x9, 0x374BC6, 0xC,          // 125 MHz CPGMAC
+            0x48, 0x4);                  // 24 MHz USB, 432 MHz for Audio PLL
+
+    GEL_TextOut("\tMain PLL Init is Done ..... \n","Output",1,1,1);                                           
+}
+
+mainPLL(unsigned int MAIN_N, unsigned int MAIN_P, unsigned int  MAIN_INTFREQ1, unsigned int MAIN_FRACFREQ1, unsigned int MAIN_MDIV1, unsigned int  MAIN_INTFREQ2, unsigned int MAIN_FRACFREQ2, unsigned int MAIN_MDIV2, unsigned int  MAIN_INTFREQ3, unsigned int MAIN_FRACFREQ3, unsigned int MAIN_MDIV3, unsigned int  MAIN_INTFREQ4, unsigned int MAIN_FRACFREQ4, unsigned int MAIN_MDIV4, unsigned int  MAIN_INTFREQ5, unsigned int MAIN_FRACFREQ5, unsigned int MAIN_MDIV5, unsigned int MAIN_MDIV6, unsigned int MAIN_MDIV7)
+{
+    unsigned int main_pll_ctrl=0, k=0;
+
+    /* Put the Main PLL in Bypass Mode */
+    main_pll_ctrl = RD_MEM_32(MAINPLL_CTRL);
+    main_pll_ctrl &=0xFFFFFFFB;
+    main_pll_ctrl |=4;
+    WR_MEM_32(MAINPLL_CTRL, main_pll_ctrl);
+
+    /* Bring Main PLL out of Power Down Mode */
+    main_pll_ctrl = RD_MEM_32(MAINPLL_CTRL);
+    main_pll_ctrl &=0xFFFFFFF7;
+    main_pll_ctrl |=8;
+    WR_MEM_32(MAINPLL_CTRL, main_pll_ctrl);
+
+    /* Program the Main PLL Multiplier and Pre-dividr value */
+    main_pll_ctrl = RD_MEM_32(MAINPLL_CTRL);
+    main_pll_ctrl &=0xFF;
+    main_pll_ctrl |=(MAIN_N<<16) | (MAIN_P<<8);
+    WR_MEM_32(MAINPLL_CTRL, main_pll_ctrl); 
+
+    /* Bring the Main PLL Individual output clocks out of Power Down Mode
+    1->Power Down
+    0->Normal Mode i.e., out of Power Down Mode
+    */
+    WR_MEM_32(MAINPLL_PWD, 0x0);
+      
+    /* GEM Clock Generation, Configure the FREQ1 MMR */
+    WR_MEM_32(MAINPLL_FREQ1, (1<<31)|(1<<28)|(MAIN_INTFREQ1<<24)| MAIN_FRACFREQ1);
+
+    /* Program GEM Post divider register */
+    WR_MEM_32(MAINPLL_DIV1, (1<<8)|MAIN_MDIV1);
+
+    /* Program the PLL to generate Host ARM SYSCLK1 */
+    WR_MEM_32(MAINPLL_FREQ2, (1<<31)|(1<<28)|(MAIN_INTFREQ2<<24)|MAIN_FRACFREQ2);
+    WR_MEM_32(MAINPLL_DIV2,  (1<<8)|MAIN_MDIV2);
+
+    /* Program the PLL to generate IVA-HD SYSCLK3 */
+    WR_MEM_32(MAINPLL_FREQ3, (1<<31)|(1<<28)|(MAIN_INTFREQ3<<24)|MAIN_FRACFREQ3);
+    WR_MEM_32(MAINPLL_DIV3,  (1<<8)|MAIN_MDIV3);
+
+    /* Program the PLL to generate SYSCLK4 to SYSCLK7 */
+    WR_MEM_32(MAINPLL_FREQ4, (1<<31)|(1<<28)|(MAIN_INTFREQ4<<24)|MAIN_FRACFREQ4);
+    WR_MEM_32(MAINPLL_DIV4,  (1<<8)|MAIN_MDIV4); 
+
+    /* Program the PLL to generate SYSCLK24, CPGMAC rft_clk */
+    WR_MEM_32(MAINPLL_FREQ5, (1<<31)|(1<<28)|(MAIN_INTFREQ5<<24)|MAIN_FRACFREQ5);
+    WR_MEM_32(MAINPLL_DIV5,  (1<<8)|MAIN_MDIV5);
+  
+    /* Program the PLL to generate USB Reference Clock */
+    WR_MEM_32(MAINPLL_DIV6,  (1<<8)|MAIN_MDIV6);
+  
+    /* Program the PLL to generate Audio Reference Clock */
+    WR_MEM_32(MAINPLL_DIV7,  (1<<8)|MAIN_MDIV7);
+  
+    
+    /* Wait for PLL to Lock */
+    while( (RD_MEM_32(MAINPLL_CTRL) & 0x80) !=0x80 );   
+
+    /* Put the Main PLL in Normal(PLL) Mode */
+    main_pll_ctrl = RD_MEM_32(MAINPLL_CTRL);
+    main_pll_ctrl &=0xFFFFFFFB;
+    WR_MEM_32(MAINPLL_CTRL, main_pll_ctrl);     
+}
+
+DDRPLL(unsigned int DDR_N, unsigned int DDR_P, unsigned int DDR_MDIV1, unsigned int  DDR_INTFREQ2, unsigned int DDR_FRACFREQ2, unsigned int DDR_MDIV2, unsigned int  DDR_INTFREQ3, unsigned int DDR_FRACFREQ3, unsigned int DDR_MDIV3, unsigned int  DDR_INTFREQ4, unsigned int DDR_FRACFREQ4, unsigned int DDR_MDIV4, unsigned int  DDR_INTFREQ5, unsigned int DDR_FRACFREQ5, unsigned int DDR_MDIV5)
+{
+    unsigned int ddr_pll_ctrl=0;
+
+    /* Put the Main DDR PLL in Bypass Mode
+    0->Bypass Mode
+    1->PLL Mode
+    */
+    ddr_pll_ctrl = RD_MEM_32(DDRPLL_CTRL);
+    ddr_pll_ctrl &=0xFFFFFFFB;
+    WR_MEM_32(DDRPLL_CTRL, ddr_pll_ctrl);
+
+    /* Bring DDR PLL out of Power Down Mode
+    0->Normal Mode i.e., out of Power Down Mode
+    1->Power Down Mode
+    */
+    ddr_pll_ctrl = RD_MEM_32(DDRPLL_CTRL);
+    ddr_pll_ctrl &=0xFFFFFFF7;
+    ddr_pll_ctrl |=8;
+    WR_MEM_32(DDRPLL_CTRL, ddr_pll_ctrl);
+
+    /* Program the DDR PLL Multiplier and Pre-dividr value */
+    ddr_pll_ctrl = RD_MEM_32(DDRPLL_CTRL);
+    ddr_pll_ctrl &=0xFF;
+    ddr_pll_ctrl |=(DDR_N<<16) | (DDR_P<<8);
+    WR_MEM_32(DDRPLL_CTRL, ddr_pll_ctrl); 
+
+    /* Bring the DDR PLL Individual output clocks out of Power Down Mode
+    1->Power Down
+    0->Normal Mode i.e., out of Power Down Mode
+    */
+    WR_MEM_32(DDRPLL_PWD, 0x0);
+      
+    /* Program the DDR Post Divider to generate the DDR clock, DDR phy clock is source directly from DDR VCO output */
+    WR_MEM_32(DDRPLL_DIV1, (1<<8)|DDR_MDIV1);
+
+    /* Program the PLL to generate SYSCLK9 (16 MHz - VTP) and SYSCLK10 (48 MHz - UART, SPI, CEC, etc.) clock */
+    WR_MEM_32(DDRPLL_FREQ2, (1<<31)|(1<<28)|(DDR_INTFREQ2<<24)|DDR_FRACFREQ2);
+    WR_MEM_32(DDRPLL_DIV2,  (1<<8)|DDR_MDIV2);
+
+    /* Program the PLL to generate SYSCLK8 (400 MHz DMM, EMIF clock) */
+    WR_MEM_32(DDRPLL_FREQ3, (1<<31)|(1<<28)|(DDR_INTFREQ3<<24)|DDR_FRACFREQ3);
+    WR_MEM_32(DDRPLL_DIV3,  (1<<8)|DDR_MDIV3);
+
+    /* Program the PLL to generate expansion DDR PLL */
+    WR_MEM_32(DDRPLL_FREQ4, (1<<31)|(1<<28)|(DDR_INTFREQ4<<24)|DDR_FRACFREQ4);
+    WR_MEM_32(DDRPLL_DIV4,  (1<<8)|DDR_MDIV4); 
+
+    /* Program the PLL to generate expansion DDR PLL */
+    WR_MEM_32(DDRPLL_FREQ5, (1<<31)|(1<<28)|(DDR_INTFREQ5<<24)|DDR_FRACFREQ5);
+    WR_MEM_32(DDRPLL_DIV5,  (1<<8)|DDR_MDIV5);
+
+    /* Wait for PLL to Lock */
+    while( (RD_MEM_32(DDRPLL_CTRL) & 0x80) !=0x80 );   
+
+    /* Put the Main PLL in Normal(PLL) Mode */
+    ddr_pll_ctrl = RD_MEM_32(DDRPLL_CTRL);
+    ddr_pll_ctrl &=0xFFFFFFFB;
+    ddr_pll_ctrl |=0x4;
+    WR_MEM_32(DDRPLL_CTRL, ddr_pll_ctrl);     
+
+    /* Bring DDR RCD Module out of Power Down Mode
+    0->Power Down Mode
+    1->Normal Mode i.e., out of Power Down Mode
+    */
+    WR_MEM_32(DDR_RCD, 0x1);
+}
+
+EMIF4PRCM() 
+{
+    GEL_TextOut("\tEVM816x DDR2/3 PRCM Init is in progress ..... \n","Output",1,1,1);
+    WR_MEM_32(CM_DEFAULT_FW_CLKCTRL, 0x2);             // Enable the EMIF FireWall Clocks
+    WR_MEM_32(CM_DEFAULT_L3_FAST_CLKSTCTRL, 0x2);      // Enable the Power Domain Transition of L3 Fast Domain Peripheral
+    WR_MEM_32(CM_DEFAULT_EMIF_0_CLKCTRL,    0x2);      // Enable EMIF0 Clock
+    WR_MEM_32(CM_DEFAULT_EMIF_1_CLKCTRL,    0x2);      // Enable EMIF1 Clock
+
+    while((RD_MEM_32(CM_DEFAULT_L3_FAST_CLKSTCTRL) & 0x300)!=0x300);  // Poll for L3_FAST_GCLK  & DDR_GCLK  are active
+
+    while(RD_MEM_32(CM_DEFAULT_EMIF_0_CLKCTRL)!=0x2);  // Poll for Module is functional
+    while(RD_MEM_32(CM_DEFAULT_EMIF_1_CLKCTRL)!=0x2);  // Poll for Module is functional
+
+    WR_MEM_32(CM_DEFAULT_DMM_CLKCTRL,       0x2);      // Enable DMM clock Clock
+    while(RD_MEM_32(CM_DEFAULT_DMM_CLKCTRL)!=0x2);     // Poll for Module is functional
+
+    ddr_init_settings(0);
+
+    if(TWO_EMIF)
+        ddr_init_settings(1);
+
+    /*Program the DMM to Access EMIF0 and 1*/
+    WR_MEM_32(DMM_LISA_MAP__0, 0x80640300); // Interleaved 1GB section from 0x80000000
+    WR_MEM_32(DMM_LISA_MAP__1, 0xC0640320); // Interleaved 1GB section from 0xC0000000
+
+    WR_MEM_32(DMM_LISA_MAP__2, 0x80640300);
+    WR_MEM_32(DMM_LISA_MAP__3, 0xC0640320);
+
+    /*Enable Tiled Access*/
+    WR_MEM_32(DMM_PAT_BASE_ADDR, 0x80000000);
+    
+    GEL_TextOut("\tEVM816x DDR2/3 PRCM Init is Done ..... \n","Output",1,1,1); 
+}
+
+EMIF4P_Init(unsigned int TIM1, unsigned int TIM2, unsigned int TIM3, unsigned int SDREF, unsigned int SDCFG, unsigned int RL){
+
+    /* Program EMIF0 CFG Registers */
+    WR_MEM_32(EMIF4_0_SDRAM_TIM_1, TIM1);
+    WR_MEM_32(EMIF4_0_SDRAM_TIM_1_SHADOW, TIM1);
+    WR_MEM_32(EMIF4_0_SDRAM_TIM_2, TIM2);
+    WR_MEM_32(EMIF4_0_SDRAM_TIM_2_SHADOW, TIM2);
+    WR_MEM_32(EMIF4_0_SDRAM_TIM_3, TIM3);
+    WR_MEM_32(EMIF4_0_SDRAM_TIM_3_SHADOW, TIM3);
+    WR_MEM_32(EMIF4_0_SDRAM_CONFIG, SDCFG);
+    /* WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL, SDREF); */
+    /* WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL_SHADOW, SDREF); */
+    WR_MEM_32(EMIF4_0_DDR_PHY_CTRL_1, RL);
+    WR_MEM_32(EMIF4_0_DDR_PHY_CTRL_1_SHADOW, RL);
+
+    if(TWO_EMIF)
+    {
+        /* Program EMIF1 CFG Registers */
+        WR_MEM_32(EMIF4_1_SDRAM_TIM_1, TIM1);
+        WR_MEM_32(EMIF4_1_SDRAM_TIM_1_SHADOW, TIM1);
+        WR_MEM_32(EMIF4_1_SDRAM_TIM_2, TIM2);
+        WR_MEM_32(EMIF4_1_SDRAM_TIM_2_SHADOW, TIM2);
+        WR_MEM_32(EMIF4_1_SDRAM_TIM_3, TIM3);
+        WR_MEM_32(EMIF4_1_SDRAM_TIM_3_SHADOW, TIM3);
+        WR_MEM_32(EMIF4_1_SDRAM_CONFIG, SDCFG);
+        /* WR_MEM_32(EMIF4_1_SDRAM_REF_CTRL, SDREF); */
+        /* WR_MEM_32(EMIF4_1_SDRAM_REF_CTRL_SHADOW, SDREF); */
+        WR_MEM_32(EMIF4_1_DDR_PHY_CTRL_1, RL);
+        WR_MEM_32(EMIF4_1_DDR_PHY_CTRL_1_SHADOW, RL);
+    }
+    if(DDR2) 
+    {        
+        /* Setup a small refresh period */
+        WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL, 0x0000613B);               // Initially a large refresh period
+        WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL, 0x1000613B);               // Trigger initialization
+        WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL, (0x10000000|SDREF));       // Move to a smaller more correct one
+
+        if(TWO_EMIF)
+        {
+            /* Setup a small refresh period */
+            WR_MEM_32(EMIF4_1_SDRAM_REF_CTRL, 0x0000613B);           // Initially a large refresh period
+            WR_MEM_32(EMIF4_1_SDRAM_REF_CTRL, 0x1000613B);           // Trigger initialization
+            WR_MEM_32(EMIF4_1_SDRAM_REF_CTRL, (0x10000000|SDREF));   // Move to a smaller more correct one
+        }
+    }
+    if(DDR3) 
+    {        
+        /* Setup a small refresh period */
+        WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL, 0x0000613B);               // Initially a large refresh period
+        WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL, 0x1000613B);               // Trigger initialization
+        WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL, (0x10000000|SDREF));       // Move to a smaller more correct one
+
+        if(TWO_EMIF)
+        {
+             GEL_TextOut("\tInitializing EMIF1 ..... \n","Output",1,1,1);
+             /* Setup a small refresh period */
+             WR_MEM_32(EMIF4_1_SDRAM_REF_CTRL, 0x0000613B);          // Initially a large refresh period
+             WR_MEM_32(EMIF4_1_SDRAM_REF_CTRL, 0x1000613B);          // Trigger initialization
+             WR_MEM_32(EMIF4_1_SDRAM_REF_CTRL, (0x10000000|SDREF));  // Move to a smaller more correct one
+        }
+    }
+    if (DDR3 & SWLEVELINNG) 
+    {
+        ddr3_sw_levelling(0);  
+        GEL_TextOut("\tDDR3 SWLEVELING DONE FOR EMIF0 \n","Output",1,1,1);
+        ddr3_sw_levelling(1); 
+        GEL_TextOut("\tDDR3 SWLEVELING DONE FOR EMIF1 \n","Output",1,1,1);
+    }
+}
+
+ddr_init_settings(int emif)
+{
+    /* DLL Lockdiff */
+    if(PG1_0_DDR2) 
+    { 
+        /* The below programming is not required on EVM816x PG1.1 */
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x028, 0xF);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x05C, 0xF);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x090, 0xF);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x138, 0xF);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1DC, 0xF);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x280, 0xF);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x324, 0xF);
+    }
+
+    /* Setup use rank delays */
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x134, 1);
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1d8, 1);
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x27c, 1);
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x320, 1);
+
+    if(DDR2)
+    {
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x02C, 0x0); // invert_clk_out cmd0
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x060, 0x0); // invert_clk_out cmd0
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x094, 0x0); // invert_clk_out cmd0
+    
+        /* with inv clkout: 0x100. no inv clkout: 0x80 */
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x01C, 0x80); // cmd0 slave ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x050, 0x80); // cmd1 slave ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x084, 0x80); // cmd2 slave ratio
+    }
+
+    if(DDR3)
+    {
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x02C, 0x1); // invert_clk_out cmd0
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x060, 0x1); // invert_clk_out cmd0
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x094, 0x1); // invert_clk_out cmd0
+    
+        /* with inv clkout: 0x100. no inv clkout: 0x80 */
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x01C, 0x100); // cmd0 slave ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x050, 0x100); // cmd1 slave ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x084, 0x100); // cmd2 slave ratio
+    }
+
+    if(DDR3)  // DDR3
+    {
+        /* Verify whether following code is required on PG1.1 Samples */
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0F8,0x1); // Init mode
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x104,0x1);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x19C,0x1);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1A8,0x1);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x240,0x1);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x24C,0x1);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2E4,0x1);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2F0,0x1);
+
+        /****  Setup the initial levelinihg ratios ****/
+        /* These are derived from board delays and may be different for different boards */
+
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0F0, (DDR3_WR_DQS_RATIO3 << 10) | DDR3_WR_DQS_RATIO3); //  Data0 writelvl init ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0F4,0x00000); 
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x194, (DDR3_WR_DQS_RATIO2 << 10) | DDR3_WR_DQS_RATIO2); //  Data1 writelvl init ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x198,0x00000);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x238, (DDR3_WR_DQS_RATIO1 << 10) | DDR3_WR_DQS_RATIO1); //  Data2 writelvl init ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x23c,0x00000);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2dc, (DDR3_WR_DQS_RATIO0 << 10) | DDR3_WR_DQS_RATIO0); //  Data3 writelvl init ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2e0,0x00000);
+    
+   
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0FC,(DDR3_RD_GATE_RATIO3 << 10) | DDR3_RD_GATE_RATIO3); //  Data0 gatelvl init ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x100,0x0);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1A0,(DDR3_RD_GATE_RATIO2 << 10) | DDR3_RD_GATE_RATIO2); //  Data1 gatelvl init ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1A4,0x0);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x244,(DDR3_RD_GATE_RATIO1 << 10) | DDR3_RD_GATE_RATIO1); //  Data2 gatelvl init ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x248,0x0);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2E8,(DDR3_RD_GATE_RATIO0 << 10) | DDR3_RD_GATE_RATIO0); //  Data3 gatelvl init ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2EC,0x0);
+    }
+
+    if(DDR2) // DDR2
+    {
+        if(!PG1_0_DDR2)
+        {
+            /* Needed only in 1.1 */
+            WR_MEM_32(DDRPHY_CONFIG_BASE + 0x358,0x6); 
+        }
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x108,DQS_GATE_BYTE_LANE0); // Data0 fifo_we
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x10C,0x00000000);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1AC,DQS_GATE_BYTE_LANE1); // Data1 fifo_we
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1B0,0x00000000);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x250,DQS_GATE_BYTE_LANE2); // Data2 fifo_we
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x254,0x00000000);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2F4,DQS_GATE_BYTE_LANE3); // Data3 fifo_we
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2F8,0x00000000);
+
+
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0DC,WR_DQS_RATIO_BYTE_LANE0);     // Data0 WR DQS
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0E0,0x0);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x180,WR_DQS_RATIO_BYTE_LANE1);     // Data1 WR DQS
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x184,0x0);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x224,WR_DQS_RATIO_BYTE_LANE2);     // Data2 WR DQS
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x228,0x0);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2C8,WR_DQS_RATIO_BYTE_LANE3);     // Data3 WR DQS
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2CC,0x0);
+
+
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x120,WR_DATA_RATIO_BYTE_LANE0);     // Write data0 slave ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x124,0);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1C4,WR_DATA_RATIO_BYTE_LANE1);     // Write data1 slave ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1C8,0);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x268,WR_DATA_RATIO_BYTE_LANE2);     // Write data2 slave ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x26C, 0);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x30C,WR_DATA_RATIO_BYTE_LANE3);     // Write data3 slave ratio
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x310, 0);
+
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0C8,RD_DQS_RATIO);     // Data0 RD DQS */
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0CC,0x0);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x16C,RD_DQS_RATIO);     // Data1 RD DQS */
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x170,0x0);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x210,RD_DQS_RATIO);     // Data2 RD DQS */
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x214,0x0);
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2B4,RD_DQS_RATIO);     // Data3 RD DQS */
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2B8,0x0);
+    } 
+
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x00C,0x5);     // cmd0 io config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x010,0x5);     // cmd0 io clk config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x040,0x5);     // cmd1 io config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x044,0x5);     // cmd1 io clk config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x074,0x5);     // cmd2 io config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x078,0x5);     // cmd2 io clk config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0A8,0x4);     // data0 io config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0AC,0x4);     // data0 io clk config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x14C,0x4);     // data1 io config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x150,0x4);     // data1 io clk config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1F0,0x4);     // data2 io config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1F4,0x4);     // data2 io clk config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x294,0x4);     // data3 io config - output impedance of pad
+    WR_MEM_32(DDRPHY_CONFIG_BASE + 0x298,0x4);     // data3 io clk config - output impedance of pad
+
+    if(PG1_0_DDR2) 
+    { 
+        /* The below programming is not required on EVM816x PG1.1 */ 
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x338,0x5);     // fifo_we_out0  - output impedance of pad
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x340,0x5);     // fifo_we_out1 - output impedance of pad
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x348,0x5);     // fifo_we_in2 - output impedance of pad
+        WR_MEM_32(DDRPHY_CONFIG_BASE + 0x350,0x5);     // fifo_we_in3 - output impedance of pad
+    }
+}
+
+/* ------------------------------------------------------------------------ *
+ *                                                                          *
+ *  Setup_DDR()                                                             *
+ *      Configure DDR2/DDR3 at specified frequency.                         *
+ *                                                                          *
+ * ------------------------------------------------------------------------ */
+Setup_DDR()
+{
+    GEL_TextOut("\tEVM816x DDR PLL Init is in Progress for %d MHz DDR Clock, Please wait ..... \n","Output",1,1,1,DDR_FREQ);
+    
+    /* SYS_CLKOUT selection */
+    WR_MEM_32(CM_CLKOUT_CTRL, 0xA1);  // 16 divider is selected
+    
+    /* DDR2 Initialization */
+    if(DDR2)
+    {
+        GEL_TextOut("\tDDR2 Selected. \n","Output",1,1,1);
+        DDRPLL(59, 0x1, 0x4, 0x8, 0xD99999, 0x1E, 0x8, 0x0, 0x4, 0xE, 0x0, 0x4, 0xE, 0x0, 0x4);
+
+        GEL_TextOut("\tEVM816x DDR PLL Init is Done ..... \n","Output",1,1,1);
+
+        EMIF4PRCM();
+
+        /* HACK: do the init with bad termination value */
+        EMIF4P_Init(EMIF_TIM1_DDR2, EMIF_TIM2_DDR2, EMIF_TIM3_DDR2, EMIF_SDREF_DDR2 & 0xfffffff, EMIF_SDCFG_DDR2, EMIF_PHYCFG_DDR2);
+
+    }
+
+    /* DDR3 Initialization */
+    if(DDR3)
+    {
+        GEL_TextOut("\tDDR3 Selected. \n","Output",1,1,1);
+        if (DDR_FREQ == 400)
+            DDRPLL(59, 0x000001, 4, 8, 0xD99999, 0x1E, 8, 0x00    , 4, 0xE, 0x00, 0x4, 0xE, 0x00, 0x4);
+        if (DDR_FREQ == 531)
+            DDRPLL(59, 0x000001, 3, 8, 0xD99999,   30, 8, 0x00    , 4, 0xE, 0x00, 0x4, 0xE, 0x00, 0x4);
+        if (DDR_FREQ == 621)
+            DDRPLL(46, 0x000001, 2, 6, 0xE66666,   30, 6, 0x35C28F, 4, 0xE, 0x00, 0x4, 0xE, 0x00, 0x4);
+        if (DDR_FREQ == 634)
+            DDRPLL(47, 0x000001, 2, 7, 0x0CCCCC,   30, 6, 0x5851EB, 4, 0xE, 0x00, 0x4, 0xE, 0x00, 0x4);
+        if (DDR_FREQ == 648)
+            DDRPLL(48, 0x000001, 2, 7, 0x333333,   30, 6, 0x7AE147, 4, 0xE, 0x00, 0x4, 0xE, 0x00, 0x4);
+        if (DDR_FREQ == 675)
+            DDRPLL(50, 0x000001, 2, 7, 0x800000,   30, 6, 0xC00000, 4, 0xE, 0x00, 0x4, 0xE, 0x00, 0x4);
+        if (DDR_FREQ == 702)
+            DDRPLL(52, 0x000001, 2, 7, 0xCCCCCC,   30, 6, 0xFFF972, 4, 0xE, 0x00, 0x4, 0xE, 0x00, 0x4);
+        if (DDR_FREQ == 729)
+            DDRPLL(54, 0x000001, 2, 7, 0xFFFFEF,   30, 7, 0x4A3D70, 4, 0xE, 0x00, 0x4, 0xE, 0x00, 0x4);
+        if (DDR_FREQ == 756)
+            DDRPLL(56, 0x000001, 2, 8, 0x666666,   30, 7, 0x8F5C28, 4, 0xE, 0x00, 0x4, 0xE, 0x00, 0x4);
+        if (DDR_FREQ == 783)
+            DDRPLL(58, 0x000001, 2, 8, 0xB33333,   30, 7, 0xD47AE1, 4, 0xE, 0x00, 0x4, 0xE, 0x00, 0x4);
+        if (DDR_FREQ == 796)
+            DDRPLL(59, 0x000001, 2, 8, 0xD99999,   30, 8, 0x000000, 4, 0xE, 0x00, 0x4, 0xE, 0x00, 0x4);
+        
+        GEL_TextOut("\tDM816x DDR PLL Init is Done ..... \n","Output",1,1,1);
+
+        EMIF4PRCM();
+
+        /* HACK: do the init with bad termination value */
+        if (DDR_FREQ == 400)
+            EMIF4P_Init(EMIF_TIM1_DDR3_400, EMIF_TIM2_DDR3_400, EMIF_TIM3_DDR3_400, EMIF_SDREF_DDR3_400 & 0xfffffff, EMIF_SDCFG_DDR3_400, EMIF_PHYCFG_DDR3_400);
+        if (DDR_FREQ == 531)
+            EMIF4P_Init(EMIF_TIM1_DDR3_531, EMIF_TIM2_DDR3_531, EMIF_TIM3_DDR3_531, EMIF_SDREF_DDR3_531 & 0xfffffff, EMIF_SDCFG_DDR3_531, EMIF_PHYCFG_DDR3_531);
+        if (DDR_FREQ == 621)
+            EMIF4P_Init(EMIF_TIM1_DDR3_621, EMIF_TIM2_DDR3_621, EMIF_TIM3_DDR3_621, EMIF_SDREF_DDR3_621 & 0xfffffff, EMIF_SDCFG_DDR3_621, EMIF_PHYCFG_DDR3_621);
+        if (DDR_FREQ == 634)
+            EMIF4P_Init(EMIF_TIM1_DDR3_634, EMIF_TIM2_DDR3_634, EMIF_TIM3_DDR3_634, EMIF_SDREF_DDR3_634 & 0xfffffff, EMIF_SDCFG_DDR3_634, EMIF_PHYCFG_DDR3_634);
+        if (DDR_FREQ == 648)
+            EMIF4P_Init(EMIF_TIM1_DDR3_648, EMIF_TIM2_DDR3_648, EMIF_TIM3_DDR3_648, EMIF_SDREF_DDR3_648 & 0xfffffff, EMIF_SDCFG_DDR3_648, EMIF_PHYCFG_DDR3_648);
+        if (DDR_FREQ == 675)
+            EMIF4P_Init(EMIF_TIM1_DDR3_675, EMIF_TIM2_DDR3_675, EMIF_TIM3_DDR3_675, EMIF_SDREF_DDR3_675 & 0xfffffff, EMIF_SDCFG_DDR3_675, EMIF_PHYCFG_DDR3_675);
+        if (DDR_FREQ == 702)
+            EMIF4P_Init(EMIF_TIM1_DDR3_702, EMIF_TIM2_DDR3_702, EMIF_TIM3_DDR3_702, EMIF_SDREF_DDR3_702 & 0xfffffff, EMIF_SDCFG_DDR3_702, EMIF_PHYCFG_DDR3_702);
+        if (DDR_FREQ == 729)
+            EMIF4P_Init(EMIF_TIM1_DDR3_729, EMIF_TIM2_DDR3_729, EMIF_TIM3_DDR3_729, EMIF_SDREF_DDR3_729 & 0xfffffff, EMIF_SDCFG_DDR3_729, EMIF_PHYCFG_DDR3_729);
+        if (DDR_FREQ == 756)
+            EMIF4P_Init(EMIF_TIM1_DDR3_756, EMIF_TIM2_DDR3_756, EMIF_TIM3_DDR3_756, EMIF_SDREF_DDR3_756 & 0xfffffff, EMIF_SDCFG_DDR3_756, EMIF_PHYCFG_DDR3_756);
+        if (DDR_FREQ == 783)
+            EMIF4P_Init(EMIF_TIM1_DDR3_783, EMIF_TIM2_DDR3_783, EMIF_TIM3_DDR3_783, EMIF_SDREF_DDR3_783 & 0xfffffff, EMIF_SDCFG_DDR3_783, EMIF_PHYCFG_DDR3_783);
+        if (DDR_FREQ == 796)
+            EMIF4P_Init(EMIF_TIM1_DDR3_796, EMIF_TIM2_DDR3_796, EMIF_TIM3_DDR3_796, EMIF_SDREF_DDR3_796 & 0xfffffff, EMIF_SDCFG_DDR3_796, EMIF_PHYCFG_DDR3_796);
+    }
+
+    GEL_TextOut("\tDM816x EMIF Init is Done @ %dMHz Clock Rate..... \n","Output",1,1,1,DDR_FREQ);
+}
+
+
+menuitem "EVM816X CPUs BRINGUP"
+hotmenu Ducati()
+{
+    GEL_TextOut("\tPRCM for Ducati (CortexM3_0 & M3_1) is in Progress  \n","Output",1,1,1);
+    DucatiClkEnable();
+    if((RD_MEM_32(CM_DEFAULT_TPPSS_CLKSTCTRL) & 0x7F00) ==0x7F00 ) 
+    {
+        WR_MEM_32(RM_DEFAULT_RSTCTRL,   0xE0); // Bring TPPSS out of Reset
+        GEL_TextOut("\tTPPSS is Already out of Reset, Bring Ducati out of Reset  \n","Output",1,1,1);
+    }
+    else
+        WR_MEM_32(RM_DEFAULT_RSTCTRL,   0xE3);   //Bring Ducati M3_0 & M3_1 jointly out of Reset
+
+    /* Check for Ducati M3_0 out of Reset */
+    while(((RD_MEM_32(RM_DEFAULT_RSTST)&0x14))!=0x14) ;
+
+    /* Check for Ducati M3_1 out of Reset */
+    while(((RD_MEM_32(RM_DEFAULT_RSTST)&0x18))!=0x18) ;
+
+    /* Check Module is in Functional Mode */
+    while(((RD_MEM_32(CM_DEFAULT_DUCATI_CLKCTRL)&0x30000)>>16)!=0) ;
+
+    GEL_TextOut("\tPRCM for DucatiCortexM3_0 & M3_1 are done Successfully\n","Output",1,1,1);
+    GEL_TextOut("\tUser Can Connect to Ducati   \n","Output",1,1,1);
+}
+
+hotmenu CortexM3_0() 
+{
+    GEL_TextOut("\tPRCM for DucatiCortexM3_0 is in Progress  \n","Output",1,1,1);                                       
+    DucatiClkEnable();
+    if((RD_MEM_32(CM_DEFAULT_TPPSS_CLKSTCTRL) & 0x7F00) ==0x7F00 ) 
+    {
+        WR_MEM_32(RM_DEFAULT_RSTCTRL,   0xE0); // Bring TPPSS out of Reset
+        GEL_TextOut("\tTPPSS is Already out of Reset, Bring Ducati out of Reset  \n","Output",1,1,1);                                       
+    }
+    else 
+        WR_MEM_32(RM_DEFAULT_RSTCTRL,   0xEB); // Bring Ducati M3_0 out of Reset
+
+    /* Check for Ducati M3_0 out of Reset*/
+    while(((RD_MEM_32(RM_DEFAULT_RSTST)&0x14))!=0x14) ;
+
+    /* Check Module is in Functional Mode */
+    while(((RD_MEM_32(CM_DEFAULT_DUCATI_CLKCTRL)&0x30000)>>16)!=0) ;
+
+    GEL_TextOut("\tPRCM for DucatiCortexM3_0 is Done Successfully\n","Output",1,1,1);                                       
+    GEL_TextOut("\tUser Can Connect to DucatiCortexM3_0 of DucatiSS  \n","Output",1,1,1);                                       
+}
+
+hotmenu CortexM3_1() 
+{
+    GEL_TextOut("\tPRCM for DucatiCortexM3_1 is in Progress  \n","Output",1,1,1);                                       
+    DucatiClkEnable();
+    if((RD_MEM_32(CM_DEFAULT_TPPSS_CLKSTCTRL) & 0x7F00) ==0x7F00 ) 
+    {
+        WR_MEM_32(RM_DEFAULT_RSTCTRL,   0xE0); // Bring TPPSS out of Reset
+        GEL_TextOut("\tTPPSS is Already out of Reset, Bring Ducati out of Reset  \n","Output",1,1,1);                                       
+    }
+    else 
+        WR_MEM_32(RM_DEFAULT_RSTCTRL,   0xE7); // Bring Ducati M3_1 out of Reset
+
+    /* Check for Ducati M3_1 out of Reset */
+    while(((RD_MEM_32(RM_DEFAULT_RSTST)&0x18))!=0x18) ;
+
+    /* Check Module is in Functional Mode */
+    while(((RD_MEM_32(CM_DEFAULT_DUCATI_CLKCTRL)&0x30000)>>16)!=0) ;
+
+    GEL_TextOut("\tPRCM for DucatiCortexM3_1 is Done Successfully  \n","Output",1,1,1);                                     
+    GEL_TextOut("\tUser Can Connect to DucatiCortexM3_1 of DucatiSS  \n","Output",1,1,1);                                       
+}
+
+hotmenu IVAHD0()
+{
+    GEL_TextOut("\tPRCM for IVHD0 is in Progress, Please wait.....  \n","Output",1,1,1);                                        
+    WR_MEM_32(CM_IVAHD0_CLKSTCTRL,      2);  // Enable Power Domain Transition
+    while(RD_MEM_32(PM_IVAHD0_PWRSTST)!=0x37);  // Check Power is ON
+    WR_MEM_32(CM_IVAHD0_IVAHD_CLKCTRL,  2);  // Enable IVHD0 Clocks
+    WR_MEM_32(CM_IVAHD0_SL2_CLKCTRL,    2);  // Enable IVHD0 SL2 Clocks
+
+    while(((RD_MEM_32(CM_IVAHD0_CLKSTCTRL)&0x100))!=0x100); //IVAHD0_GCLK is Active
+
+    WR_MEM_32(RM_IVAHD0_RSTCTRL,    3);      // Enable IVHD0 logic & SL2
+
+    while(RD_MEM_32(RM_IVAHD0_RSTST)!=4);
+
+    WR_MEM_32(0x58088000, 0xEAFFFFFE);      // Write Self Branch Instruction in ICONT1 ITCM 0 Location
+
+    WR_MEM_32(0x58098000, 0xEAFFFFFE);      // Write Self Branch Instruction in ICONT2 ITCM 0 Location
+
+    WR_MEM_32(RM_IVAHD0_RSTCTRL,    0);     // Bring ICONT1 & ICONT2 out of Reset
+    
+    while(RD_MEM_32(RM_IVAHD0_RSTST)!=7);   // ICONT1 & ICONT2 are out of Reset
+
+    GEL_TextOut("\tPRCM for IVHD0 is Done Successfully  \n","Output",1,1,1);                                        
+    GEL_TextOut("\tUser Can Connect to ICONT1 & ICONT2 of IVHD0  \n","Output",1,1,1);                                       
+}
+
+hotmenu IVAHD1()
+{
+    GEL_TextOut("\tPRCM for IVHD1 is in Progress, Please wait.....  \n","Output",1,1,1);                                        
+    WR_MEM_32(CM_IVAHD1_CLKSTCTRL,      2);      // Enable Power Domain Transition
+    while(RD_MEM_32(PM_IVAHD1_PWRSTST)!=0x37);   // Check Power is ON
+    WR_MEM_32(CM_IVAHD1_IVAHD_CLKCTRL,  2);      // Enable IVHD1 Clocks
+    WR_MEM_32(CM_IVAHD1_SL2_CLKCTRL,    2);      // Enable IVHD1 SL2 Clocks
+
+    while(((RD_MEM_32(CM_IVAHD1_CLKSTCTRL)&0x100))!=0x100); // IVAHD1_GCLK is Active
+
+    WR_MEM_32(RM_IVAHD1_RSTCTRL,    3);         // Enable IVHD1 logic & SL2
+
+    while(RD_MEM_32(RM_IVAHD1_RSTST)!=4);
+
+    WR_MEM_32(0x5A088000, 0xEAFFFFFE);          // Write Self Branch Instruction in ICONT1 ITCM 0 Location
+
+    WR_MEM_32(0x5A098000, 0xEAFFFFFE);          // Write Self Branch Instruction in ICONT2 ITCM 0 Location
+
+    WR_MEM_32(RM_IVAHD1_RSTCTRL,    0);         // Bring ICONT1 & ICONT2 out of Reset
+    
+    while(RD_MEM_32(RM_IVAHD1_RSTST)!=7);       // ICONT1 & ICONT2 are out of Reset
+
+    GEL_TextOut("\tPRCM for IVHD1 is Done Successfully  \n","Output",1,1,1);                                        
+    GEL_TextOut("\tUser Can Connect to ICONT1 & ICONT2 of IVHD1  \n","Output",1,1,1);                                       
+}
+
+hotmenu IVAHD2()
+{
+    GEL_TextOut("\tPRCM for IVHD2 is in Progress, Please wait.....  \n","Output",1,1,1);                                        
+    WR_MEM_32(CM_IVAHD2_CLKSTCTRL,      2);     // Enable Power Domain Transition
+    while(RD_MEM_32(PM_IVAHD2_PWRSTST)!=0x37);  // Check Power is ON
+    WR_MEM_32(CM_IVAHD2_IVAHD_CLKCTRL,  2);     // Enable IVHD2 Clocks
+    WR_MEM_32(CM_IVAHD2_SL2_CLKCTRL,    2);     // Enable IVHD2 SL2 Clocks
+
+    while(((RD_MEM_32(CM_IVAHD2_CLKSTCTRL)&0x100))!=0x100); // IVAHD2_GCLK is Active
+
+    WR_MEM_32(RM_IVAHD2_RSTCTRL,    3);           // Enable IVHD1 logic & SL2
+
+    while(RD_MEM_32(RM_IVAHD2_RSTST)!=4);
+
+    WR_MEM_32(0x53088000, 0xEAFFFFFE);          // Write Self Branch Instruction in ICONT1 ITCM 0 Location
+
+    WR_MEM_32(0x53098000, 0xEAFFFFFE);          // Write Self Branch Instruction in ICONT2 ITCM 0 Location
+
+    WR_MEM_32(RM_IVAHD2_RSTCTRL,    0);         // Bring ICONT1 & ICONT2 out of Reset
+    
+    while(RD_MEM_32(RM_IVAHD2_RSTST)!=7);       // ICONT1 & ICONT2 are out of Reset
+
+    GEL_TextOut("\tPRCM for IVHD2 is Done Successfully  \n","Output",1,1,1);                                        
+    GEL_TextOut("\tUser Can Connect to ICONT1 & ICONT2 of IVHD2  \n","Output",1,1,1);                                       
+}
+
+hotmenu TPPSS()
+{
+    unsigned int fail=0, k=0;
+    GEL_TextOut("\tPRCM for TPPSS is in Progress, Please wait.....  \n","Output",1,1,1);                                      
+    WR_MEM_32(RM_DEFAULT_RSTCTRL,   0xFD); // Bring TPP ARM out of Reset
+        
+    /* Enable the TPPSS Clocks */
+    WR_MEM_32(CM_DEFAULT_TPPSS_CLKSTCTRL, 2);
+    WR_MEM_32(CM_DEFAULT_TPPSS_CLKCTRL,   2);
+    while(((RD_MEM_32(CM_DEFAULT_TPPSS_CLKSTCTRL) & 0x7F00)>>8)!=0x7F);
+    while(((RD_MEM_32(CM_DEFAULT_TPPSS_CLKCTRL)&0x30000)>>16)!=0);
+    GEL_TextOut("\tPRCM for TPPSS Initialization in Done \n","Output",1,1,1);                                          
+
+    for(k=0; k<10; k++)
+        WR_MEM_32(TPPIRAM_BASE_ADDR+4*k, 0xEAFFFFFE);
+    
+    /* Check CLKIN200TR & CLKINTR  are active */
+    /* Implement Different Logic in C, Based on Application requirement for TPPSS, Ducati */
+    if((RD_MEM_32(CM_DEFAULT_DUCATI_CLKSTCTRL)&0x300) ==0x300 )
+        GEL_TextOut("\tDucati is Already out of Reset, Bring TPPSS out of Reset  \n","Output",1,1,1);                                       
+    else 
+        WR_MEM_32(RM_DEFAULT_RSTCTRL,   0xFC); // Bring TPP out of Local Reset
+
+   GEL_TextOut("\tPRCM for TPPSS is Done Successfully  \n","Output",1,1,1);                                      
+   GEL_TextOut("\tUser Can Connect to ARM968 of TPPSS  \n","Output",1,1,1);                                                                  
+}
+
+hotmenu C674x()
+{
+    unsigned int i=0, k=0, fail=0;
+
+    GEL_TextOut("\tPRCM for C674x is in Progress, Please wait.....  \n","Output",1,1,1);                                      
+
+    /* Cortex A8 must be in Supervisor Mode to Access the following two registers */
+    WR_MEM_32(DSPMEM_SLEEP,       0);     // Bring GEM L2RAM out of Power down Mode
+    WR_MEM_32(DSPBOOTADDR,            0x00800000); // DSPBOOT ADDRESS
+
+    /*Enable Clock to MMU CFG*/
+    WR_MEM_32(CM_MMUCFG_CLKSTCTRL,        2); 
+    WR_MEM_32(CM_ALWON_MMUCFG_CLKCTRL,        2); 
+    while(((RD_MEM_32(CM_ALWON_MMUCFG_CLKCTRL)&0x0))!=0x0); 
+   while(((RD_MEM_32(CM_MMUCFG_CLKSTCTRL)&0x100))!=0x100); 
+
+    /*Enable Clock to Data*/
+    WR_MEM_32(CM_MMU_CLKSTCTRL,       2); 
+    WR_MEM_32(CM_ALWON_MMUDATA_CLKCTRL,       2); 
+    while(((RD_MEM_32(CM_ALWON_MMUDATA_CLKCTRL)&0x0))!=0x0); 
+    while(((RD_MEM_32(CM_MMU_CLKSTCTRL)&0x100))!=0x100); 
+
+    /*Enable Clock to GEMSS*/
+    WR_MEM_32(CM_GEM_CLKSTCTRL,       2);       // Enable Power Domain Transition
+    while(RD_MEM_32(PM_ACTIVE_PWRSTST)!=0x37);  // Check Power is ON
+    WR_MEM_32(CM_ACTIVE_GEM_CLKCTRL,  2);       // Enable GEMSS Clocks
+
+
+    while(((RD_MEM_32(CM_GEM_CLKSTCTRL)&0x700))!=0x700); // GME Clocks are Active
+
+    WR_MEM_32(RM_ACTIVE_RSTCTRL,  1);           // Issue GEM Warm Reset To access GEMSS memories
+
+    while(((RD_MEM_32(RM_ACTIVE_RSTST)&0x2))!=0x2); // GEMSS Warm Reset has been Asserted
+
+
+    for(i=0; i<8; i++)
+        WR_MEM_32((GEM_L2RAM_BASE_ADDR+4*i), 0x12); // Write Self Branch Instruction
+
+    WR_MEM_32(RM_ACTIVE_RSTCTRL,  0);           // Bring GEM Core out of Reset
+    
+    while(((RD_MEM_32(RM_ACTIVE_RSTST)&0x3))!=0x3); // GEM core core is out of Reset
+
+    for(k=0; k<SIZE; k++) 
+    {
+        WR_MEM_32(GEM_L2RAM_BASE_ADDR+0x100+4*k, 0x12345678+k);
+    }
+
+    for(k=0;  k<SIZE; k++)
+    {
+        if(RD_MEM_32(GEM_L2RAM_BASE_ADDR+0x100+4*k) != (0x12345678+k) ) 
+            fail++;
+    }
+    if(fail!=0) 
+    {
+        GEL_TextOut("\tC674x L2 RAM Accesses are FAILED \n","Output",1,1,1);                                            
+    }
+    GEL_TextOut("\tC674x L2 RAM Accesses are PASSED \n","Output",1,1,1);                                          
+    GEL_TextOut("\tUser Can Connect to C674x   \n","Output",1,1,1);                                       
+}
+
+DucatiClkEnable()
+{
+
+    WR_MEM_32(RM_DEFAULT_RSTCTRL,   0xEF); // Enable the Ducati Logic
+
+    WR_MEM_32(CM_DEFAULT_DUCATI_CLKSTCTRL, 2); // Enable Power Domain Transition
+    WR_MEM_32(CM_DEFAULT_DUCATI_CLKCTRL,   2); // Enable Ducati Clocks
+
+    /* Check CLKIN200TR & CLKINTR  are active */
+    while(((RD_MEM_32(CM_DEFAULT_DUCATI_CLKSTCTRL)&0x300)>>8)!=3) ;
+
+    /* Write Ducate IRAM Boot Image */
+    WR_MEM_32(DUCATI_BASE_ADDR,         0x10000);
+    WR_MEM_32(DUCATI_BASE_ADDR+0x4,   0x9);
+    WR_MEM_32(DUCATI_BASE_ADDR+0x8,   0xE7FEE7FE);
+  
+    /* DUcati Ammu COnfig */
+    /* AmmuConfig(); */
+}
+
+AmmuConfig()
+{
+    /* Large Page Translations */
+    WR_MEM_32(DUCATI_MMU_CFG+0x800,         0x40000000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x804,         0x80000000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x808,         0xA0000000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x80C,         0x60000000);
+
+    WR_MEM_32(DUCATI_MMU_CFG+0x820,         0x40000000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x824,         0x80000000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x828,         0xA0000000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x82C,         0x60000000);
+
+    WR_MEM_32(DUCATI_MMU_CFG+0x840,         0x00000007);
+    WR_MEM_32(DUCATI_MMU_CFG+0x844,         0x000B0007);
+    WR_MEM_32(DUCATI_MMU_CFG+0x848,         0x00020007);
+    WR_MEM_32(DUCATI_MMU_CFG+0x84C,         0x00020007);
+
+    /* Medium Page */
+    WR_MEM_32(DUCATI_MMU_CFG+0x860,         0x00300000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x864,         0x00400000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x868,         0x00000000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x86C,         0x00000000);
+
+    WR_MEM_32(DUCATI_MMU_CFG+0x8A0,         0x40300000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x8A4,         0x40400000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x8A8,         0x00000000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x8AC,         0x00000000);
+
+    WR_MEM_32(DUCATI_MMU_CFG+0x8E0,         0x00000007);
+    WR_MEM_32(DUCATI_MMU_CFG+0x8E4,         0x00020007);
+    WR_MEM_32(DUCATI_MMU_CFG+0x8E8,         0x00000000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x8EC,         0xC0000000);
+
+    /* Small Page */
+    WR_MEM_32(DUCATI_MMU_CFG+0x920,         0x00000000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x924,         0x40000000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x928,         0x00004000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x92C,         0x00008000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x930,         0x0000C000);
+
+    WR_MEM_32(DUCATI_MMU_CFG+0x9A0,         0x55020000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x9A4,         0x55080000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x9A8,         0x55024000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x9AC,         0x55028000);
+    WR_MEM_32(DUCATI_MMU_CFG+0x9B0,         0x5502C000);
+
+    WR_MEM_32(DUCATI_MMU_CFG+0xA20,         0x0001000B);
+    WR_MEM_32(DUCATI_MMU_CFG+0xA24,         0x0000000B);
+    WR_MEM_32(DUCATI_MMU_CFG+0xA28,         0x00010007);
+    WR_MEM_32(DUCATI_MMU_CFG+0xA2C,         0x00000007);
+    WR_MEM_32(DUCATI_MMU_CFG+0xA30,         0x00000007);
+}
+
+#define SWLEVEL_WR_DQS_RATIO_BYTE_LANE3         ((0x93 << 10) | 0x93)
+#define SWLEVEL_WR_DQS_RATIO_BYTE_LANE2         ((0x93 << 10) | 0x93)
+#define SWLEVEL_WR_DQS_RATIO_BYTE_LANE1         ((0x93 << 10) | 0x93)
+#define SWLEVEL_WR_DQS_RATIO_BYTE_LANE0         ((0x93 << 10) | 0x93)
+
+#define SWLEVEL_WR_DATA_RATIO_BYTE_LANE3        (((0x93 + 0x40) << 10) | (0x93 + 0x40))
+#define SWLEVEL_WR_DATA_RATIO_BYTE_LANE2        (((0x93 + 0x40) << 10) | (0x93 + 0x40))
+#define SWLEVEL_WR_DATA_RATIO_BYTE_LANE1        (((0x93 + 0x40) << 10) | (0x93 + 0x40))
+#define SWLEVEL_WR_DATA_RATIO_BYTE_LANE0        (((0x93 + 0x40) << 10) | (0x93 + 0x40))
+
+#define SWLEVEL_RD_DQS_RATIO                    ((0x35 << 10) | 0x35)
+
+#define SWLEVEL_DQS_GATE_BYTE_LANE0             ((0x1B3 << 10) | 0x1B3)
+#define SWLEVEL_DQS_GATE_BYTE_LANE1             ((0x1B3 << 10) | 0x1B3)
+#define SWLEVEL_DQS_GATE_BYTE_LANE2             ((0x1B3 << 10) | 0x1B3)
+#define SWLEVEL_DQS_GATE_BYTE_LANE3             ((0x1B3 << 10) | 0x1B3)
+
+#define __raw_writel(v, a)      (*(unsigned int *)(a) = (v))
+
+ddr3_sw_levelling(int emif)
+{
+    __raw_writel(0x6, (DDRPHY_CONFIG_BASE + 0x358));
+    __raw_writel(SWLEVEL_DQS_GATE_BYTE_LANE0, (DDRPHY_CONFIG_BASE + 0x108));
+    __raw_writel(0x00000000, (DDRPHY_CONFIG_BASE + 0x10C));
+    __raw_writel(SWLEVEL_DQS_GATE_BYTE_LANE1, (DDRPHY_CONFIG_BASE + 0x1AC));
+    __raw_writel(0x00000000, (DDRPHY_CONFIG_BASE + 0x1B0));
+    __raw_writel(SWLEVEL_DQS_GATE_BYTE_LANE2, (DDRPHY_CONFIG_BASE + 0x250));
+    __raw_writel(0x00000000, (DDRPHY_CONFIG_BASE + 0x254));
+    __raw_writel(SWLEVEL_DQS_GATE_BYTE_LANE3, (DDRPHY_CONFIG_BASE + 0x2F4));
+    __raw_writel(0x00000000, (DDRPHY_CONFIG_BASE + 0x2F8));
+
+    __raw_writel(SWLEVEL_WR_DQS_RATIO_BYTE_LANE0, (DDRPHY_CONFIG_BASE + 0x0DC));
+    __raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x0E0));
+    __raw_writel(SWLEVEL_WR_DQS_RATIO_BYTE_LANE1, (DDRPHY_CONFIG_BASE + 0x180));
+    __raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x184));
+    __raw_writel(SWLEVEL_WR_DQS_RATIO_BYTE_LANE2, (DDRPHY_CONFIG_BASE + 0x224));
+    __raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x228));
+    __raw_writel(SWLEVEL_WR_DQS_RATIO_BYTE_LANE3, (DDRPHY_CONFIG_BASE + 0x2C8));
+    __raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x2CC));
+
+    __raw_writel(SWLEVEL_WR_DATA_RATIO_BYTE_LANE0, (DDRPHY_CONFIG_BASE + 0x120));
+    __raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x124));
+    __raw_writel(SWLEVEL_WR_DATA_RATIO_BYTE_LANE1, (DDRPHY_CONFIG_BASE + 0x1C4));
+    __raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x1C8));
+    __raw_writel(SWLEVEL_WR_DATA_RATIO_BYTE_LANE2, (DDRPHY_CONFIG_BASE + 0x268));
+    __raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x26C));
+    __raw_writel(SWLEVEL_WR_DATA_RATIO_BYTE_LANE3, (DDRPHY_CONFIG_BASE + 0x30C));
+    __raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x310));
+
+    __raw_writel(SWLEVEL_RD_DQS_RATIO, (DDRPHY_CONFIG_BASE + 0x0C8));
+    __raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x0CC));
+    __raw_writel(SWLEVEL_RD_DQS_RATIO, (DDRPHY_CONFIG_BASE + 0x16C));
+    __raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x170));
+    __raw_writel(SWLEVEL_RD_DQS_RATIO, (DDRPHY_CONFIG_BASE + 0x210));
+    __raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x214));
+    __raw_writel(SWLEVEL_RD_DQS_RATIO, (DDRPHY_CONFIG_BASE + 0x2B4));
+    __raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x2B8));
+}

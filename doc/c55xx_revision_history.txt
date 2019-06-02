@@ -1,0 +1,111 @@
+C5000 Device Support Package
+============================
+
+1.1.9
+-----
+Fixed CCDSK-3109 (invalid offsets of Timer registers of 5517)
+EVM5517.GEL: Changed default PLL setting to 175MHz. Added menu options for 100MHz and 200MHz.
+
+1.1.8
+-----
+Fixed CCSIDE-3093 (split .text section on linker cmd files)
+
+1.1.7
+-----
+Added 120MHz PLL option to C5545 GEL file
+
+1.1.6
+-----
+Fixed CCSDK-2040: hw breakpoints cannot be set while running
+
+1.1.5
+-----
+Added C5545 device
+General cleanup of unused XML properties
+
+1.1.4
+-----
+Fixed SDSCM00051393
+
+1.1.3
+-----
+Fixed links to invalid linker .CMD files on VC5509A and VC5510A device XML files
+Added the 'VC' prefix to all VC55x linker CMD files
+Updated EVM5517 GEL files
+
+1.1.2
+-----
+Fixed the invalid --silicon_version Project Wizard parameter of the 5517 device
+
+1.1.1
+-----
+Unrapped group directives of several Modules of C5515, C5517 and C5535 directories
+CCSv6 handoff
+
+1.1.0
+-----
+C5517 files added
+
+1.0.9
+-----
+Removed the non-existing usbstk5535.xml file
+
+1.0.8
+-----
+5505, 5515, 5535 peripheral files update to remove non-existent TIMINT register 
+PDINHIBR3 bit descriptions fixed
+LDOCNTL offset changed from 2 to 4 (0x7004 address is correct)
+
+1.0.7
+-----
+Linker command files updated to remove warning regarding vectors section
+
+1.0.6
+-----
+SDSCM00043724 Removed endianness setting as was causing an issue with the Wizard 
+
+1.0.5
+-----
+Converted CR/LF (DOS) to LF (UNIX) on several files
+Added author information to Linker CMD files
+Added linker CMD files for ALL C55x devices 
+Added ezdsp5502 and evm5509a board and GEL files
+Added vc5504 device 
+Added project options to device XML files 
+
+1.0.4
+-----
+Moved revision history into /doc
+
+1.0.3
+-----
+Fixed bitfield names in C5515\cslr_emif_001.xml to not start with a number
+Fixed bitfield name SDIOIST in C5535\cslr_mmcsd.xml to not have a space in the name
+Fixed bitfield width issue in FIFO3R2 C5535\cslr_usb001.xml
+Fixed bitfield names in C5505\cslr_emif_001.xml to not start with a number
+Fixed bitfield name SDIOIST in C5505\cslr_mmcsd_001.xml to not have a space in the name
+Fixed bitfield width issue in FIFO3R2 C5505\cslr_usb001.xml
+Fixed bitfield name SDIOIST in C5515\cslr_mmcsd_001.xml to not have a space in the name
+Fixed bitfield width issue in FIFO3R2 C5515\cslr_usb001.xml
+
+1.0.2
+-----
+-D build option added with device name
+
+1.0.1
+-----
+Installation instructions added
+C5532, C5533, C5534 files updated to remove LCD
+Package updated to include modules and boards folders
+Updates to C5504/C5505 module files
+changed directory structure to accommodate GEL files
+Added existing GEL files
+
+1.0.0
+-----
+Updated to contain correct path usage for Linux compatibility
+Updates to have family filters for the project wizard
+C5532, C5533, C5534 device files added
+
+
+

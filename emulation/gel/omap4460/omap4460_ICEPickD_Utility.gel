@@ -1,0 +1,157 @@
+/*--------------------------------------------------------------*/
+/* ICEPickD_Utility.gel                                         */
+/* version 0.01                                                 */
+/*                                                              */
+/* SUMMARY:                                                     */
+/*                                                              */
+/* This gel file is to provide utility functions to program     */
+/* and configure ICEPickD module                                */
+/*                                                              */
+/* LIMITATIONS:                                                 */
+/*                                                              */
+/*                                                              */
+/*--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------*/
+/* FUNCTION SUMMARY                                             */
+/*                                                              */
+/* ReleaseWIR_Ducati_RTOS -- Release WIR mode of DucatiRTOS     */
+/* ReleaseWIR_Ducati_SIMCOP - Release WIR of DucatiSIMCOP       */
+/*                                                              */
+/*--------------------------------------------------------------*/
+
+menuitem "ICEPickD_Utility";
+
+//----------------------------------------------------------------
+#define SDTR_DUCATI_RTOS         IP_TAP_CNTL_4
+#define SDTR_DUCATI_SIMCOP       IP_TAP_CNTL_5
+#define SDTR_IVAHD_C64           IP_TAP_CNTL_1
+#define SDTR_IVAHD_ICONT1        IP_TAP_CNTL_2
+#define SDTR_IVAHD_ICONT2        IP_TAP_CNTL_3
+
+
+// masks and values for the SDTR register
+#define POWERLOSSDETECTED        (unsigned int)(0x1 << 21)
+#define RELEASEFROMWIR           (unsigned int)(0x1 << 17)
+#define RESETCONTROL_MASK        (unsigned int)(0x3 << 14)
+#define EXECUTEACTION            (unsigned int)(0x1 << 10)
+
+#define RESETCNTL_NORMAL         (unsigned int)(0x0 << 14)
+#define RESETCNTL_WIR            (unsigned int)(0x1 << 14)
+#define RESETCNTL_BLOCK          (unsigned int)(0x2 << 14)
+#define RESETCNTL_ASSERT         (unsigned int)(0x3 << 14)
+
+OnTargetConnect()
+{
+  ReleaseWIR_Ducati_RTOS();
+  ReleaseWIR_Ducati_SIMCOP();
+			ReleaseWIR_IVAHD_C64();
+			ReleaseWIR_IVAHD_ICONT1();
+ 		ReleaseWIR_IVAHD_ICONT2();			
+}
+
+hotmenu ReleaseWIR_Ducati_RTOS()
+{
+   int SDTR_temp;
+   int writeBackValue;
+
+   SDTR_temp = SDTR_DUCATI_RTOS;  /* Read the SDTR value */
+
+   /* Do a read/modify write such that we write zero to following bits */
+   /* EXECUTEACTION bit */
+   /* RELEASEFROMWIR bit */
+   /* POWERLOSSDETECTED bit */
+   /* Reset Control bits */
+   writeBackValue = 
+         SDTR_temp & (~( POWERLOSSDETECTED | RELEASEFROMWIR | EXECUTEACTION | RESETCONTROL_MASK ) );
+
+  SDTR_DUCATI_RTOS = writeBackValue;            
+
+  GEL_TextOut("Ducati RTOS is released from Wait-In-Reset. \n");
+
+} 
+
+hotmenu ReleaseWIR_Ducati_SIMCOP()
+{
+   int SDTR_temp;
+   int writeBackValue;
+
+   SDTR_temp = SDTR_DUCATI_SIMCOP;  /* Read the SDTR value */
+
+   /* Do a read/modify write such that we write zero to following bits */
+   /* EXECUTEACTION bit */
+   /* RELEASEFROMWIR bit */
+   /* POWERLOSSDETECTED bit */
+   /* Reset Control bits */
+   writeBackValue = 
+         SDTR_temp & (~( POWERLOSSDETECTED | RELEASEFROMWIR | EXECUTEACTION | RESETCONTROL_MASK ) );
+
+  SDTR_DUCATI_SIMCOP = writeBackValue;            
+
+  GEL_TextOut("Ducati SIMCOP is released from Wait-In-Reset. \n");
+
+}
+   
+hotmenu ReleaseWIR_IVAHD_C64()
+{
+   int SDTR_temp;
+   int writeBackValue;
+
+   SDTR_temp = SDTR_IVAHD_C64;  /* Read the SDTR value */
+
+   /* Do a read/modify write such that we write zero to following bits */
+   /* EXECUTEACTION bit */
+   /* RELEASEFROMWIR bit */
+   /* POWERLOSSDETECTED bit */
+   /* Reset Control bits */
+   writeBackValue = 
+         SDTR_temp & (~( POWERLOSSDETECTED | RELEASEFROMWIR | EXECUTEACTION | RESETCONTROL_MASK ) );
+
+  SDTR_IVAHD_C64 = writeBackValue;            
+
+  GEL_TextOut("IVAHD C64 is released from Wait-In-Reset. \n");
+
+}
+   
+
+hotmenu ReleaseWIR_IVAHD_ICONT1()
+{
+   int SDTR_temp;
+   int writeBackValue;
+
+   SDTR_temp = SDTR_IVAHD_ICONT1;  /* Read the SDTR value */
+
+   /* Do a read/modify write such that we write zero to following bits */
+   /* EXECUTEACTION bit */
+   /* RELEASEFROMWIR bit */
+   /* POWERLOSSDETECTED bit */
+   /* Reset Control bits */
+   writeBackValue = 
+         SDTR_temp & (~( POWERLOSSDETECTED | RELEASEFROMWIR | EXECUTEACTION | RESETCONTROL_MASK ) );
+
+  SDTR_IVAHD_ICONT1 = writeBackValue;            
+
+  GEL_TextOut("IVAHD ICONT1 is released from Wait-In-Reset. \n");
+
+}
+   
+hotmenu ReleaseWIR_IVAHD_ICONT2()
+{
+   int SDTR_temp;
+   int writeBackValue;
+
+   SDTR_temp = SDTR_IVAHD_ICONT2;  /* Read the SDTR value */
+
+   /* Do a read/modify write such that we write zero to following bits */
+   /* EXECUTEACTION bit */
+   /* RELEASEFROMWIR bit */
+   /* POWERLOSSDETECTED bit */
+   /* Reset Control bits */
+   writeBackValue = 
+         SDTR_temp & (~( POWERLOSSDETECTED | RELEASEFROMWIR | EXECUTEACTION | RESETCONTROL_MASK ) );
+
+  SDTR_IVAHD_ICONT2 = writeBackValue;            
+
+  GEL_TextOut("IVAHD ICONT2 is released from Wait-In-Reset. \n");
+
+}

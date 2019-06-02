@@ -1,0 +1,2910 @@
+/*******************************************************************/ 
+
+/* This GEL file is loaded on the command line of Code Composer    */
+
+/* The StartUp() function is called every time you start           */
+
+/* Code Composer.  You can customize this function to              */
+
+/* initialize wait states or to perform other initialization.      */
+
+/* UPDATES FOR OMAP2420 ES2.0 TO                              */
+
+/* SDRC_MDDR_SamsungOrElpida16()                              */
+
+/*  Setup_ClockConfig_IV()                                              */
+
+/*  Setup_ClockConfig_II()                                               */
+
+/*  SDRC_MDDR_Samsung32()                                        */
+
+/*                                                                                 */
+
+/*******************************************************************/
+
+
+
+/* =============================================================================
+
+				STARTUP FUNCTIONS
+
+   ============================================================================= */
+
+StartUp()
+
+{ 
+
+  common_startup();
+
+}  
+
+
+
+OnTargetConnect()
+
+{
+
+    Watchdog_disable();
+
+    SDRC_MDDR_SamsungOrElpida16();
+
+    Setup_ClockConfig_IV();
+
+    release_UMA_reset();   
+
+    Enable_IVA();
+
+}
+
+
+
+OnRestart()
+
+{
+
+	if( ( CPSR & 0x20L ) == 0x20L )
+
+	{
+
+	        // This is recursive but should only execute once.  We are doing this to
+
+		// clear the Thumbbit which cannot be cleared with simple CPSR write.
+
+		// The side effect of the GEL_Reset() is that it will also call the
+
+		// gel function OnReset() to re-init the device.
+
+		//
+
+		GEL_TextOut(" OnRestart(): Resetting ARM to clear Thumb bit\n");
+
+		GEL_Reset();
+
+		GEL_Restart();
+
+	}
+
+	
+
+}
+
+
+
+OnPreFileLoad()
+
+{
+
+	/* On file load we need to do a reset to get the device back into ARM */
+
+	/* mode and clear other bits.  Otherwise we have to go through and  */
+
+	/* manually clear the caches, mmus, interrupts etc.                 */
+
+	GEL_Reset();
+
+}
+
+
+
+OnReset()
+
+{
+
+   Watchdog_disable();
+
+   
+
+   //SDRC_MDDR_SamsungOrElpida16();
+
+
+
+   release_UMA_reset();   
+
+   Enable_IVA();
+
+}
+
+
+
+/* =============================================================================
+
+				COMMON SETUP
+
+   ============================================================================= */
+
+common_startup()
+
+{     
+
+   GEL_MapOff();
+
+   GEL_MapReset();
+
+   memorymap_init();
+
+   GEL_MapOn(); 
+
+}  
+
+
+
+Watchdog_disable()
+
+{
+
+   /* Wait until reset complete */
+
+   while (!((*(int*)0x48022014) & 0x01));
+
+
+
+  /* Disable 32Khz watchdog timer */
+
+  *(int*)0x48022048 = 0x0000AAAA;
+
+
+
+   while ( ((*(int *)0x48022034) & 0x10));
+
+          
+
+  *(int*)0x48022048 = 0x00005555;
+
+  
+
+   while ( ((*(int *)0x48022034) & 0x10)); 
+
+   
+
+   GEL_TextOut("Attempted to disable MPU 32K Watchdog Timer \n","result");
+
+   
+
+} 
+
+
+
+WDTimer2_enableMSuspend()
+
+{
+
+  /* Enable sensitivity to MCU and DSP MSuspend signals for WDTimer2 */
+
+  *(int*)0x48000298 |= 0x000C0000;
+
+
+
+   GEL_TextOut("Enable sensitivity to MCU and DSP MSuspend for MPU 32K Watchdog Timer \n","result");
+
+   
+
+} 
+
+
+
+memorymap_init()
+
+{
+
+    /* !! FOLLOWING MEM SPACE TO BE CONFIGURED PROPERLY !! */
+
+    GEL_MapAddStr(0x00000000, 0, 0x5C000000, "R|W"    , 0); /* TO BE CONFIGURED */
+
+
+
+    /* L4-peripheral memory space mapping --------------------------------------*/
+
+    GEL_MapAddStr(0x48000000, 0, 0x00000024, "R|W|AS4", 0);  /* OMAP24XX system control - module */
+
+    GEL_MapAddStr(0x48000030, 0, 0x00000113, "R|W|AS1", 0);  /* OMAP24XX system control - module (PAD conf registers) */
+
+    GEL_MapAddStr(0x48000270, 0, 0x000000e8, "R|W|AS4", 0);  /* OMAP24XX system control - module */
+
+    GEL_MapAddStr(0x48001000, 0, 0x00001000, "R|W|AS4", 0);  /* OMAP24XX system control - L4 interconnect */
+
+    GEL_MapAddStr(0x48004000, 0, 0x00001000, "R|W|AS4", 0);  /* 32K TIMER - module */
+
+    GEL_MapAddStr(0x48005000, 0, 0x00001000, "R|W|AS4", 0);  /* 32K TIMER - L4 interconnect */
+
+    GEL_MapAddStr(0x48008000, 0, 0x00000800, "R|W|AS4", 0);  /* PRCM - module region A */
+
+    GEL_MapAddStr(0x48008800, 0, 0x00000800, "R|W|AS4", 0);  /* PRCM - module region B */
+
+    GEL_MapAddStr(0x48009000, 0, 0x00001000, "R|W|AS4", 0);  /* PRCM - L4 interconnect */
+
+    GEL_MapAddStr(0x48012000, 0, 0x00001000, "R|W|AS4", 0);  /* TEST-BCM - module (bcm_func.doc)*/
+
+    GEL_MapAddStr(0x48013000, 0, 0x00001000, "R|W|AS4", 0);  /* TEST-BCM - L4 interconnect */
+
+    GEL_MapAddStr(0x48014000, 0, 0x00001000, "R|W|AS4", 0);  /* TEST-Chip-level TAP - module (chiplevel_tap_func.doc)*/
+
+    GEL_MapAddStr(0x48015000, 0, 0x00001000, "R|W|AS4", 0);  /* TEST-Chip-level TAP - L4 interconnect */
+
+    GEL_MapAddStr(0x48018000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO1 module (quadgpio.doc)*/
+
+    GEL_MapAddStr(0x48019000, 0, 0x00001000, "R|W|AS4", 0);  /* Quad GPIO top (OCP splitter) (quadgpio.doc)*/
+
+    GEL_MapAddStr(0x4801A000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO2 module (quadgpio.doc)*/
+
+    GEL_MapAddStr(0x4801B000, 0, 0x00001000, "R|W|AS4", 0);  /* Quad GPIO L4 interconnect */
+
+    GEL_MapAddStr(0x4801C000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO3 module (quadgpio.doc)*/
+
+    GEL_MapAddStr(0x4801E000, 0, 0x00001000, "R|W|AS4", 0);  /* GPIO4 module (quadgpio.doc)*/
+
+    GEL_MapAddStr(0x48020000, 0, 0x00001000, "R|W|AS4", 0);  /* WDTIMER1 module */
+
+    GEL_MapAddStr(0x48021000, 0, 0x00001000, "R|W|AS2", 0);  /* Dual WDTIMER top (OCP splitter) */
+
+    GEL_MapAddStr(0x48022000, 0, 0x00001000, "R|W|AS4", 0);  /* WDTIMER 2 module */
+
+    GEL_MapAddStr(0x48023000, 0, 0x00001000, "R|W|AS4", 0);  /* Dual WDTIMER L4 interconnect */
+
+    GEL_MapAddStr(0x48024000, 0, 0x00001000, "R|W|AS4", 0);  /* WDTIMER3(DSP) - module */
+
+    GEL_MapAddStr(0x48025000, 0, 0x00001000, "R|W|AS4", 0);  /* WDTIMER3(DSP) - L4 interconnect */
+
+    GEL_MapAddStr(0x48026000, 0, 0x00001000, "R|W|AS4", 0);  /* WDTIMER4(IVA) - module */
+
+    GEL_MapAddStr(0x48027000, 0, 0x00001000, "R|W|AS4", 0);  /* WDTIMER4(IVA) - L4 interconnect */
+
+    GEL_MapAddStr(0x48028000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER1 - module */
+
+    GEL_MapAddStr(0x48029000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER1 - L4 interconnect */
+
+    GEL_MapAddStr(0x4802A000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER2 - module */
+
+    GEL_MapAddStr(0x4802B000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER2 - L4 interconnect */
+
+    GEL_MapAddStr(0x48040000, 0, 0x00000800, "R|W|AS4", 0);  /* L4-configuration - Address/Protection (AP) */
+
+    GEL_MapAddStr(0x48040800, 0, 0x00000800, "R|W|AS4", 0);  /* L4-configuration - Initiator Port (IP) */
+
+    GEL_MapAddStr(0x48041000, 0, 0x00001000, "R|W|AS4", 0);  /* L4-configuration - Link Agent (LA) */
+
+    GEL_MapAddStr(0x48048000, 0, 0x00002000, "R|W|AS4", 0);  /* ARM11ETB - module (etb_mgmt_func.doc)*/
+
+    GEL_MapAddStr(0x4804A000, 0, 0x00001000, "R|W|AS4", 0);  /* ARM11ETB - L4 interconnect */
+
+    GEL_MapAddStr(0x48050000, 0, 0x00000400, "R|W|AS4", 0);  /* DISPLAY subsystem - Display Subsystem Top (DisplaySubSystem_func.doc)*/
+
+    GEL_MapAddStr(0x48050400, 0, 0x00000400, "R|W|AS4", 0);  /* DISPLAY subsystem - Display Controller (DISP) (DISPC_func.doc)*/
+
+    GEL_MapAddStr(0x48050800, 0, 0x00000400, "R|W|AS4", 0);  /* DISPLAY subsystem - Remote Frame Buffer Interface (RFBI) (RBFI_func.doc)*/
+
+    GEL_MapAddStr(0x48050C00, 0, 0x00000400, "R|W|AS1", 0);  /* DISPLAY subsystem - Video encoder (VENC) (VIdeoEnc_func.doc)*/
+
+    GEL_MapAddStr(0x48051000, 0, 0x00001000, "R|W|AS4", 0);  /* DISPLAY subsystem - L4 interconnect */
+
+    GEL_MapAddStr(0x48052000, 0, 0x00000400, "R|W|AS4", 0);  /* CAMERA - Camera Top (camera_func.doc)*/
+
+    GEL_MapAddStr(0x48052400, 0, 0x00000400, "R|W|AS4", 0);  /* CAMERA - Camera Core (camera_core_func.doc)*/
+
+    GEL_MapAddStr(0x48052800, 0, 0x00000400, "R|W|AS4", 0);  /* CAMERA - Camera DMA */
+
+    GEL_MapAddStr(0x48052C00, 0, 0x00000400, "R|W|AS4", 0);  /* CAMERA - Camera MMU */
+
+    GEL_MapAddStr(0x48053000, 0, 0x00001000, "R|W|AS4", 0);  /* CAMERA - L4 interconnect */
+
+    GEL_MapAddStr(0x48056000, 0, 0x00001000, "R|W|AS4", 0);  /* SDMA - module (L3) */
+
+    GEL_MapAddStr(0x48057000, 0, 0x00001000, "R|W|AS4", 0);  /* SDMA - L4 interconnect */
+
+    GEL_MapAddStr(0x48058000, 0, 0x00001000, "R|W|AS4", 0);  /* SSI - SSI Top (ssi_func.doc)*/
+
+    GEL_MapAddStr(0x48059000, 0, 0x00001000, "R|W|AS4", 0);  /* SSI - SSI GDD (ssi_func.doc)*/
+
+    GEL_MapAddStr(0x4805A000, 0, 0x00001000, "R|W|AS4", 0);  /* SSI - SSI Port1 (ssi_func.doc)*/
+
+    GEL_MapAddStr(0x4805B000, 0, 0x00001000, "R|W|AS4", 0);  /* SSI - SSI Port2 (ssi_func.doc)*/
+
+    GEL_MapAddStr(0x4805C000, 0, 0x00001000, "R|W|AS4", 0);  /* SSI - L4 interconnect */
+
+    GEL_MapAddStr(0x4805E000, 0, 0x00001000, "R|W|AS4", 0);  /* USB - module (L3) (usb_otg_func.doc)*/
+
+    GEL_MapAddStr(0x4805F000, 0, 0x00001000, "R|W|AS4", 0);  /* USB - L4 interconnect */
+
+    GEL_MapAddStr(0x48060000, 0, 0x00001000, "R|W|AS4", 0);  /* WIN_TRACER1(SDRC) - module (WindowTracer_func.doc)*/
+
+    GEL_MapAddStr(0x48061000, 0, 0x00001000, "R|W|AS4", 0);  /* WIN_TRACER1(SDRC) - L4 interconnect */
+
+    GEL_MapAddStr(0x48062000, 0, 0x00001000, "R|W|AS4", 0);  /* WIN_TRACER2(GPMC) - module (WindowTracer_func.doc)*/
+
+    GEL_MapAddStr(0x48063000, 0, 0x00001000, "R|W|AS4", 0);  /* WIN_TRACER2(GPMC) - L4 interconnect */
+
+    GEL_MapAddStr(0x48064000, 0, 0x00001000, "R|W|AS4", 0);  /* WIN_TRACER3(OCM) - module */
+
+    GEL_MapAddStr(0x48065000, 0, 0x00001000, "R|W|AS4", 0);  /* WIN_TRACER3(OCM) - L4 interconnect */
+
+    GEL_MapAddStr(0x48066000, 0, 0x00000100, "R|W|AS4", 0);  /* WIN_TRACER4(L4)  - Module Top */
+
+    GEL_MapAddStr(0x48066100, 0, 0x00000100, "R|W|AS4", 0);  /* WIN_TRACER4(L4)  - External Trace Trigger module (ett) */
+
+    GEL_MapAddStr(0x48066200, 0, 0x00000100, "R|W|AS4", 0);  /* WIN_TRACER4(L4)  - Window Tracer module */
+
+    GEL_MapAddStr(0x48067000, 0, 0x00001000, "R|W|AS4", 0);  /* WIN_TRACER4(L4)  - L4 interconnect */
+
+    GEL_MapAddStr(0x48068000, 0, 0x00001000, "R|W|AS4", 0);  /* XTI - module (xti_func.doc)*/
+
+    GEL_MapAddStr(0x48069000, 0, 0x00001000, "R|W|AS4", 0);  /* XTI - L4 interconnect */
+
+    GEL_MapAddStr(0x4806A000, 0, 0x00001000, "R|W|AS1", 0);  /* UART1 - module */
+
+    GEL_MapAddStr(0x4806B000, 0, 0x00001000, "R|W|AS2", 0);  /* UART1 - L4 interconnect */
+
+    GEL_MapAddStr(0x4806C000, 0, 0x00001000, "R|W|AS1", 0);  /* UART2 - module */
+
+    GEL_MapAddStr(0x4806D000, 0, 0x00001000, "R|W|AS2", 0);  /* UART2 - L4 interconnect */
+
+    GEL_MapAddStr(0x4806E000, 0, 0x00001000, "R|W|AS1", 0);  /* UART3 - module (uartirdacirocp.doc)*/
+
+    GEL_MapAddStr(0x4806F000, 0, 0x00001000, "R|W|AS2", 0);  /* UART3 - L4 interconnect */
+
+    GEL_MapAddStr(0x48070000, 0, 0x00001000, "R|W|AS2", 0);  /* I2C1 - module (msi2cocp_func.doc)*/
+
+    GEL_MapAddStr(0x48071000, 0, 0x00001000, "R|W|AS2", 0);  /* I2C1 - L4 interconnect */
+
+    GEL_MapAddStr(0x48072000, 0, 0x00001000, "R|W|AS2", 0);  /* I2C2 - module (msi2cocp_func.doc)*/
+
+    GEL_MapAddStr(0x48073000, 0, 0x00001000, "R|W|AS2", 0);  /* I2C2 - L4 interconnect */
+
+    GEL_MapAddStr(0x48074000, 0, 0x00001000, "R|W|AS2", 0);  /* McBSP1 - module */
+
+    GEL_MapAddStr(0x48075000, 0, 0x00001000, "R|W|AS2", 0);  /* McBSP1 - L4 interconnect */
+
+    GEL_MapAddStr(0x48076000, 0, 0x00001000, "R|W|AS2", 0);  /* McBSP2 - module */
+
+    GEL_MapAddStr(0x48077000, 0, 0x00001000, "R|W|AS2", 0);  /* McBSP2 - L4 interconnect */
+
+    GEL_MapAddStr(0x48078000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER3 - module */
+
+    GEL_MapAddStr(0x48079000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER3 - L4 interconnect */
+
+    GEL_MapAddStr(0x4807A000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER4 - module */
+
+    GEL_MapAddStr(0x4807B000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER4 - L4 interconnect */
+
+    GEL_MapAddStr(0x4807C000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER5 - module */
+
+    GEL_MapAddStr(0x4807D000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER5 - L4 interconnect */
+
+    GEL_MapAddStr(0x4807E000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER6 - module */
+
+    GEL_MapAddStr(0x4807F000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER6 - L4 interconnect */
+
+    GEL_MapAddStr(0x48080000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER7 - module */
+
+    GEL_MapAddStr(0x48081000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER7 - L4 interconnect */
+
+    GEL_MapAddStr(0x48082000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER8 - module */
+
+    GEL_MapAddStr(0x48083000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER8 - L4 interconnect */
+
+    GEL_MapAddStr(0x48084000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER9 - module */
+
+    GEL_MapAddStr(0x48085000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER9 - L4 interconnect */
+
+    GEL_MapAddStr(0x48086000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER10 - module */
+
+    GEL_MapAddStr(0x48087000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER10 - L4 interconnect */
+
+    GEL_MapAddStr(0x48088000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER11 - module */
+
+    GEL_MapAddStr(0x48089000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER11 - L4 interconnect */
+
+    GEL_MapAddStr(0x4808A000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER12 - module */
+
+    GEL_MapAddStr(0x4808B000, 0, 0x00001000, "R|W|AS4", 0);  /* GPTIMER12 - L4 interconnect */
+
+    GEL_MapAddStr(0x48090000, 0, 0x00001000, "R|W|AS2", 0);  /* EAC - module (eac_func.doc)*/
+
+    GEL_MapAddStr(0x48091000, 0, 0x00001000, "R|W|AS2", 0);  /* EAC - L4 interconnect */
+
+    GEL_MapAddStr(0x48092000, 0, 0x00001000, "R|W|AS2", 0);  /* FAC - module (fac_ocp_func.doc)*/
+
+    GEL_MapAddStr(0x48093000, 0, 0x00001000, "R|W|AS2", 0);  /* FAC - L4 interconnect */
+
+    GEL_MapAddStr(0x48094000, 0, 0x00001000, "R|W|AS4", 0);  /* MAILBOX - module (Mailboxes_func.doc)*/
+
+    GEL_MapAddStr(0x48095000, 0, 0x00001000, "R|W|AS4", 0);  /* MAILBOX - L4 interconnect */
+
+    GEL_MapAddStr(0x48098000, 0, 0x00001000, "R|W|AS4", 0);  /* SPI1 - module (mcspiocp_func.doc)*/
+
+    GEL_MapAddStr(0x48099000, 0, 0x00001000, "R|W|AS4", 0);  /* SPI1 - L4 interconnect */
+
+    GEL_MapAddStr(0x4809A000, 0, 0x00001000, "R|W|AS4", 0);  /* SPI2 - module (mcspiocp_func.doc)*/
+
+    GEL_MapAddStr(0x4809B000, 0, 0x00001000, "R|W|AS4", 0);  /* SPI2 - L4 interconnect */
+
+    GEL_MapAddStr(0x4809C000, 0, 0x00001000, "R|W|AS2", 0);  /* MMC/SDIO - module (mmcsdioocp_func.doc)*/
+
+    GEL_MapAddStr(0x4809D000, 0, 0x00001000, "R|W|AS2", 0);  /* MMC/SDIO - L4 interconnect */
+
+    GEL_MapAddStr(0x4809E000, 0, 0x00001000, "R|W|AS4", 0);  /* MS_PRO - module */
+
+    GEL_MapAddStr(0x4809F000, 0, 0x00001000, "R|W|AS4", 0);  /* MS_PRO - L4 interconnect */
+
+    GEL_MapAddStr(0x480A0000, 0, 0x00001000, "R|W|AS4", 0);  /* RNG - module (rng_func.doc)*/
+
+    GEL_MapAddStr(0x480A1000, 0, 0x00001000, "R|W|AS4", 0);  /* RNG - L4 interconnect */
+
+    GEL_MapAddStr(0x480A2000, 0, 0x00001000, "R|W|AS4", 0);  /* DES3DES - module (des_func.doc)*/
+
+    GEL_MapAddStr(0x480A3000, 0, 0x00001000, "R|W|AS4", 0);  /* DES3DES - L4 interconnect */
+
+    GEL_MapAddStr(0x480A4000, 0, 0x00001000, "R|W|AS4", 0);  /* SHA1MD5 - module */
+
+    GEL_MapAddStr(0x480A5000, 0, 0x00001000, "R|W|AS4", 0);  /* SHA1MD5 - L4 interconnect */
+
+    GEL_MapAddStr(0x480A6000, 0, 0x00001000, "R|W|AS4", 0);  /* AES - module (aes_func.doc)*/
+
+    GEL_MapAddStr(0x480A7000, 0, 0x00001000, "R|W|AS4", 0);  /* AES - L4 interconnect */
+
+    GEL_MapAddStr(0x480A8000, 0, 0x00002000, "R|W|AS4", 0);  /* PKA - module (pka_func.doc)*/
+
+    GEL_MapAddStr(0x480AA000, 0, 0x00001000, "R|W|AS4", 0);  /* PKA - L4 interconnect */
+
+    GEL_MapAddStr(0x480B0000, 0, 0x00001000, "R|W|AS??", 0);  /* MG - module ????????*/
+
+    GEL_MapAddStr(0x480B1000, 0, 0x00001000, "R|W|AS4", 0);  /* MG - L4 interconnect */
+
+    GEL_MapAddStr(0x480B2000, 0, 0x00001000, "R|W|AS4", 0);  /* HDQ (1 wire) - module (hdq1wocp_func.doc)*/
+
+    GEL_MapAddStr(0x480B3000, 0, 0x00001000, "R|W|AS4", 0);  /* HDQ (1 wire) - L4 interconnect */
+
+    GEL_MapAddStr(0x480FE000, 0, 0x00001000, "R|W|AS4", 0);  /* MPU interrupt (mINT) */
+
+    /* End of L4-peripheral memory space mapping --------------------------------------*/
+
+
+
+   
+
+    /* -- IVA Memory Space -----------------------------------------------------*/
+
+    GEL_MapAddStr(0x5C000000, 0, 0x00020000, "R|W"    , 0);  /* IVA RAM         */
+
+    GEL_MapAddStr(0x5C020000, 0, 0x00008000, "R  "    , 0);  /* IVA ROM         */
+
+
+
+    /* COPR Registers */
+
+    GEL_MapAddStr(0x5C040000, 0, 0x00002000, "R|W|AS2", 0);  /* IMG_BUF_A       */
+
+    GEL_MapAddStr(0x5C042000, 0, 0x00002000, "R|W|AS2", 0);  /* IMG_BUF_B       */
+
+    GEL_MapAddStr(0x5C048000, 0, 0x00000800, "R|W|AS2", 0);  /* VLCDS           */
+
+    GEL_MapAddStr(0x5C049000, 0, 0x00002000, "R|W|AS2", 0);  /* IMX_COEF        */
+
+    GEL_MapAddStr(0x5C051000, 0, 0x00001000, "R|W|AS2", 0);  /* IMX_CMD         */
+
+    GEL_MapAddStr(0x5C053000, 0, 0x00000400, "R|W|AS2", 0);  /* VLCDQ           */
+
+    GEL_MapAddStr(0x5C054000, 0, 0x00001000, "R|W|AS2", 0);  /* VLCDH           */
+
+    GEL_MapAddStr(0x5C055000, 0, 0x00001000, "R|W|AS2", 0);  /* SEQ_CMD         */
+
+    GEL_MapAddStr(0x5C056000, 0, 0x00000100, "R|W|AS2", 0);  /* IMX_REG         */
+
+    GEL_MapAddStr(0x5C056100, 0, 0x00000100, "R|W|AS2", 0);  /* VLCD_REG        */
+
+    GEL_MapAddStr(0x5C056200, 0, 0x00000100, "R|W|AS2", 0);  /* SEQ_REG         */
+
+    GEL_MapAddStr(0x5C056300, 0, 0x00000100, "R|W|AS2", 0);  /* IMG_BUG_REG     */
+
+    GEL_MapAddStr(0x5C056400, 0, 0x00000100, "R|W|AS2", 0);  /* SEQIRQ_REG      */
+
+    GEL_MapAddStr(0x5C060000, 0, 0x00001000, "R|W"    , 0);  /* OCP register    */
+
+    GEL_MapAddStr(0x5C070000, 0, 0x00001000, "R|W"    , 0);  /* SYSC register   */
+
+    GEL_MapAddStr(0x5D000000, 0, 0x00001000, "R|W"    , 0);  /* iMMU register   */
+
+    /* -- END OF IVA MEM SPACE -------------------------------------------------*/
+
+
+
+    /* !! FOLLOWING MEM SPACE TO BE CONFIGURED PROPERLY !!*/
+
+    GEL_MapAddStr(0x60000000, 0, 0xA0000000, "R|W"    , 0);  /* TO BE CONFIGURED */
+
+}
+
+
+
+
+
+
+
+/* =============================================================================
+
+			UMA CONFIGURATION
+
+   ============================================================================= */
+
+release_UMA_reset() {
+
+
+
+   /*  Enable DSP-ss functional clock (set bit 0) */
+
+   (*(int*)0x48008800) |= 0x1;
+
+
+
+   /* Enable DSPIPI/DSPMMU clock (set bit 1) */
+
+   (*(int*)0x48008810) |= (1 << 1);
+
+
+
+
+
+   /* Release DSPIPI/DSPMMU reset (clear bit 1)*/
+
+   (*(int*)0x48008850) &= ~(1 << 1);
+
+
+
+
+
+   /* Add endless instruction to the beginning of the SARAM */
+
+   (*(int *)0x58010000) = 0x4A7E2020;
+
+
+
+   /* Set DSP boot mode to API */
+
+    (*(int*)0x59000050) = 0x05; 
+
+
+
+
+
+   /* Release DSP from reset (clear bit 0) */
+
+    (*(int*)0x48008850) &= ~(1 << 0); 
+
+
+
+    GEL_TextOut("UMA release from reset\n","result");
+
+ 
+
+}
+
+
+
+
+
+/* =============================================================================
+
+			DSP MMU CONFIGURATION
+
+   ============================================================================= */
+
+
+
+menuitem "dspMMU"
+
+
+
+hotmenu ResetMMU()
+
+{
+
+    *(int *)0x5A000010 |= 0x2;
+
+}
+
+
+
+hotmenu Enable()
+
+{
+
+    *(int *)0x5A000044 |= 0x2;
+
+}
+
+
+
+hotmenu Disable()
+
+{
+
+    *(int *)0x5A000044 &= ~0x2;
+
+}
+
+
+
+hotmenu GetStatus()
+
+{
+
+    int status;
+
+    
+
+    status = *(int *)0x5A000044;
+
+    GEL_TextOut("\n\ndspMMU CNTL = %x\n",,,,,status);
+
+    status = *(int *)0x5A000014;
+
+    GEL_TextOut("dspMMU SYSS = %x\n",,,,,status);
+
+    status = *(int *)0x5A000018;
+
+    GEL_TextOut("dspMMU IRQS = %x\n",,,,,status);
+
+    if ( (status & 1) == 1 )
+
+    {
+
+        GEL_TextOut("    Fault TBLmiss Virtual Address: %x\n\n",,,,,*(int *)0x5A000048);
+
+    }
+
+    if ( (status & 4) == 4 )
+
+    {
+
+        GEL_TextOut("    Fault EMUTBLmiss Virtual Address: %x\n\n",,,,,*(int *)0x5A000070);
+
+    }
+
+}
+
+
+
+hotmenu ProgramMMU()
+
+{
+
+    /* L4 Peripherals */
+
+    *(int *)0x5A000050 = 0x00000000;
+
+    *(int *)0x5A000058 = 0x0010000C;
+
+    *(int *)0x5A00005C = 0x480001C0;
+
+    *(int *)0x5A000054 = 0x00000001;
+
+
+
+    /* L3 Peripherals */
+
+    *(int *)0x5A000050 = 0x00000010;
+
+    *(int *)0x5A000058 = 0x0030000C;
+
+    *(int *)0x5A00005C = 0x680001C0;
+
+    *(int *)0x5A000054 = 0x00000001;
+
+
+
+    /* OCMC RAM*/
+
+    *(int *)0x5A000050 = 0x00000020;
+
+    *(int *)0x5A000058 = 0x0020000C;
+
+    *(int *)0x5A00005C = 0x402001C0;
+
+    *(int *)0x5A000054 = 0x00000001;
+
+
+
+    /* SDRAM*/
+
+    *(int *)0x5A000050 = 0x00000030;
+
+    *(int *)0x5A000058 = 0x0080000C;
+
+    *(int *)0x5A00005C = 0x804001C0;
+
+    *(int *)0x5A000054 = 0x00000001;
+
+
+
+    *(int *)0x5A000050 = 0x00000040;
+
+    *(int *)0x5A000058 = 0x0090000C;
+
+    *(int *)0x5A00005C = 0x80500000;
+
+    *(int *)0x5A000054 = 0x00000001;
+
+
+
+    *(int *)0x5A000050 = 0x00000050;
+
+    *(int *)0x5A000058 = 0x00A0000C;
+
+    *(int *)0x5A00005C = 0x806001C0;
+
+    *(int *)0x5A000054 = 0x00000001;
+
+
+
+    *(int *)0x5A000050 = 0x00000060;
+
+    *(int *)0x5A000058 = 0x00B0000C;
+
+    *(int *)0x5A00005C = 0x807001C0;   
+
+    *(int *)0x5A000054 = 0x00000001;
+
+
+
+}
+
+
+
+hotmenu ReadConfig()
+
+{
+
+
+
+    int ramv;
+
+    int camv;
+
+    
+
+    int i;
+
+    int tmp;
+
+    
+
+    GEL_TextOut("\n\n         dspMMU Configuration         \n");
+
+    GEL_TextOut(    "======================================\n");
+
+    GEL_TextOut(    "  Curr         CAM            RAM     \n");
+
+    GEL_TextOut(    "--------------------------------------\n");
+
+    for ( i = 0; i < 32; i ++ )
+
+    {
+
+        tmp = i << 4;
+
+        *(int *)0x5A000050 = tmp;
+
+        camv = *(int *)0x5A000068;
+
+        ramv = *(int *)0x5A00006C;
+
+        GEL_TextOut("%x:  %x     %x\n",,,,,i,camv, ramv);
+
+    }
+
+    GEL_TextOut(    "======================================\n");
+
+    
+
+}
+
+
+
+
+
+/* =============================================================================
+
+			IVA CONFIGURATION
+
+   ============================================================================= */
+
+
+
+Enable_IVA()
+
+{
+
+    int dummyRead;
+
+
+
+    /* Enable IVA subsystem to bring up instance of CCS with ARM7 in scan path */
+
+
+
+    /*Enable IVA_COPR & IVA_IF clocks*/
+
+     *(int *)0x48008800 |= (1<<10);  /*SwitchOn IVA_COPR_CLK & IVA_IF_CLK*/
+
+
+
+
+
+    /* DeAssert IVA Reset */
+
+     *(int*)0x48008850 &= ~(1<<8); 
+
+
+
+                  /* Virtual     Physical    Victim                    */
+
+     Program_IVA_MMU(0x00000000, 0x48000000, 0);    /* l4              */
+
+     Program_IVA_MMU(0x00100000, 0x40200000, 1);    /* ocmc_ram        */
+
+     Program_IVA_MMU(0x00200000, 0x40000000, 2);    /* ocmc_rom        */
+
+     Program_IVA_MMU(0x00300000, 0x68000000, 3);    /* l3_ctrl         */
+
+     Program_IVA_MMU(0x00400000, 0x80000000, 4);    /* sdrc_cs0      A */
+
+     Program_IVA_MMU(0x00500000, 0x58000000, 5);    /* dsp_ram         */
+
+     Program_IVA_MMU(0x00600000, 0x00000000, 6);    /* gpmc_cs0_base (change from simu) */ 
+
+     Program_IVA_MMU(0x00700000, 0xa0000000, 7);    /* sdrc_cs1_base A */
+
+     Program_IVA_MMU(0x00800000, 0xa0100000, 8);    /*               B */
+
+     Program_IVA_MMU(0x00900000, 0xa0200000, 9);    /*               C */
+
+     Program_IVA_MMU(0x00a00000, 0x80600000, 10);   /* sdrc_cs0_base B */
+
+     Program_IVA_MMU(0x00b00000, 0x80700000, 11);   /*               C */
+
+
+
+     IVA_MMUEnable(); 
+
+  
+
+    /* The following two lines of code don't work properly yet -- waiting for new release of */
+
+    /* icepick software */
+
+    *(int*)0x5c000000 = 0xEAFFFFFE;
+
+    
+
+     dummyRead = *(int*)0x5c000000;
+
+
+
+    /* Enable ARM7 functional clock */
+
+    *(int *)0x48008800 |= (1<<8);  
+
+
+
+     /* Report IVA initialization is done */
+
+     GEL_TextOut("Ready to load program into ARM7 RAM\n");
+
+}
+
+
+
+
+
+IVA_MMUEnable()
+
+{
+
+
+
+    *(int*)0x5d000044 |= (1 << 1); /* Enable MMU - Keep TWL disabled */
+
+
+
+}
+
+
+
+
+
+Program_IVA_MMU(inVirtualAddr, inPhysAddr, inCurrentVictim )
+
+{
+
+
+
+    int lvVirtualAddrTag, lvCamReg, lvMMURamReg, lvLockReadReg;
+
+
+
+
+
+    /* Load the virtual address, preserved bit, valid bit and section/page size in 
+
+       CAM register */
+
+
+
+    lvVirtualAddrTag = ( (inVirtualAddr & 0xfffff000) >> 12);
+
+    lvCamReg = (lvVirtualAddrTag << 12);
+
+    lvCamReg = ( lvCamReg | 0x00 | (0x1 << 2) | (0x1 << 3));
+
+
+
+    *(int*)0x5d000058 = lvCamReg;
+
+
+
+    /* Load the physical address and the endianness/element size into the RAM register */
+
+
+
+    lvMMURamReg = ( inPhysAddr & 0xfffff000 );
+
+
+
+    lvMMURamReg = (lvMMURamReg | ((0x0 << 9) | (0x00 <<7) | (0x0 << 6)));
+
+
+
+    *(int*)0x5d00005c = lvMMURamReg;
+
+
+
+
+
+    /* Update the current victim field (in LOCK register) which specifies the location
+
+       of the entry to be loaded */
+
+
+
+
+
+    lvLockReadReg = ( (inCurrentVictim << 4) | (0x0 << 10) ); /* basevalue = 0 */
+
+
+
+    *(int*)0x5d000050 = lvLockReadReg;
+
+
+
+
+
+    /* Set the ld_tlb bit of the LD_TLB register to load these values */
+
+    *(int*)0x5d000054  = 1; 
+
+
+
+}
+
+
+
+
+
+
+
+menuitem "omap2420"
+
+
+
+hotmenu PRCM_Mailbox_Interface_ClockEnable()
+
+{
+
+
+
+ *(int*)0x48008210 |= (1 << 30); /* Interface clock enable */
+
+
+
+  GEL_TextOut(" Mailbox on L4 interconnect is now accessible \n" );
+
+}
+
+
+
+
+
+
+
+/* =============================================================================
+
+			DEVICE CONFIGURATIONS
+
+   ============================================================================= */
+
+menuitem "omap2420"
+
+
+
+hotmenu Device_Config_Info()
+
+{
+
+
+
+  int regSysControl, bootMode, cs0muxMode, deviceType;
+
+
+
+    
+
+  regSysControl = (*(int*)0x480002f8);
+
+   
+
+  bootMode = (regSysControl & 0x00000008) >> 3;
+
+   
+
+  cs0muxMode = ( regSysControl & 0x00000006 ) >> 1; 
+
+   
+
+  deviceType = ( regSysControl & 0x00000700 ) >> 8;
+
+                    
+
+  if (bootMode == 0)
+
+  {
+
+     GEL_TextOut(" OMAP device is booting in EXTERNAL mode \n" );
+
+  }
+
+  else
+
+  {
+
+     GEL_TextOut(" OMAP device is booting in INTERNAL mode \n" );
+
+  }
+
+  
+
+  
+
+  if (cs0muxMode == 0x1)
+
+  {
+
+     GEL_TextOut(" GPMC CS0 interface is in muxed mode \n" ); 
+
+  }
+
+  else
+
+  {
+
+     GEL_TextOut(" GPMC CS0 interface is in non-muxed mode \n" ); 
+
+  }
+
+  
+
+  
+
+  if (deviceType == 0x0)
+
+  {
+
+     GEL_TextOut(" OMAP device is a TEST device \n" );
+
+  }
+
+  else if (deviceType == 0x1)
+
+  {
+
+     GEL_TextOut(" OMAP device is an EMULATOR device \n");
+
+  }
+
+  else if (deviceType == 0x2)
+
+  {
+
+     GEL_TextOut(" OMAP device is a SECURE device \n");
+
+  }
+
+  else if (deviceType == 0x3)
+
+  {
+
+     GEL_TextOut(" OMAP device is a GENERAL purpose device \n");
+
+  }                 
+
+        
+
+  return;
+
+}
+
+
+
+
+
+
+
+/* =============================================================================
+
+			MEMORY CONFIGURATIONS
+
+   ============================================================================= */
+
+
+
+
+
+/* ----------------------- INTEL FLASH -------------------------------- */
+
+menuitem "omap2420"
+
+
+
+hotmenu Erase_FirstBlock_GPMC_CS0_Intel_28F256Flash()
+
+{
+
+  int regSysControl, bootMode;
+
+  
+
+  regSysControl = (*(int*)0x480002f8);
+
+   
+
+  bootMode = (regSysControl & 0x00000008) >> 3;
+
+   
+
+  /* if OMAP device is booting in INTERNAL mode */
+
+  if (bootMode == 1)
+
+  {
+
+     GEL_TextOut(" Configure GPMC pins in INTERNAL mode \n" );
+
+     *(unsigned char*)0x48000071 = 0x18;
+
+     *(unsigned char*)0x48000072 = 0x18;
+
+     *(unsigned char*)0x48000073 = 0x18;
+
+     *(unsigned char*)0x48000074 = 0x18;
+
+     *(unsigned char*)0x48000075 = 0x18;
+
+     *(unsigned char*)0x48000076 = 0x18;
+
+     *(unsigned char*)0x48000077 = 0x18;
+
+     *(unsigned char*)0x48000078 = 0x18;
+
+     *(unsigned char*)0x48000079 = 0x18;
+
+     *(unsigned char*)0x4800007A = 0x18;
+
+     *(unsigned char*)0x4800007B = 0x18;
+
+     *(unsigned char*)0x4800007C = 0x18;
+
+     *(unsigned char*)0x4800007D = 0x18;
+
+     *(unsigned char*)0x4800007E = 0x18;
+
+     *(unsigned char*)0x4800007F = 0x18;
+
+     *(unsigned char*)0x48000080 = 0x18;
+
+     *(unsigned char*)0x48000081 = 0x18;
+
+     *(unsigned char*)0x48000082 = 0x18;
+
+  }
+
+  
+
+  /* Re-map GPMC CS0 to start at 0x04000000 so that code can be run
+
+     if booting OMAP in external mode or internal mode */
+
+  
+
+  *(int*)0x6800a078 = 0x00000f44;
+
+  
+
+  /* Get GPMC not to drive A26-A11 to 0xFFFF */
+
+  *(int*)0x6800a050 &= ~(1 << 1);
+
+    
+
+  /* Set WP bit */
+
+  *(int*)0x6800a050 |= ( 1 << 4);
+
+  
+
+  /* Unlock Block */
+
+  *(int*)0x04000000 = 0x00d00060;
+
+  
+
+  /* Set in Read Array Mode */
+
+  *(int*)0x04000000 = 0x00ff;
+
+  
+
+  /* Erase the first 128K byte block of flash */
+
+  *(int*)0x04000000 = 0x00d00020;
+
+  
+
+  /* Read Status Register */
+
+  while ( !(( *(unsigned short*)0x04000000) & 0x80)); 
+
+  
+
+  /* Set in Read Array Mode */
+
+  *(int*)0x04000000 = 0x00ff;
+
+
+
+  /* Lock the Block */
+
+  *(int*)0x04000000 = 0x00010060;
+
+  
+
+  /* Set in Read Array Mode */
+
+  *(int*)0x04000000 = 0x00ff;  
+
+  
+
+  /* GPMC CS0 is mapped back to 0x00000000 */
+
+  *(int*)0x6800a078 = 0x00000f40;
+
+    
+
+  /* Clear WP bit */
+
+  *(int*)0x6800a050 &= ~( 1 << 4);
+
+  
+
+  GEL_TextOut(" First Block of GPMC CS0 has been erased \n" );
+
+
+
+}
+
+
+
+
+
+/* ----------------------- SDRC 16 SETUP -------------------------------- */
+
+menuitem "omap2420"
+
+
+
+hotmenu SDRC_Setup16()
+
+{
+
+  int i;
+
+
+
+  /* Mobile SDRAM; Actual memory on TEB is x 32 (16MB --- 4096 x 256 x 4) */
+
+  /* Configuring SDRC CS0 as x16-bit (so capacity of memory is halved) */
+
+  /* RamSize = 4 x 2MB chunks = 8MB */
+
+  /* MUX mode is 2  --- 2bit bank, 12 bit row and 8 bit column */
+
+  /* no deep power down support */
+
+  /* SDRC_MCFG0 register */
+
+  
+
+  (*(int*)0x68009080) = 0x00100400;			
+
+  
+
+  /* SDRC_SHARING register */
+
+  /* 16-bit SDRAM on data lane [31:16] - CS0 */
+
+  /* 16-bit SDRAM on data lane [31:16] - CS1 */
+
+  /* pin tri-stated = 0 - All SDRC interface pins are tristated */
+
+  
+
+  (*(int*)0x68009044) = 0x00002400;
+
+  
+
+  
+
+  /* SDRC_RFR_CTRL0 register */
+
+  /* auto-refresh counter value = 12 */
+
+  /* Are = 0x01 (single commands ) */
+
+  
+
+  (*(int*)0x680090a4) = 0x00000b01;
+
+  
+
+  
+
+  /* SDRC_ACTIM_CTRLA0 register */
+
+  
+
+  /* one cycle for each of the programmable a.c. time */
+
+  /* parameters (this is o.k. if SDRC clock < 10MHz) */
+
+  
+
+  (*(int*)0x6800909c) = 0x08449241;
+
+  
+
+      
+
+  /* SDRC_ACTIM_CTRLB0 register */
+
+  
+
+  /* one cycle for exit from self-refresh timing parameter */
+
+  
+
+  (*(int*)0x680090a0) = 0x00000001;
+
+  
+
+  
+
+  /* SDRC_Manual command register */
+
+  
+
+  (*(int*)0x680090a8) = 0x00000000; /* NOP command */
+
+  (*(int*)0x680090a8) = 0x00000001; /* Precharge command */
+
+  (*(int*)0x680090a8) = 0x00000002; /* Auto-refresh command */
+
+  (*(int*)0x680090a8) = 0x00000002; /* Auto-refresh command */
+
+  
+
+  /* SDRC MR0 register */
+
+  
+
+  (*(int*)0x68009084) = 0x00000031; /* Burst length =2 */
+
+                                    /* CAS latency = 3 */
+
+				    /* Read burst = Write burst */
+
+				    /* Serial Mode  (bit = 0, bug in functional spec) */ 
+
+   
+
+  GEL_TextOut(" SDRC setup completed to access MSDR memory on SDRC CS0 for 16-bit mode \n" );
+
+     
+
+  return;
+
+}
+
+
+
+/* ----------------------- SDRC 32 SETUP -------------------------------- */
+
+menuitem "omap2420"
+
+
+
+hotmenu SDRC_Setup32()
+
+{
+
+int regSysControl, bootMode, cs0muxMode;
+
+
+
+   regSysControl = (*(int*)0x480002f8);
+
+   
+
+   bootMode = (regSysControl & 0x00000008) >> 3;
+
+   
+
+   cs0muxMode = ( regSysControl & 0x00000006 ) >> 1; 
+
+   
+
+                    
+
+if ((bootMode == 1) || ( cs0muxMode == 0x1))
+
+{
+
+   
+
+  /* Mobile SDRAM; Actual memory on TEB is x 32 (16MB --- 4096 x 256 x 4) */
+
+  /* Configuring SDRC CS0 as x32-bit  */
+
+  /* RamSize = 8 x 2MB chunks = 16MB */
+
+  /* MUX mode is 5  --- 2bit bank, 12 bit row and 8 bit column */
+
+  /* no deep power down support */
+
+  /* SDRC_MCFG0 register */
+
+  
+
+  (*(int*)0x68009080) = 0x00400810;			
+
+  
+
+  /* SDRC_SHARING register */
+
+  /* 32-bit SDRAM on data lane [31:0] - CS0 */
+
+  /* 16-bit SDRAM on data lane [31:0] - CS1 */
+
+  /* pin tri-stated = 0 - All SDRC interface pins are tristated */
+
+  
+
+  (*(int*)0x68009044) = 0x00000000;
+
+  
+
+  
+
+  /* SDRC_RFR_CTRL0 register */
+
+  /* auto-refresh counter value = 12 */
+
+  /* Are = 0x01 (single commands ) */
+
+  
+
+  (*(int*)0x680090a4) = 0x00000b01;
+
+  
+
+  
+
+  /* SDRC_ACTIM_CTRLA0 register */
+
+  
+
+  /* one cycle for each of the programmable a.c. time */
+
+  /* parameters (this is o.k. if SDRC clock < 10MHz) */
+
+  
+
+  (*(int*)0x6800909c) = 0x08449241;
+
+  
+
+      
+
+  /* SDRC_ACTIM_CTRLB0 register */
+
+  
+
+  /* one cycle for exit from self-refresh timing parameter */
+
+  
+
+  (*(int*)0x680090a0) = 0x00000001;
+
+  
+
+  
+
+  /* SDRC_Manual command register */
+
+  
+
+  (*(int*)0x680090a8) = 0x00000000; /* NOP command */
+
+  (*(int*)0x680090a8) = 0x00000001; /* Precharge command */
+
+  (*(int*)0x680090a8) = 0x00000002; /* Auto-refresh command */
+
+  (*(int*)0x680090a8) = 0x00000002; /* Auto-refresh command */
+
+  
+
+  /* SDRC MR0 register */
+
+  
+
+  (*(int*)0x68009084) = 0x00000031; /* Burst length =2 */
+
+                                    /* CAS latency = 3 */
+
+				                    /* Write Burst = Read Burst */
+
+				                    /* Serial Mode */
+
+ 
+
+   /* Get GPMC  to drive A26-A11 to 0xFFFF */
+
+  *(int*)0x6800a050 |= (1 << 1);
+
+   
+
+  GEL_TextOut(" SDRC setup completed to access MSDR memory on SDRC CS0 for 32-bit access \n" );
+
+  GEL_TextOut(" GPMC interface is not accessible in non-multiplexed mode \n" );
+
+ }
+
+ else
+
+ {
+
+     GEL_TextOut(" SDRC cannot be configured in 32-bit mode if boot mode is external and muxMode for GPMC CS0 is non-muxed \n" );
+
+ }  
+
+        
+
+  return;
+
+}
+
+
+
+
+
+/* ----------------------- SDRC MDDR SAMSUNG 32 SETUP -------------------------------- */
+
+menuitem "omap2420"
+
+
+
+hotmenu SDRC_MDDR_Samsung32()
+
+{
+
+int regSysControl, bootMode, cs0muxMode;
+
+
+
+   regSysControl = (*(int*)0x480002f8);
+
+   
+
+   bootMode = (regSysControl & 0x00000008) >> 3;
+
+   
+
+   cs0muxMode = ( regSysControl & 0x00000006 ) >> 1; 
+
+   
+
+                    
+
+if ((bootMode == 1) || ( cs0muxMode == 0x1))
+
+{
+
+   
+
+  /*  MDDR (Samsung K4X56163PE-L(F)G */
+
+  /*  Two x16-bits memories on daughter card for H4 Silicon Board */
+
+  /*  Same CS for both (CS0) */
+
+  /*  x 32-bit memory from controller perspective  */
+
+  /*  MUX mode is 24 ( 2 bit bank, 13bit row, 9 bit column  ( 16M x 32-bit ) ) */
+
+  /*  RamSize = 32 * 2MB chunks = 64MB  */
+
+
+
+  /* SYS Control register to allow sdrc_a12 to be connected at top level */
+
+  (*(unsigned char *)0x48000032) = 0x08;
+
+ 
+
+  /* Get GPMC  to drive A26-A11 to 0xFFFF */
+
+  *(int*)0x6800a050 |= (1 << 1); 
+
+     
+
+  /* SDRC_MCFG0 register */
+
+  (*(int*)0x68009080) = ( ( 0x17 << 20) | ( 32 << 8 ) | ( 1 << 4) | ( 0 << 3) | ( 0 << 2) | 0x01 );			
+
+  
+
+  /* SDRC_SHARING register */
+
+  /* 32-bit SDRAM on data lane [31:0] - CS0 */
+
+  /* 16-bit SDRAM on data lane [31:0] - CS1 */
+
+  /* pin tri-stated = 1 */
+
+  
+
+  (*(int*)0x68009044) = 0x00000100;
+
+  
+
+  
+
+  /* SDRC_RFR_CTRL0 register */
+
+  /* auto-refresh counter value = 780 */
+
+  /* Are = 0x03 (burst of 8 ) */
+
+  
+
+  (*(int*)0x680090a4) = ( ( 780 << 8) | ( 0x03 << 0));
+
+  
+
+  
+
+  /* SDRC_ACTIM_CTRLA0 register (optimise for clk = 166MHz) */
+
+  /* trfc = 110ns = 19 clock cycles */
+
+  /* trc  = 90ns  = 15 clock cycles */
+
+  /* tras = 60ns  = 10 clock cycles */
+
+  /* trp  = 30ns  = 5  clock cycles */
+
+  /* trcd = 30ns  = 5  clock cycles */
+
+  /* trrd = 20ns  = 4  clock cycles */
+
+  /* tdpl = 20ns  = 4  clock cycles */
+
+  /* tdal = 50ns  = 9  clock cycles */
+
+   
+
+  (*(int*)0x6800909c) = ( ( 19 << 27) | ( 15 << 22) | (10 << 18) | (5 << 15) | (5 << 12) | (4 << 9) | (4 << 6) | (9 << 0) );
+
+  
+
+      
+
+  /* SDRC_ACTIM_CTRLB0 register */
+
+  /* tsrex = 120ns = 20 clock cycles */   
+
+  /* one cycle for exit from self-refresh timing parameter */
+
+  
+
+  (*(int*)0x680090a0) = ( ( 20 << 0 ) );
+
+  
+
+  
+
+  /* SDRC_Manual command register */
+
+  
+
+  (*(int*)0x680090a8) = 0x00000000; /* NOP command */
+
+  (*(int*)0x680090a8) = 0x00000001; /* Precharge command */
+
+  (*(int*)0x680090a8) = 0x00000002; /* Auto-refresh command */
+
+  (*(int*)0x680090a8) = 0x00000002; /* Auto-refresh command */
+
+  
+
+  /* SDRC MR0 register */
+
+  
+
+  (*(int*)0x68009084) = 0x00000032; /* Burst length =4 */
+
+                                    /* CAS latency = 3 */
+
+				    /* Write Burst = Read Burst */
+
+				    /* Serial Mode */
+
+ 
+
+  /* SDRC DLLA control register */
+
+  /* Enable DLL, Load counter with 128 (middle of range) */ 
+
+  /* Delay is 72 degrees */
+
+ /*  Updates for ES2.0 */
+
+  (*(int*)0x68009060) = ((0x73 << 8) | (0x1 << 3) | (1 << 2) | (0x0 << 1) | (0 << 0));
+
+  
+
+   
+
+  /* Clear the enable DLL bit to use DLLA in unlock mode (counter value is continuously asserted) */
+
+  (*(int*)0x68009060) &= ~( 1 << 3);
+
+ 
+
+  /* SDRC DLLB control register */
+
+  /* Enable DLL, Load counter with 128 (middle of range) */ 
+
+  /* Delay is 72 degrees */
+
+  (*(int*)0x68009068) = ((0x73 << 8) | (0x1 << 3) | (1 << 2) | (0x0 << 1) | (0 << 0));
+
+  
+
+   
+
+  /* Clear the enable DLL bit to use DLLB in unlock mode (counter value is continuously asserted) */
+
+  (*(int*)0x68009068) &= ~( 1 << 3);  
+
+  
+
+   
+
+  GEL_TextOut(" SDRC setup completed to access 2 Samsung (16M x 16) MDDR memories on SDRC CS0 in 32-bit access mode, with DLLs in unlock mode \n" );
+
+  GEL_TextOut(" GPMC interface is not accessible in non-multiplexed mode \n" );
+
+ }
+
+else
+
+ {
+
+  GEL_TextOut(" SDRC cannot be configured in 32-bit mode if boot mode is external and muxMode for GPMC CS0 is non-muxed \n" );
+
+ }  
+
+        
+
+  return;
+
+}
+
+
+
+
+
+/* ----------------------- SDRC MDDR SAMSUNG OR ELPIDA 16 SETUP -------------------------------- */
+
+menuitem "omap2420"
+
+
+
+hotmenu SDRC_MDDR_SamsungOrElpida16()
+
+{
+
+   
+
+  /* MDDR (Samsung K4X56163PE-L(F)G or  MDDR (Elpida EDK2516CBBH ) */ 
+
+  /* Two x16-bits memories on daughter card for H4 Silicon Board or memory on memory module 12 */
+
+  /* Access on d[31:16] */
+
+  /* x 16-bit memory from controller perspective implemented when accessing Samsung memories */ 
+
+  /* (so access only to one x16 bit memory possible) */
+
+  /* MUX mode is 7 ( 2 bit bank, 13bit row, 9 bit column  ( 16M x 16-bit ) ) */
+
+  /* RamSize = 16 * 2MB chunks = 32MB   */
+
+
+
+
+
+  /* SYS Control register to allow sdrc_a12 to be connected at top level */
+
+  (*(unsigned char *)0x48000032) = 0x08;
+
+ 
+
+     
+
+  /* SDRC_MCFG0 register */
+
+  (*(int*)0x68009080) = ( ( 0x06 << 20) | ( 16 << 8) | ( 0 << 4) | ( 0 << 3) | ( 0 << 2) | 0x01 );			
+
+  
+
+  
+
+  /* SDRC Sharing register */
+
+  /* 16-bit SDRAM on data lane [31:16] - CS0 */ 
+
+  /* pin tri-stated = 1 */
+
+  (*(int*)0x68009044) = 0x00002500;
+
+    
+
+  /* SDRC_RFR_CTRL0 register */
+
+  /* auto-refresh counter value = 780 */
+
+  /* Are = 0x03 (burst of 8 ) */
+
+  
+
+  (*(int*)0x680090a4) = ( ( 780 << 8) | ( 0x03 << 0));
+
+  
+
+  
+
+  /* SDRC_ACTIM_CTRLA0 register (optimise for clk = 166MHz) */
+
+  /* trfc = 110ns = 19 clock cycles */
+
+  /* trc  = 90ns  = 15 clock cycles */
+
+  /* tras = 60ns  = 10 clock cycles */
+
+  /* trp  = 30ns  = 5  clock cycles */
+
+  /* trcd = 30ns  = 5  clock cycles */
+
+  /* trrd = 20ns  = 4  clock cycles */
+
+  /* tdpl = 20ns  = 4  clock cycles */
+
+  /* tdal = 50ns  = 9  clock cycles */
+
+   
+
+  (*(int*)0x6800909c) = ( ( 19 << 27) | ( 15 << 22) | (10 << 18) | (5 << 15) | (5 << 12) | (4 << 9) | (4 << 6) | (9 << 0) );
+
+  
+
+      
+
+  /* SDRC_ACTIM_CTRLB0 register */
+
+  /* tsrex = 120ns = 20 clock cycles */   
+
+  /* one cycle for exit from self-refresh timing parameter */
+
+  
+
+  (*(int*)0x680090a0) = ( ( 20 << 0 ) );
+
+  
+
+  
+
+  /* SDRC_Manual command register */
+
+  
+
+  (*(int*)0x680090a8) = 0x00000000; /* NOP command */
+
+  (*(int*)0x680090a8) = 0x00000001; /* Precharge command */
+
+  (*(int*)0x680090a8) = 0x00000002; /* Auto-refresh command */
+
+  (*(int*)0x680090a8) = 0x00000002; /* Auto-refresh command */
+
+  
+
+  /* SDRC MR0 register */
+
+  
+
+  (*(int*)0x68009084) = 0x00000032; /* Burst length =4 */
+
+                                    /* CAS latency = 3 */
+
+				    /* Write Burst = Read Burst */
+
+				    /* Serial Mode */
+
+ 
+
+  /* SDRC DLLA control register */
+
+  /* Enable DLL, Load counter with 115 (middle of range) */ 
+
+  /* Delay is 72 degrees */
+
+  (*(int*)0x68009060) = ((0x73 << 8) | (0x1 << 3) | (1 << 2) | (0x0 << 1) | (0 << 0));
+
+  
+
+   
+
+  /* Clear the enable DLL bit to use DLLA in unlock mode (counter value is continuously asserted) */
+
+  (*(int*)0x68009060) &= ~( 1 << 3);
+
+ 
+
+  /* SDRC DLLB control register */
+
+  /* Enable DLL, Load counter with 128 (middle of range) */ 
+
+  /* Delay is 72 degrees */
+
+  (*(int*)0x68009068) = ((0x73 << 8) | (0x1 << 3) | (1 << 2) | (0x0 << 1) | (0 << 0));
+
+  
+
+   
+
+  /* Clear the enable DLL bit to use DLLB in unlock mode (counter value is continuously asserted) */
+
+  (*(int*)0x68009068) &= ~( 1 << 3);  
+
+  
+
+   
+
+  GEL_TextOut(" SDRC setup completed to access 2 Samsung (16M x 16) MDDR memories on SDRC CS0 in 16-bit access mode, with DLLs in unlock mode \n" );
+
+        
+
+  return;
+
+}
+
+
+
+
+
+/* --------------------- Clock Configuration -------------------- */
+
+/* This GEL file is loaded on the command line of Code Composer   */
+
+/* The StartUp() function is called every time you start          */
+
+/* Code Composer.  You can customize this function to             */
+
+/* initialize wait states or to perform other initialization.     */
+
+/* --------------------- Clock Configuration -------------------- */
+
+
+
+menuitem "omap2420"
+
+
+
+hotmenu Clock_Config_Info()
+
+{
+
+
+
+  int APLLClockInput, regTemp, temp, DPLL_MULT, DPLL_DIV, DPLL, DSP_SYNC, IVA_SYNC, DPLL_STATUS;
+
+  float SYS_CLK, CORE_CLK, MPU_FCLK, DSP_FCLK, DSP_ICLK, IVA_FCLK, GFX_FCLK, L3_CLK, L4_CLK;
+
+  int DSP_FCLK_DIV, DSP_ICLK_DIV, IVA_FCLK_DIV, GFX_FCLK_DIV, L3_CLK_DIV, L4_CLK_DIV;
+
+
+
+  regTemp = (*(int*)0x48008540);
+
+
+
+  APLLClockInput = (regTemp & 0x03800000) >> 23;
+
+  DPLL_DIV       = ((regTemp & 0x00000F00) >>  8) + 0x1;
+
+  DPLL_MULT      = (regTemp & 0x003FF000) >> 12;
+
+
+
+  DPLL_STATUS    = (*(int*)0x48008520 & 0x3);
+
+ 
+
+  if(DPLL_STATUS == 1)
+
+  {
+
+     GEL_TextOut(" DPLL in BYPASS \n" );
+
+     DPLL_MULT = 1;
+
+     DPLL_DIV  = 1;
+
+  }
+
+  else if(DPLL_STATUS == 2) 
+
+  {    
+
+      GEL_TextOut(" DPLL in Locked Mode\n" );
+
+  }
+
+  else if(DPLL_STATUS == 3) 
+
+  {   
+
+      GEL_TextOut(" DPLL in 32k Mode\n" );
+
+  }
+
+
+
+  if (APLLClockInput == 0x0)
+
+  {
+
+     GEL_TextOut(" APLLs clock input is 19.2 MHz \n" );
+
+     SYS_CLK = 19.2;           
+
+  }
+
+  else if (APLLClockInput == 0x2)
+
+  {
+
+     GEL_TextOut(" APLLs clock input is 13 MHz \n" );
+
+     SYS_CLK = 13;
+
+  }
+
+  else if (APLLClockInput == 0x3)
+
+  {
+
+     GEL_TextOut(" APLLs clock input is 12 MHz \n" );
+
+     SYS_CLK = 12;
+
+  }
+
+  else
+
+  {
+
+     GEL_TextOut(" APLLs clock input is others \n" );
+
+     return;
+
+  }
+
+
+
+  regTemp = (*(int*)0x48008544);
+
+  temp    = (regTemp & 0x00000003);
+
+  DPLL    = (SYS_CLK*DPLL_MULT)/DPLL_DIV;
+
+  if(temp == 0x1)
+
+  {
+
+     CORE_CLK = DPLL;
+
+  }
+
+  else if (temp == 0x2)
+
+  {
+
+	 if(DPLL_STATUS != 1)
+
+     {
+
+         CORE_CLK = DPLL<<1;
+
+     }
+
+	 else
+
+	 {
+
+		 CORE_CLK = DPLL;
+
+         GEL_TextOut(" DPLL in BYPASS: ignoring CORE CLOCK=DPLL X 2 - ES1 only\n" );
+
+	 }
+
+  }
+
+  else if (temp == 0x0)
+
+  {
+
+     GEL_TextOut(" CORE_CLK_SRC is 32 kHz clock \n" );
+
+     return;
+
+  }
+
+  else
+
+  {
+
+     GEL_TextOut(" CORE_CLK_SRC is Reserved \n" );
+
+     return;
+
+  }
+
+  GEL_TextOut(" DPLL settings is %d \n",,,,,DPLL);
+
+  GEL_TextOut(" CORE_CLK_SRC  is %f \n",,,,,CORE_CLK);
+
+  
+
+  regTemp = (*(int*)0x48008140);
+
+  temp = (regTemp & 0x0000001F);
+
+  if (temp == 0x0) return;
+
+
+
+  MPU_FCLK = CORE_CLK/temp;
+
+  GEL_TextOut(" MPU_FCLK      is %f \n",,,,,MPU_FCLK);
+
+
+
+  regTemp = (*(int*)0x48008840);
+
+  temp = (regTemp & 0x0000001F);
+
+  if (temp == 0x0) return;
+
+
+
+  DSP_FCLK = CORE_CLK/temp;
+
+  DSP_FCLK_DIV = temp;
+
+  GEL_TextOut(" DSP_FCLK      is %f \n",,,,,DSP_FCLK);
+
+  temp = (regTemp & 0x00000060)>>5;
+
+  if (temp == 0x0) return;
+
+  if (temp == 0x3) return;
+
+  DSP_ICLK = DSP_FCLK/temp;
+
+  DSP_ICLK_DIV = temp;
+
+  GEL_TextOut(" DSP_ICLK      is %f \n",,,,,DSP_ICLK);
+
+  DSP_SYNC = (regTemp & 0x00000080)>>7;
+
+  if (DSP_SYNC == 0x0)
+
+  {
+
+     GEL_TextOut(" DSP SYNC      is DISABLE(BYPASS) \n");
+
+  }
+
+  else
+
+  {
+
+     GEL_TextOut(" DSP SYNC      is ENABLE \n");
+
+  }
+
+
+
+  temp = (regTemp & 0x00001F00)>>8;
+
+  if (temp == 0x0) return;
+
+
+
+  IVA_FCLK = CORE_CLK/temp;
+
+  IVA_FCLK_DIV = temp;
+
+  GEL_TextOut(" IVA_FCLK      is %f \n",,,,,IVA_FCLK);
+
+  /*GEL_TextOut(" IVA_ICLK      is %f \n",,,,,IVA_FCLK/2);
+
+  GEL_TextOut(" IVA_MPU_CLK      is %f \n",,,,,IVA_FCLK/2);*/
+
+  IVA_SYNC = (regTemp & 0x00002000)>>13;
+
+  if (IVA_SYNC == 0x0)
+
+  {
+
+     GEL_TextOut(" IVA SYNC      is DISABLE(BYPASS) \n");
+
+  }
+
+  else
+
+  {
+
+     GEL_TextOut(" IVA SYNC      is ENABLE \n");
+
+  }
+
+
+
+  regTemp = (*(int*)0x48008240);
+
+  temp = (regTemp & 0x0000001F);
+
+  if (temp == 0x0) return;
+
+
+
+  L3_CLK = CORE_CLK/temp;
+
+  L3_CLK_DIV = temp;
+
+
+
+  temp = (regTemp & 0x00000060)>>5;
+
+  if (temp == 0x0) return;
+
+  if (temp == 0x3) return;
+
+
+
+  L4_CLK = L3_CLK/temp;
+
+  L4_CLK_DIV = temp;
+
+
+
+  regTemp = (*(int*)0x48008340);
+
+  temp = (regTemp & 0x00000007);
+
+  if (temp == 0x0) return;
+
+
+
+  GFX_FCLK = L3_CLK/temp;
+
+  GFX_FCLK_DIV = temp;
+
+  GEL_TextOut(" GFX_FCLK      is %f \n",,,,,GFX_FCLK);
+
+  GEL_TextOut(" L3_CLK        is %f \n",,,,,L3_CLK);
+
+  GEL_TextOut(" L4_CLK        is %f \n",,,,,L4_CLK);
+
+
+
+
+
+  if (DPLL == 330 && CORE_CLK == 660 && MPU_FCLK == 330 && DSP_FCLK == 220 && DSP_ICLK == 110 
+
+      && DSP_SYNC == 1 && IVA_FCLK == 165 && IVA_SYNC == 0 && GFX_FCLK == 82.5 && L3_CLK == 165 
+
+      && L4_CLK == 82.5)
+
+  {
+
+     GEL_TextOut(" Clock Configuration I \n");
+
+  }
+
+  else if (DPLL == 300 && CORE_CLK == 600 && MPU_FCLK == 300 && DSP_FCLK == 200 && DSP_ICLK == 100 
+
+      && DSP_SYNC == 0 && IVA_FCLK == 200 && IVA_SYNC == 0 && GFX_FCLK == 50 && L3_CLK == 100 
+
+      && L4_CLK == 100)
+
+  {
+
+     GEL_TextOut(" Clock Configuration II \n");
+
+  }
+
+  else if (DPLL == 266 && CORE_CLK == 532 && MPU_FCLK == 266 && DSP_FCLK_DIV == 3 && DSP_ICLK_DIV == 2
+
+      && DSP_SYNC == 1 && IVA_FCLK_DIV == 3 && IVA_SYNC == 1 && GFX_FCLK == 66.5 && L3_CLK == 133 
+
+      && L4_CLK == 66.5)
+
+  {
+
+     GEL_TextOut(" Clock Configuration III \n");
+
+  }
+
+  else if (DPLL == 330 && CORE_CLK == 660 && MPU_FCLK == 330 && DSP_FCLK == 220 && DSP_ICLK == 110 
+
+      && DSP_SYNC == 0 && IVA_FCLK == 110 && IVA_SYNC == 0 && GFX_FCLK == 55 && L3_CLK == 110 
+
+      && L4_CLK == 55)
+
+  {
+
+     GEL_TextOut(" Clock Configuration IV \n");
+
+  }
+
+  else if (DPLL == 440 && CORE_CLK == 880 && MPU_FCLK == 440 && DSP_FCLK_DIV == 3 && DSP_ICLK_DIV == 2 
+
+      && DSP_SYNC == 0 && IVA_FCLK_DIV == 6 && IVA_SYNC == 0 && GFX_FCLK_DIV == 2 && L3_CLK_DIV == 6 
+
+      && L4_CLK_DIV == 2)
+
+  {
+
+     GEL_TextOut(" Clock Configuration V \n");
+
+  }
+
+  else if (DPLL == 440 && CORE_CLK == 880 && MPU_FCLK == 440 && DSP_FCLK == 220 && DSP_ICLK == 110 
+
+      && DSP_SYNC == 0 && IVA_FCLK == 220 && IVA_SYNC == 0 && GFX_FCLK == 55 && L3_CLK == 110 
+
+      && L4_CLK == 110)
+
+  {
+
+     GEL_TextOut(" Clock Configuration VI \n");
+
+  }
+
+  else if (CORE_CLK == DPLL && MPU_FCLK == DPLL && L3_CLK == DPLL && L4_CLK == DPLL)
+
+  {
+
+     GEL_TextOut(" Clock Configuration VII \n");
+
+  }
+
+  else 
+
+  {
+
+     GEL_TextOut(" Clock Configuration ??? \n");
+
+  }
+
+
+
+  return;
+
+}
+
+
+
+
+
+
+
+menuitem "PRCM_CLOCK_CONFIGS"
+
+
+
+hotmenu Setup_ClockConfig_IV()
+
+{
+
+int regSysControl, bootMode, clken_pll_value, oscillValue;
+
+
+
+  regSysControl = (*(int*)0x480002f8);
+
+   
+
+  bootMode = (regSysControl & 0x00000008) >> 3;
+
+   
+
+                      
+
+ if ((bootMode == 1))
+
+ {
+
+
+
+   GEL_TextOut(" Internal BOOT MODE so assuming DPLL is in lock to start \n");
+
+   GEL_TextOut(" Putting DPLL into bypass before proceeding \n");
+
+   
+
+   /* Put DPLL into bypass */ 
+
+   clken_pll_value =  *(int*)0x48008500;
+
+   clken_pll_value &= ~0x03;
+
+   clken_pll_value |= (1 << 0); 
+
+   *(int*)0x48008500 = clken_pll_value;
+
+   while ( ((*(int*)0x48008520) & 0x03) != 0x1 );  
+
+
+
+ }  
+
+
+
+   /* DPLL clkout x 2 */
+
+   *(int*)0x48008544 = (0x2 << 0);
+
+
+
+
+
+   /* MPU clock = core_clk/2 */
+
+   *(int*)0x48008140 = (0x2 << 0);
+
+ 
+
+   /* Clock ratios for Clock config 4 */
+
+   /* ................. L3             L4              DSS1         DSS2          VLYNQ         SSI          USB  */     
+
+   *(int*)0x48008240 = ((0x6  << 0) | (0x2 << 5)     | (0x1 << 8) | (0x0 << 13) | (0x0 << 15) |(0x3 << 20) | (0x2 << 25));
+
+
+
+   
+
+   /* Clock ratios for   DSP func.    DSP inter.   DSP sync.    IVA coprocessor  IVA sync. */
+
+   *(int*)0x48008840 = ((0x3 << 0) | (0x2 << 5) | (0x0 << 7)  | (0x6 << 8)   | (0x0 << 13));
+
+
+
+   
+
+   /* GFX clock = l3 clock /2 */
+
+   *(int*)0x48008340 = (0x2 << 0);
+
+
+
+   
+
+   /* Validate the clock ratios */
+
+   *(int*)0x48008080 = 0x1;
+
+   
+
+   /* Wait for configuration to be validated */
+
+   while ( (*(int*)0x48008080 & 0x1) != 0x0 );
+
+   
+
+      
+
+   /* Program DPLL */
+
+   /* Multiplier = 0x55 */
+
+   /* Divisor = 0x1 */
+
+   /* APLL clock source = 12MHz system clock */
+
+   /* 54MHz and 48MHz clocks are derived from APLL */   
+
+   *(int*)0x48008540 = ((0x37 << 12) | (0x1 << 8) | (0x3 << 23) | (0x0 << 5) | (0x0 << 3));     
+
+ 
+
+
+
+   /* Assuming that we are using MDDR external memory */
+
+   /* Need to put DLLA and DLLB into lock mode */   
+
+
+
+  /* Set the enable DLLA bit to use DLLA in lock mode */
+
+  (*(int*)0x68009060) |= ( 1 << 3);
+
+
+
+  /* Clear LoadDLL bit */
+
+  (*(int*)0x68009060) &= ~( 1 << 2);
+
+
+
+  /* Set the enable DLLB bit to use DLLB in lock mode */
+
+  (*(int*)0x68009068) |= ( 1 << 3);
+
+
+
+  /* Clear LoadDLL bit */
+
+  (*(int*)0x68009068) &= ~( 1 << 2);
+
+
+
+   GEL_TextOut(" ASSUMPTION : SDRC CONFIGURED FOR ACCESS TO MDDR MEMORIES  \n");    
+
+   GEL_TextOut(" DLLs in SDRC are moved into LOCK mode  \n");    
+
+
+
+     
+
+   /* Put DPLL into lock mode */   
+
+   *(int*)0x48008500 |= 0x3;
+
+
+
+   /* Wait for DPLL to be in lock mode */
+
+   while ( ((*(int*)0x48008520) & 0x03) != 0x2 );  
+
+   
+
+   
+
+   /* Configure internal oscillator in efficient way so it can be powered down */
+
+   oscillValue = *(int*)0x48008060 & ~0x03;
+
+   oscillValue |= 0x1;
+
+   *(int*)0x48008060 = oscillValue;  
+
+  
+
+   GEL_TextOut(" PRCM clock configuration IV setup has been completed \n");   
+
+        
+
+  return;
+
+}
+
+
+
+/* --------------------- PRCM Clock Configuration ------------------- */
+
+/*                                                                    */
+
+/* NOTES : PRCM Clock Config II                                       */
+
+/*                                                                    */ 
+
+/*         DPLL Clkout x 2                                            */
+
+/*         MPU clock = core_clk /2                                    */
+
+/*         DSP clock = core_clk /3                                    */
+
+/*         DSP interface clock = DSP clock/2                          */
+
+/*         L3  clock = core_clk /6                                    */
+
+/*         L4  clock = l3_clk /1                                      */
+
+/*         USB interface clock = L3 clk /2                            */
+
+/*         SSI functional clock = core_clk/3                          */
+
+/*         DSS1 functional clock = core_clk/1                         */
+
+/*         DSS2 functional clock = system clock                       */
+
+/*         IVA co-processor clock = core_clk / 3                      */
+
+/*         ARM7 functional clock = IVA co-processor clock /2          */
+
+/*         Disable IVA and DSP synchronisers                          */
+
+/*         DPLL multiplier = 50                                       */
+
+/*         DPLL divisor = 1                                           */
+
+/*         core_clk = 12* (50/2) * 2 = 600MHz                         */
+
+/*         ASSUMPTION IS THAT THE 12MHZ SYSTEM CLOCK IS USED          */
+
+/* --------------------- PRCM Clock Configuration ------------------- */
+
+
+
+menuitem "PRCM_CLOCK_CONFIGS"
+
+
+
+hotmenu Setup_ClockConfig_II()
+
+{
+
+int regSysControl, bootMode, clken_pll_value, oscillValue;
+
+
+
+  regSysControl = (*(int*)0x480002f8);
+
+   
+
+  bootMode = (regSysControl & 0x00000008) >> 3;
+
+   
+
+                      
+
+ if ((bootMode == 1))
+
+ {
+
+
+
+   GEL_TextOut(" Internal BOOT MODE so assuming DPLL is in lock to start \n");
+
+   GEL_TextOut(" Putting DPLL into bypass before proceeding \n");
+
+   
+
+   /* Put DPLL into bypass */ 
+
+   clken_pll_value =  *(int*)0x48008500;
+
+   clken_pll_value &= ~0x03;
+
+   clken_pll_value |= (1 << 0); 
+
+   *(int*)0x48008500 = clken_pll_value;
+
+   while ( ((*(int*)0x48008520) & 0x03) != 0x1 );  
+
+
+
+ }  
+
+
+
+   /* DPLL clkout x 2 */
+
+   *(int*)0x48008544 = (0x2 << 0);
+
+
+
+
+
+   /* MPU clock = core_clk/2 */
+
+   *(int*)0x48008140 = (0x2 << 0);
+
+ 
+
+   /* Clock ratios for Clock config 4 */
+
+   /* ................. L3             L4              DSS1         DSS2          VLYNQ         SSI          USB  */     
+
+   *(int*)0x48008240 = ((0x6  << 0) | (0x1 << 5)     | (0x1 << 8) | (0x0 << 13) | (0x0 << 15) |(0x3 << 20) | (0x2 << 25));
+
+
+
+   
+
+   /* Clock ratios for   DSP func.    DSP inter.   DSP sync.    IVA coprocessor  IVA sync. */
+
+   *(int*)0x48008840 = ((0x3 << 0) | (0x2 << 5) | (0x0 << 7)  | (0x3 << 8)   | (0x0 << 13));
+
+
+
+   
+
+   /* GFX clock = l3 clock /2 */
+
+   *(int*)0x48008340 = (0x2 << 0);
+
+
+
+   
+
+   /* Validate the clock ratios */
+
+   *(int*)0x48008080 = 0x1;
+
+   
+
+   /* Wait for configuration to be validated */
+
+   while ( (*(int*)0x48008080 & 0x1) != 0x0 );
+
+   
+
+      
+
+   /* Program DPLL */
+
+   /* ...................Multiplier   Divisor      APLL clk src  54MHz src    48MHz src */   
+
+   *(int*)0x48008540 = ((50 << 12) | (0x1 << 8) | (0x3 << 23) | (0x0 << 5) | (0x0 << 3));     
+
+      
+
+
+
+   /* Assuming that we are using MDDR external memory */
+
+   /* Need to put DLLA and DLLB into lock mode */   
+
+
+
+  /* Set the enable DLLA bit to use DLLA in lock mode */
+
+  (*(int*)0x68009060) |= ( 1 << 3);
+
+
+
+  /* Clear LoadDLL bit */
+
+  (*(int*)0x68009060) &= ~( 1 << 2);
+
+
+
+  /* Set the enable DLLB bit to use DLLB in lock mode */
+
+  (*(int*)0x68009068) |= ( 1 << 3);
+
+
+
+
+
+  /* Clear LoadDLL bit */
+
+  (*(int*)0x68009068) &= ~( 1 << 2);
+
+
+
+   GEL_TextOut(" ASSUMPTION : SDRC CONFIGURED FOR ACCESS TO MDDR MEMORIES  \n");    
+
+   GEL_TextOut(" DLLs in SDRC are moved into LOCK mode  \n");    
+
+
+
+
+
+   /* Put DPLL into lock mode */   
+
+   *(int*)0x48008500 |= 0x3;
+
+
+
+   /* Wait for DPLL to be in lock mode */
+
+   while ( ((*(int*)0x48008520) & 0x03) != 0x2 );  
+
+   
+
+   
+
+   /* Configure internal oscillator in efficient way so it can be powered down */
+
+   oscillValue = *(int*)0x48008060 & ~0x03;
+
+   oscillValue |= 0x1;
+
+   *(int*)0x48008060 = oscillValue;  
+
+  
+
+   GEL_TextOut(" PRCM clock configuration II setup has been completed \n");   
+
+        
+
+  return;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

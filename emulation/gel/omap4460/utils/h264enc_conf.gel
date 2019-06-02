@@ -1,0 +1,723 @@
+
+// number of input parameters tests
+#define NB_H264_ENC_TEST_PARAM  20
+// ivahd encoder input parameters
+#define ENC_PARAM_INPUT_WIDTH_IDX   			0
+#define ENC_PARAM_INPUT_HEIGHT_IDX 				1
+#define ENC_PARAM_INPUT_FRAME_RATE_IDX		    2
+#define ENC_PARAM_INPUT_I_FRAME_INT_IDX		    3
+#define ENC_PARAM_INPUT_P_FRAME_INT_IDX		    4
+#define ENC_PARAM_INPUT_PROFILE_IDX  	  		5
+#define ENC_PARAM_INPUT_LEVEL_IDX		   		6
+#define ENC_PARAM_INPUT_NB_UNITS_IDX		    7
+#define ENC_PARAM_OUTPUT_NB_UNITS_IDX		    8
+#define ENC_PARAM_INPUT_FORMAT_IDX		        9
+// h264 encoder test framework input parameters
+#define ENC_PARAM_INPUT_SOURCE_IDX			    10
+#define ENC_PARAM_INPUT_COMP_OUT_IDX		    11
+#define ENC_PARAM_INPUT_SAVE_OUT_IDX		    12
+#define ENC_PARAM_INPUT_TILER_IDX			    13
+#define ENC_PARAM_INPUT_CR_TILER_IDX    		14
+#define ENC_PARAM_INPUT_VIDEO_PIPE_IDX		    15
+#define ENC_PARAM_INPUT_VIDEO_PIPE_OUT_IDX      16
+#define ENC_PARAM_INPUT_DISP_RATE_IDX		    17
+#define ENC_PARAM_INPUT_NB_IN_BUFF_IDX		    18
+
+// h264 standard definitions....
+#define  H264_ENCODER_BASELINE_PROFILE			66
+#define  H264_ENCODER_MAIN_PROFILE				77
+#define  H264_ENCODER_HIGH_PROFILE			   100
+
+// mb of microsec per frame at 30 fps
+#define DISPLAY_30FPS   33333
+// mb of microsec per frame at 24  fps
+#define DISPLAY_24FPS   41666
+
+#define DATA_LOAD_FROM_DDR    1
+#define DATA_LOAD_FROM_DISK   2
+#define DATA_LOAD_FROM_MMC    3
+#define DATA_LOAD_FROM_EMMC   4
+#define DATA_LOAD_FROM_GEL    5
+#define DATA_LOAD_FROM_CAMERA 6
+
+menuitem "h264_encode"
+
+hotmenu h264Enc_LoadTestProg()
+{
+       GEL_Load ("S:/cdb/tcomap4440/tc_ivahd/ivahd_ducati_enc_frwk_board/cortexa9_cpu0_ape/cortexa9_cpu0_ape_silicon_image.axf");
+
+}
+
+hotmenu Encoderh264_GoToTestfunction()
+{
+    // go to the test function to have symbol loaded
+    GEL_Go(M3ENCFRWK_TestFunction);
+}
+
+dialog Encoderh264_config(image_size "Image format:0: user defined;1:QCIF;2:CIF;4:VGA;8:720p;9:1080p",
+                          frame_width "frame width",
+                          frame_height "frame height",
+                          nb_P_between_2_I "Nb of P frames between 2 I",
+                          nb_B_between_2_P "Nb of B frames between 2 P",
+						  frame_rate "Encoder frame rate",
+                          nb_frames_to_encode "Nb frames to encode",
+						  enc_profile "Encoder Profile: 1: baseline-2:main-3:high",
+						  enc_level "Encoder level (Max 4.1 = 41)",
+						  nb_slices "Nb slices per frames",
+						  in_format "Format: 0 :Progrssive - 1:Interleaved"					  
+                          )
+{
+    if (image_size == 0)  {
+         Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_WIDTH_IDX] = frame_width;
+         Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_HEIGHT_IDX] = frame_height ;
+    }
+    else if ( image_size ==1)   { // QCIF
+        Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_WIDTH_IDX] = 176; 
+		Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_HEIGHT_IDX] =144;
+	}
+    else if ( image_size == 2)    { // CIF
+	     Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_WIDTH_IDX] = 352; 
+		 Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_HEIGHT_IDX] =288;
+    }
+    else if ( image_size == 3)     {  // QVGA
+	     Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_WIDTH_IDX] = 320; 
+		 Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_HEIGHT_IDX] =240;
+    }
+    else if ( image_size == 4)     {  // VGA
+	     Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_WIDTH_IDX] = 640; 
+		 Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_HEIGHT_IDX] =480;
+    }
+    else if ( image_size == 5)     {
+	     Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_WIDTH_IDX] = 800; 
+		 Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_HEIGHT_IDX] =600;
+    }
+    else if ( image_size == 6)     {
+	     Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_WIDTH_IDX] = 1024; 
+		 Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_HEIGHT_IDX] =768;
+    }
+    else if ( image_size == 7)     { // D1
+	     Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_WIDTH_IDX] = 720; 
+		 Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_HEIGHT_IDX] =576;
+    }
+    else if ( image_size == 8)     { // 720p
+	     Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_WIDTH_IDX] = 1280; 
+		 Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_HEIGHT_IDX] =720;
+    }
+    else if ( image_size == 9)     { // 1080p
+	     Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_WIDTH_IDX] = 1920; 
+		 Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_HEIGHT_IDX] =1080;
+	}
+   Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_I_FRAME_INT_IDX] =  nb_P_between_2_I;
+   Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_P_FRAME_INT_IDX] =  nb_B_between_2_P;
+   Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_FRAME_RATE_IDX] = frame_rate*1000;
+   
+   Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_NB_UNITS_IDX]    =   nb_frames_to_encode  ;
+   if (enc_profile == 1)
+   {
+		Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_PROFILE_IDX]    =   H264_ENCODER_BASELINE_PROFILE  ;
+	}
+   else if (enc_profile == 2)
+   {
+		Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_PROFILE_IDX]    =   H264_ENCODER_MAIN_PROFILE  ;
+	}
+   else if (enc_profile == 3)
+   {
+		Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_PROFILE_IDX]    =   H264_ENCODER_HIGH_PROFILE  ;
+	}
+	
+   Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_LEVEL_IDX]    =   enc_level  ;
+   Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_OUTPUT_NB_UNITS_IDX]    =   nb_slices  ;
+    Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_FORMAT_IDX]    =   in_format  ;  
+   
+
+}
+
+dialog Encoder_test_config( tiler_on "0:RAW mode;1:Tiler mode",
+                            chroma_container "Chroma container:0 8 bits;1:16 bits",
+                           input_src "Input from: 1 DDR ;2 HD;3: MMC;4 EMMC;5:GEL;6:Camera",
+                           comp_flag "Comparison of Encode Output:0:No:1 on M3;2:on Tesla",
+						   video_pipe " video Pipe Id (1 to 3)",
+						   video_pipe_out "display: 0:OFF 1: TV  2 :DSI1 3: DSI2",
+						   display_rate "Display rate (24 or 30 fps)",
+						   nb_inbuff "Nb of input buffers",
+                            tiler_base_addr "Tiler Physical base address MSB",
+                            tiler_section_size "Tiler section size (in Mbyte)",
+                           nb_runs "Number of iterations on stream" ,
+						  sw_uart "Use SW uart:0 NO / 1: YES)"
+   
+						   )
+{
+	Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_SOURCE_IDX]   = input_src; 
+	Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_COMP_OUT_IDX]  = comp_flag;
+	Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_SAVE_OUT_IDX] = 0; // never save stream on eMMC
+	Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_TILER_IDX]  =  tiler_on    ;
+	Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_CR_TILER_IDX]  = chroma_container    ;
+	Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_NB_IN_BUFF_IDX]  =  nb_inbuff   ;
+	if (video_pipe_out == 0)
+	{
+		flag_display_on = 0;
+		Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_VIDEO_PIPE_OUT_IDX] = 0;
+	}
+	else
+	{
+		flag_display_on = 1;
+		Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_VIDEO_PIPE_IDX] = video_pipe; //  video pipe id
+		Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_VIDEO_PIPE_OUT_IDX] = video_pipe_out; //  video pipe id destination
+		
+		if (display_rate == 30)
+		{
+			Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_DISP_RATE_IDX]  = DISPLAY_30FPS;
+		}
+		else if (display_rate == 24)
+		{
+			Ivahd_H264_Enc_Test_Param[stream_id*NB_H264_ENC_TEST_PARAM +ENC_PARAM_INPUT_NB_IN_BUFF_IDX]  = DISPLAY_24FPS;
+		}
+	}
+	// global variables initialization
+	tiler_phys_base_addr =  (tiler_base_addr & 0xff)  << 24;
+	tiler_section_length = tiler_section_size <<20;
+	nb_2d_objects =    8;
+
+   if (nb_runs == 0) nb_runs =1;
+    nb_run_to_launch =nb_runs;
+	
+	use_sw_uart = sw_uart;		
+}
+
+dialog h264enc_qcif(tiler "0:OFF - 1: ON CR 8b - 2:ON Cr 16b",
+			        nbframes "nb frames to encode",
+					display_on "Display: 0-OFF;1-ON",
+					sw_uart "Use SW uart:0 NO / 1: YES")
+{
+	int tiler_y;
+	int tiler_cr;
+
+	nb_streams = 1;
+	stream_id =0;
+	if (tiler > 0 )
+	{
+		tiler_y =1;
+		tiler_cr =tiler-1; // if input =1, chroma in 8 bit, else if 2, chroma in 16 bit containers
+	}
+	else {
+		tiler_y = 0;
+		tiler_cr =0;
+	}
+
+	Encoder_test_config (tiler_y ,  // tiler_mode     
+	                     tiler_cr, // chroma_tiled_mode    ;
+						 DATA_LOAD_FROM_DDR, // input yuv sequence preloaded in ddr
+						 1,  // comparison ON
+						 1,  // video pipe id
+						 display_on, // display on TV
+						 30, // display rate 
+	                     1,  // nb_input_buffers  ;					 
+						 0x8c,   /// tiler_phys_base_addr =  (0x8c & 0xff)  << 24;
+	                     64,   // tiler_section_length = 64 <<20;
+						 1 ,        // nb runs
+					     sw_uart	
+						);
+
+  
+  Encoderh264_config(1, // QCIF format
+                     0, // image width
+                     0,  // image height
+                     10, // intraframe inter
+                     1,  // inter frame interval
+                     30, // frame rate
+                     nbframes, //nb frames
+                      3,  // high profile
+					 41,   // level 4.1
+					 1, // 1 slice /frame
+					 0 // progressive content
+                     );
+ 
+}
+
+dialog h264enc_ddr( format "1:CIF - 2:WVGA -3:720p - 4:1080p",
+					tiler "0:OFF - 1: ON CR 8b - 2:ON Cr 16b",
+                    nbframes "nb frames to encode",
+					display_on "Display: 0-OFF;1-ON",
+					sw_uart "Use SW uart:0 NO / 1: YES")
+{
+	 int width;
+	int height;
+	int tiler_y;
+	int tiler_cr;
+
+	if (format == 1)
+	{
+		width =352;
+		height =288;	
+	}	
+	else if (format == 2)
+	{
+		width =720;
+		height =480;	
+	}
+	else if (format == 3)
+	{
+		width =1280;
+		height =720;	
+	}
+	else if (format == 4)
+	{
+		width =1920;
+		height =1080;	
+	}
+	
+	if (tiler > 0 )
+	{
+		tiler_y =1;
+		tiler_cr =tiler-1; // if input =1, chroma in 8 bit, else if 2, chroma in 16 bit containers
+	}
+	else {
+		tiler_y = 0;
+		tiler_cr =0;
+	}
+	nb_streams = 1;
+	stream_id =0;
+	
+	Encoder_test_config (tiler_y ,  // tiler_mode     
+	                     tiler_cr, // chroma_tiled_mode    ;
+						 DATA_LOAD_FROM_GEL, // input yuv sequence loaded at run time by script
+						 0,  // comparison ON
+						 1,  // video pipe id
+						 display_on, // display off: 0 /on TV 1 / LCD 2
+						 30, // display rate 
+	                     1,  // nb_input_buffers   ;					 
+						 0x8c,   /// tiler_phys_base_addr =  (0x8c & 0xff)  << 24;
+	                     64,   // tiler_section_length = 64 <<20;
+						 nb_runs ,        // nb runs
+					     sw_uart	
+						);
+						
+  Encoderh264_config(0, // custom format
+					width, // image width
+                     height,  // image height
+                     10, // intraframe inter
+                     1,  // inter frame interval
+                     30, // frame rate
+                     nbframes, //nb frames
+                      3,  // high profile
+					 41,   // level 4.1
+					 1, // 1 slice /frame
+					 0 // progressive content
+                     );
+
+}
+
+dialog h264enc_iss( format "1:D1 - 2:720p - 3:1080p",
+					tiler "0:OFF - 1: ON CR 8b - 2:ON Cr 16b",
+                     nbframes "nb frames to encode",
+                     p_int "Nb P frames betwenn 2 I",
+                     b_int "Nb B frames betwenn 2 P"	,
+                     disp "Display: 0 :OFF - 1:ON",
+                     sw_uart "Use SW uart:0 NO / 1: YES)"
+					 )
+{
+ int width;
+ int height;
+ int tiler_y;
+ int tiler_cr;
+ 
+	nb_streams = 1;
+	stream_id =0;
+	if (format == 1)
+	{
+		width =768;
+		height =576;	
+	}
+	else if (format == 2)
+	{
+		width =1280;
+		height =720;	
+	}
+	else if (format == 3)
+	{
+		width =1920;
+		height =1080;	
+	}
+	
+	if (tiler > 0 )
+	{
+		tiler_y =1;
+		tiler_cr =tiler-1;
+	}
+	else {
+		tiler_y = 0;
+		tiler_cr =0;
+	}
+	
+	Encoder_test_config (tiler_y ,  // tiler_mode     
+	                     tiler_cr, // chroma_tiled_mode    ;
+						 DATA_LOAD_FROM_CAMERA, // input yuv sequence loaded at run time by script
+						 0,  // comparison ON
+						 1,  // video pipe id
+						 disp, // display on TV or OFF
+						 30, // display rate 
+	                     1,  // nb_input_buffers   ;					 
+						 0x8c,   /// tiler_phys_base_addr =  (0x8c & 0xff)  << 24;
+	                     64,   // tiler_section_length = 64 <<20;
+						 1 ,        // nb runs
+					     sw_uart	
+						);
+
+  if (nbframes == 0) nbframes =300;
+
+  Encoderh264_config( 0, // format modified (width multiple of 256)
+                     width, // image width
+                     height,  // image height
+					 p_int, // intraframe inter
+                     b_int,  // inter frame interval
+                    30 , // frame rate
+                     nbframes, //nb frames
+                      3,  // high profile
+					 41,   // level 4.1
+					 1, // 1 slice /frame
+					 0 // progressive content
+                     );
+
+}
+
+hotmenu h264enc_powlist()
+{
+	GEL_TextOut(" \nList of Power transition codes");
+	GEL_TextOut(" \n0x10:ACTIVE -> INACTIVE transition ");
+	GEL_TextOut(" \n0x20:ACTIVE -> OSWR transition: TCM1-TCM2-SL2 powered in retention.",,0);
+	GEL_TextOut(" \n0x40:ACTIVE -> OSWR transition: TCM1-TCM2 powered / SL2 OFF in retention.",,0);
+	GEL_TextOut(" \n0x80:ACTIVE -> OSWR transition: TCM1-SL2 powered / TCM2 OFF in retention.",,0);
+	GEL_TextOut(" \n0x100:ACTIVE -> OSWR transition: TCM2-SL2 powered / TCM1 in retention.",,0);
+	GEL_TextOut(" \n0x200:ACTIVE -> OSWR transition: TCM1-TCM2 OFF / SL2 powered in retention.",,0);
+	GEL_TextOut(" \n0x400:ACTIVE -> OSWR transition: TCM2-SL2 OFF / TCM1 powered in retention.",,0);
+	GEL_TextOut(" \n0x800:ACTIVE -> OSWR transition: TCM1-SL2 OFF / TCM2 powered in retention.",,0);
+	GEL_TextOut(" \n0x1000:ACTIVE -> OSWR transition: TCM1-TCM2-SL2 OFF in retention.",,0);
+	GEL_TextOut(" \n0x2000:ACTIVE -> OFF transition: TCM1-TCM2-SL2 OFF in retention.",,0);
+	GEL_TextOut(" \n0x4000:INACTIVE ->OSWR LPM transition.",,0);
+	GEL_TextOut(" \n0xc000:OSWR -> OFF LPM transition.",,0);
+	GEL_TextOut(" \n0x10000:INACTIVE ->OFF LPM transition.",,0);
+	
+}
+
+dialog h264enc_power_test(prcm_test "LPM test code (run h264enc_powlist gel to get code)",
+						  loop_mode "loop mode: 0-OFF; 1-ON; 2 - LPM only",
+						  retmode "force SRAM LDO IVA retmode EN:0: NO- 1:YES",
+						  measure_on "0: no PWM tesla ON - 1 tesla OFF - 3 PWM & tesla OFF",
+						  sw_uart "Use SW uart:0 NO / 1: YES)"
+						  )
+{
+	nb_streams = 1;
+	stream_id =0;
+   flag_test_standby = prcm_test;
+   if (loop_mode == 1)
+	test_power_loop = 1;
+  else if (loop_mode == 2)
+	test_power_loop = 5;
+  else // default
+	test_power_loop = 0;
+
+   if (retmode == 1)
+	  test_power_loop |=2; // set bit 1 to force bit in SW
+   
+   // call encoder on qcif stream tiler ON - display OFF
+  h264enc_qcif ( 1,40,0,sw_uart );
+
+  flag_measure_on = measure_on;
+
+	flag_display_on = 0;
+}
+
+dialog h264enc_opp_test( frame_width "frame width",
+                          frame_height "frame_height",
+                          nb_P_between_2_I "Nb of P frames between 2 I",
+                          nb_B_between_2_P "Nb of B frames between 2 P",
+                          nb_frames_to_encode "Nb frames to encode",
+                          input_src "Input from: 1 DDR ;2 HD;3: MMC;4 EMMC;5:GEL;6:Camera",
+                         nb_runs "nb runs",
+						 flag_loop "1:same opp/stream-2 toggle opp/stream" ,
+						  sw_uart "Use SW uart:0 NO / 1: YES)"						 
+						 )           
+{
+	nb_streams = 1;
+	stream_id = 0;
+	
+	if (flag_loop ==1)
+		flag_test_ivahd_opp = 1;
+	else if (flag_loop ==2)
+		flag_test_ivahd_opp = 3;
+
+	Encoder_test_config (1 ,  // tiler_mode     
+						 1, // chroma_tiled_mode    ;
+						 input_src, // input yuv sequence source
+						 0,  // comparison ON
+						 1,  // video pipe id
+						 0, // do not display 
+						 30, // display rate 
+						 1,  // nb_input_buffers   ;					 
+						 0x8c,   /// tiler_phys_base_addr =  (0x8c & 0xff)  << 24;
+						 64,   // tiler_section_length = 64 <<20;
+						 nb_runs ,        // nb runs
+						 sw_uart	
+						);
+		
+  Encoderh264_config(0, // user format
+                     frame_width, // image width
+                     frame_height,  // image height
+                     nb_P_between_2_I, // intraframe inter
+                     nb_B_between_2_P,  // inter frame interval
+                     30, // frame rate
+                     nb_frames_to_encode, //nb frames
+                      3,  // high profile
+					 41,   // level 4.1
+					 1, // 1 slice /frame
+					 0 // progressive content
+                     )	;	
+}
+
+dialog h264enc_2_streams_qcif(nb_runs "nb runs",sw_uart "Use SW uart:0 NO / 1: YES)")
+{
+
+	nb_streams = 2;
+	stream_id = 0;
+	Encoder_test_config (1 ,  // tiler_mode     
+	                     1, // chroma_tiled_mode    ;
+						 DATA_LOAD_FROM_DDR, // input yuv sequence preloaded in ddr
+						 1,  // comparison ON
+						 1,  // video pipe id
+						 1, // display on TV
+						 30, // display rate 
+	                     1,  // nb_input_buffers  ;					 
+						 0x8c,   /// tiler_phys_base_addr =  (0x8c & 0xff)  << 24;
+	                     64,   // tiler_section_length = 64 <<20;
+						 nb_runs ,        // nb runs
+						 sw_uart	
+						);
+
+  
+  Encoderh264_config(1, // QCIF format
+                     0, // image width
+                     0,  // image height
+                     10, // intraframe inter
+                     1,  // inter frame interval
+                     30, // frame rate
+                     40, //nb frames
+                      3,  // high profile
+					 41,   // level 4.1
+					 1, // 1 slice /frame
+					 0 // progressive content
+                     );
+ 	// 2nd stream: display on LCD
+ 	stream_id = 1;
+	Encoder_test_config (1 ,  // tiler_mode     
+	                     1, // chroma_tiled_mode    ;
+						 DATA_LOAD_FROM_DDR, // input yuv sequence preloaded in ddr
+						 1,  // comparison ON
+						 2,  // video pipe id
+						 2, // display on TAAL
+						 30, // display rate 
+	                     1,  // nb_input_buffers  ;					 
+						 0x8c,   /// tiler_phys_base_addr =  (0x8c & 0xff)  << 24;
+	                     64,   // tiler_section_length = 64 <<20;
+						 nb_runs ,        // nb runs
+						 sw_uart
+						);
+
+  
+  Encoderh264_config(1, // QCIF format
+                     0, // image width
+                     0,  // image height
+                     10, // intraframe inter
+                     1,  // inter frame interval
+                     30, // frame rate
+                     40, //nb frames
+                      3,  // high profile
+					 41,   // level 4.1
+					 1, // 1 slice /frame
+					 0 // progressive content
+                     );
+}
+
+dialog h264enc_cif_wvga(nb_runs "nb runs",sw_uart "Use SW uart:0 NO / 1: YES)")
+{
+
+	nb_streams = 2;
+	stream_id = 0;
+	Encoder_test_config (1 ,  // tiler_mode     
+	                     1, // chroma_tiled_mode    ;
+						 DATA_LOAD_FROM_GEL, // input yuv sequence load by GEL file
+						 0,  // comparison ON
+						 1,  // video pipe id
+						 1, // display on TV
+						 30, // display rate 
+	                     1,  // nb_input_buffers  ;					 
+						 0x8c,   /// tiler_phys_base_addr =  (0x8c & 0xff)  << 24;
+	                     64,   // tiler_section_length = 64 <<20;
+						 nb_runs ,        // nb runs
+						 sw_uart	
+						);
+
+  
+  Encoderh264_config(2, // CIF format
+                     0, // image width
+                     0,  // image height
+                     10, // intraframe inter
+                     1,  // inter frame interval
+                     30, // frame rate
+                     120, //nb frames
+                      3,  // high profile
+					 41,   // level 4.1
+					 1, // 1 slice /frame
+					 0 // progressive content
+                     );
+ 	stream_id = 1;
+	Encoder_test_config (1 ,  // tiler_mode     
+	                     1, // chroma_tiled_mode    ;
+						 DATA_LOAD_FROM_GEL, // input yuv sequence preloaded in ddr
+						 0,  // comparison ON
+						 2,  // video pipe id
+						 1, // display on TV
+						 30, // display rate 
+	                     1,  // nb_input_buffers  ;					 
+						 0x8c,   /// tiler_phys_base_addr =  (0x8c & 0xff)  << 24;
+	                     64,   // tiler_section_length = 64 <<20;
+						 nb_runs ,        // nb runs
+						 sw_uart,	
+						);
+
+  
+  Encoderh264_config(0, // custom format
+                     720, // image width
+                     480,  // image height
+                     10, // intraframe inter
+                     1,  // inter frame interval
+                     30, // frame rate
+                     60, //nb frames
+                      3,  // high profile
+					 41,   // level 4.1
+					 1, // 1 slice /frame
+					 0 // progressive content
+                     );
+}
+
+dialog h264enc_iss_ddr(nb_runs "nb runs",sw_uart "Use SW uart:0 NO / 1: YES)")
+{
+
+	nb_streams = 2;
+	stream_id = 0;
+	Encoder_test_config (1 ,  // tiler_mode     
+	                     1, // chroma_tiled_mode    ;
+						 DATA_LOAD_FROM_CAMERA, // input yuv sequence load by GEL file
+						 0,  // comparison ON
+						 1,  // video pipe id
+						 1, // display on TV
+						 30, // display rate 
+	                     1,  // nb_input_buffers  ;					 
+						 0x8c,   /// tiler_phys_base_addr =  (0x8c & 0xff)  << 24;
+	                     64,   // tiler_section_length = 64 <<20;
+						 nb_runs ,        // nb runs
+						 sw_uart	
+						);
+
+  
+  Encoderh264_config(8, // 720p format
+                     0, // image width
+                     0,  // image height
+                     10, // intraframe inter
+                     1,  // inter frame interval
+                     30, // frame rate
+                     180, //nb frames
+                      3,  // high profile
+					 41,   // level 4.1
+					 1, // 1 slice /frame
+					 0 // progressive content
+                     );
+ 	stream_id = 1;
+	Encoder_test_config (1 ,  // tiler_mode     
+	                     1, // chroma_tiled_mode    ;
+						 DATA_LOAD_FROM_GEL, // input yuv sequence preloaded in ddr
+						 0,  // comparison ON
+						 2,  // video pipe id
+						 2, // display on DSI1
+						 30, // display rate 
+	                     1,  // nb_input_buffers  ;					 
+						 0x8c,   /// tiler_phys_base_addr =  (0x8c & 0xff)  << 24;
+	                     64,   // tiler_section_length = 64 <<20;
+						 nb_runs ,        // nb runs
+						 sw_uart	
+						);
+
+  
+  Encoderh264_config(0, // CIF format
+                     720, // image width
+                     480,  // image height
+                     10, // intraframe inter
+                     1,  // inter frame interval
+                     30, // frame rate
+                     60, //nb frames
+                      3,  // high profile
+					 41,   // level 4.1
+					 1, // 1 slice /frame
+					 0 // progressive content
+                     );
+}
+
+dialog h264enc_isshd_ddr(nb_runs "nb runs",sw_uart "Use SW uart:0 NO / 1: YES)")
+{
+	nb_streams = 2;
+	stream_id = 0;
+	Encoder_test_config (1 ,  // tiler_mode     
+	                     1, // chroma_tiled_mode    ;
+						 DATA_LOAD_FROM_CAMERA, // input yuv sequence load by GEL file
+						 0,  // comparison ON
+						 1,  // video pipe id
+						 1, // display on TV
+						 30, // display rate 
+	                     1,  // nb_input_buffers  ;					 
+						 0x8c,   /// tiler_phys_base_addr =  (0x8c & 0xff)  << 24;
+	                     64,   // tiler_section_length = 64 <<20;
+						 nb_runs ,        // nb runs
+						 sw_uart	
+						);
+
+  
+  Encoderh264_config(9, // 1080p format
+                     0, // image width
+                     0,  // image height
+                     10, // intraframe inter
+                     1,  // inter frame interval
+                     30, // frame rate
+                     180, //nb frames
+                      3,  // high profile
+					 41,   // level 4.1
+					 1, // 1 slice /frame
+					 0 // progressive content
+                     );
+ 	stream_id = 1;
+	Encoder_test_config (1 ,  // tiler_mode     
+	                     1, // chroma_tiled_mode    ;
+						 DATA_LOAD_FROM_GEL, // input yuv sequence preloaded in ddr
+						 0,  // comparison ON
+						 2,  // video pipe id
+						 2, // display on DSI1
+						 30, // display rate 
+	                     1,  // nb_input_buffers  ;					 
+						 0x8c,   /// tiler_phys_base_addr =  (0x8c & 0xff)  << 24;
+	                     64,   // tiler_section_length = 64 <<20;
+						 nb_runs ,        // nb runs
+						 sw_uart	
+						);
+
+  
+  Encoderh264_config(0, // CIF format
+                     720, // image width
+                     480,  // image height
+                     10, // intraframe inter
+                     1,  // inter frame interval
+                     30, // frame rate
+                     60, //nb frames
+                      3,  // high profile
+					 41,   // level 4.1
+					 1, // 1 slice /frame
+					 0 // progressive content
+                     );
+}

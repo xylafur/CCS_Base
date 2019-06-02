@@ -1,0 +1,19 @@
+<module name="PSILSS0_CFG_MMRS2" acronym="" XML_version="1.0" HW_revision="n/a" description="">
+  <register id="PSIL_CFG_PID" acronym="PSIL_CFG_PID" offset="0x0" width="32" description="The Revision Register contains the major and minor revisions for the module.">
+    <bitfield id="REV" width="32" begin="31" end="0" resetval="0x66C44100" description="TI internal data." range="" rwaccess="R"/>
+  </register>
+  <register id="PSIL_CFG_CONFIG" acronym="PSIL_CFG_CONFIG" offset="0x4" width="32" description="The Config Register shows configured params.">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0xX" description="" range="" rwaccess="R"/>
+    <bitfield id="ENDPOINTS" width="16" begin="15" end="0" resetval="0x1C" description="Number of endpoints supported." range="" rwaccess="R"/>
+  </register>
+  <register id="PSIL_CFG_EVENT" acronym="PSIL_CFG_EVENT" offset="0x10" width="32" description="The Event Register defines the event to produce for a link down event.">
+    <bitfield id="RESERVED" width="16" begin="31" end="16" resetval="0xX" description="" range="" rwaccess="RW"/>
+    <bitfield id="EVT" width="16" begin="15" end="0" resetval="0xFFFF" description="The event to produce." range="" rwaccess="RW"/>
+  </register>
+  <register id="PSIL_CFG_LINK" acronym="PSIL_CFG_LINK" offset="0x20" width="32" description="The Link Register shows the current status of the endpoint links.">
+    <bitfield id="STATUS" width="32" begin="31" end="0" resetval="0xX" description="The status of the endpoint links." range="" rwaccess="R"/>
+  </register>
+  <register id="PSIL_CFG_DOWN" acronym="PSIL_CFG_DOWN" offset="0x40" width="32" description="The Link Down Register shows which links are down for the endpoints.">
+    <bitfield id="STATUS" width="32" begin="31" end="0" resetval="0x0" description="The down status of the endpoint links." range="" rwaccess="RW1C"/>
+  </register>
+</module>

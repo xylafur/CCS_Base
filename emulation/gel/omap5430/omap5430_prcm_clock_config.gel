@@ -1,0 +1,2330 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* OMAP5430 prcm clock config   		     					   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+
+/**********************************************************************
+ *
+ *  DEFINITIONS
+ *
+ **********************************************************************/
+ 
+ #define INFO_PRINT	0
+ 
+ 
+//------------------------
+//  OPP definitions
+//------------------------
+#define OPP_BOOT    0
+#define	OPP_LOW		1
+#define	OPP_NOM		2
+#define OPP_OD      3
+#define OPP_HIGH    4
+#define OPP_SB      5
+#define OPP_LOW_ABE 6 
+#define OPP_ZEBU    7
+#define OPP_WAKEUP_DDR_532 8
+#define OPP_WAKEUP_DDR_400 9
+#define OPP_WAKEUP_DDR_266 10
+
+#define DEFAULT_OPP OPP_WAKEUP_DDR_532
+
+#define OPP_MPU_VOLTAGE_NONE 0
+#define OPP_CORE_VOLTAGE_NONE 0
+#define OPP_LPDDR_VOLTAGE_NONE 0
+#define OPP_IVA_VOLTAGE_NONE 0
+
+#define OPP_CORE_LOW_ABE_VOLTAGE 880
+#define OPP_LPDDR_LOW_ABE_VOLTAGE 880
+
+#define OPP_MPU_LOW_VOLTAGE 880
+#define OPP_CORE_LOW_VOLTAGE 880
+#define OPP_LPDDR_LOW_VOLTAGE 1350
+#define OPP_IVA_LOW_VOLTAGE 880
+
+#define OPP_MPU_NOM_VOLTAGE 1100
+#define OPP_CORE_NOM_VOLTAGE 1150
+//#define OPP_CORE_NOM_VOLTAGE 1050
+#define OPP_LPDDR_NOM_VOLTAGE 1350
+#define OPP_IVA_NOM_VOLTAGE 1100
+	
+#define OPP_CORE_WAKEUP_VOLTAGE 1050
+#define OPP_LPDDR_WAKEUP_VOLTAGE 1350
+
+#define OPP_IVA_OD_VOLTAGE 1220
+
+#define OPP_MPU_HIGH_VOLTAGE 1250
+
+#define OPP_MPU_SB_VOLTAGE 1290
+
+#define OPP_MPU_VOLTAGE_DEFAULT OPP_MPU_NOM_VOLTAGE
+#define OPP_CORE_VOLTAGE_DEFAULT OPP_CORE_NOM_VOLTAGE
+#define OPP_LPDDR_VOLTAGE_DEFAULT OPP_LPDDR_NOM_VOLTAGE
+#define OPP_IVA_VOLTAGE_DEFAULT  OPP_IVA_NOM_VOLTAGE
+
+int current_opp = DEFAULT_OPP;
+int current_mpu_voltage = OPP_MPU_VOLTAGE_DEFAULT;
+int current_core_voltage = OPP_CORE_VOLTAGE_DEFAULT;
+int current_lpddr_voltage = OPP_CORE_VOLTAGE_DEFAULT;
+int current_iva_voltage = OPP_IVA_VOLTAGE_DEFAULT;
+
+// Values for CORE DPLL CONFIG WakeUp DDR 532 
+int opp_nom_core_m_wakeup_ddr_532 = 665;
+int opp_nom_core_n_38_4_wakeup_ddr_532 = 23;
+int opp_nom_core_n_19_2_wakeup_ddr_532 = 11;
+int opp_nom_core_m2_wakeup_ddr_532 = 2; // EMIF_PHY = 532 MHZs
+int opp_nom_core_m3_wakeup_ddr_532 = 5; // SCRM = 425.6 MHZs
+int opp_nom_core_h11_wakeup_ddr_532 = 8;  // CORE_DLL = 266 MHZs
+int opp_nom_core_h12_wakeup_ddr_532 = 4;  // CORE_X2 = 532.0 MHZs
+int opp_nom_core_h13_wakeup_ddr_532 = 62; // CORE_USB_OTG_SS = 34.3 MHzs
+int opp_nom_core_h14_wakeup_ddr_532  = 5; // CORE_GPU = 425.6 MHzs
+int opp_nom_core_h22_wakeup_ddr_532 = 5; // CORE_IPU_ISS_BOOST = 425.6 MHzs 
+int opp_nom_core_h23_wakeup_ddr_532 = 7; // CORE_ISS_MAIN = 304 MHzs
+
+// Values for CORE DPLL CONFIG WakeUp DDR 400  CORE_DPLL = 1600.
+int opp_nom_core_m_wakeup_ddr_400 = 375;
+int opp_nom_core_n_38_4_wakeup_ddr_400 = 17;
+int opp_nom_core_n_19_2_wakeup_ddr_400 = 8;
+int opp_nom_core_m2_wakeup_ddr_400 = 2; // EMIF_PHY = 400 MHZs
+int opp_nom_core_m3_wakeup_ddr_400 = 5; // SCRM = 320 MHZs
+int opp_nom_core_h11_wakeup_ddr_400 = 8;  // CORE_DLL = 200 MHZs
+int opp_nom_core_h12_wakeup_ddr_400 = 4;  // CORE_X2 = 400.0 MHZs
+int opp_nom_core_h13_wakeup_ddr_400 = 62; // CORE_USB_OTG_SS = 25 MHzs
+int opp_nom_core_h14_wakeup_ddr_400  = 5; // CORE_GPU = 320 MHzs
+int opp_nom_core_h22_wakeup_ddr_400 = 5; // CORE_IPU_ISS_BOOST = 320 MHzs 
+int opp_nom_core_h23_wakeup_ddr_400 = 7; // CORE_ISS_MAIN = 228 MHzs
+
+// Values for CORE DPLL CONFIG WakeUp DDR 266 
+int opp_nom_core_m_wakeup_ddr_266 = 665;
+int opp_nom_core_n_38_4_wakeup_ddr_266 = 23;
+int opp_nom_core_n_19_2_wakeup_ddr_266 = 11;
+int opp_nom_core_m2_wakeup_ddr_266 = 4; // EMIF_PHY = 266 MHZs
+int opp_nom_core_m3_wakeup_ddr_266 = 5; // SCRM = 425.6 MHZs
+int opp_nom_core_h11_wakeup_ddr_266 = 8;  // CORE_DLL = 266 MHZs
+int opp_nom_core_h12_wakeup_ddr_266 = 8;  // CORE_X2 = 266.0 MHZs
+int opp_nom_core_h13_wakeup_ddr_266 = 62; // CORE_USB_OTG_SS = 34.3 MHzs
+int opp_nom_core_h14_wakeup_ddr_266  = 5; // CORE_GPU = 425.6 MHzs
+int opp_nom_core_h22_wakeup_ddr_266 = 5; // CORE_IPU_ISS_BOOST = 425.6 MHzs 
+int opp_nom_core_h23_wakeup_ddr_266 = 7; // CORE_ISS_MAIN = 304 MHzs
+
+
+// Values for CORE DPLL CONFIG NOM 2128 MHZs 
+int opp_nom_core_m = 665;
+int opp_nom_core_n_38_4 = 23;
+int opp_nom_core_n_19_2 = 11;
+
+int opp_nom_core_m2 = 2; // EMIF_PHY = 532 MHZs
+int opp_nom_core_m3 = 5; // SCRM = 425.6 MHZs
+int opp_nom_core_h11 = 8;  // CORE_DLL = 266 MHZs
+int opp_nom_core_h12 = 4;  // CORE_X2 = 532.0 MHZs
+int opp_nom_core_h13 = 62; // CORE_USB_OTG_SS = 34.3 MHzs
+int opp_nom_core_h14_opp_od_ivahd  = 4; // CORE_GPU = 532 MHzs for OPP_IVAHD = OD.
+int opp_nom_core_h14  = 5; // CORE_GPU = 425.6 MHzs
+int opp_nom_core_h22 = 5; // CORE_IPU_ISS_BOOST = 425.6 MHzs 
+int opp_nom_core_h23 = 7; // CORE_ISS_MAIN = 304 MHzs
+
+// Values for CORE DPLL CONFIG LOW 2128 MHZs
+int opp_low_core_m = 665;
+int opp_low_core_n_38_4 = 23;
+int opp_low_core_n_19_2 = 11;
+int opp_low_core_m2 = 4; // EMIF_PHY = 266 MHZs
+int opp_low_core_m3 = 8; // SCRM = 266 MHZs
+int opp_low_core_h11 = 8; // CORE_DLL = 266 MHZs
+int opp_low_core_h12 = 8; // CORE_X2 = 266 MHZs
+int opp_low_core_h13 = 62; // CORE_USB_OTG_SS = 34.3 MHzs
+int opp_low_core_h14 = 10; // CORE_GPU = 212.8 MHzs
+int opp_low_core_h22 = 10; // CORE_IPU_ISS_BOOST = 212.8 MHzs 
+int opp_low_core_h23 = 14; // CORE_ISS_MAIN = 152 MHzs
+
+// Values for CORE DPLL CONFIG AUDIO LOW NO LOCK IN BYPATH (SYS_CLK = 38.4)
+int opp_low_abe_core_m = 0;
+int opp_low_abe_core_n = 0;
+int opp_low_abe_core_m2 = 1; // EMIF_PHY = 19.2 MHZs
+int opp_low_abe_core_m3 = 1; // SCRM = 38.4 MHZs
+int opp_low_abe_core_h11 = 1; // CORE_DLL = 38.4 MHZs
+int opp_low_abe_core_h12 = 1; // CORE_X2 = 38.4 MHZs
+int opp_low_abe_core_h13 = 1; // CORE_USB_OTG_SS = 38.4 MHzs
+int opp_low_abe_core_h14 = 1; // CORE_GPU = 38.4 MHzs
+int opp_low_abe_core_h22 = 1; // CORE_IPU_ISS_BOOST = 38.4 MHzs
+int opp_low_abe_core_h23 = 1; // CORE_ISS_MAIN = 38.4 MHzs
+
+// Values for CORE DPLL CONFIG ZEBU 
+int opp_zebu_core_m = 2;
+int opp_zebu_core_n = 0;
+int opp_zebu_core_m2 = 2; // EMIF_PHY =
+int opp_zebu_core_m3 = 5; // SCRM =
+int opp_zebu_core_h11 = 8; // CORE_DLL =
+int opp_zebu_core_h12 = 4; // CORE_X2 =
+int opp_zebu_core_h13 = 6; // CORE_USB_OTG_SS =
+int opp_zebu_core_h14 = 5; // CORE_GPU = 
+int opp_zebu_core_h22 = 5; // CORE_IPU_ISS_BOOST =
+int opp_zebu_core_h23 = 7; // CORE_ISS_MAIN =
+
+
+// Values for MPU DPLL CONFIG HIGH 2200 MHZs (DCC=0 => *2 Multiplier, DPLL_CLK = 2* m2 * MPU_CLK = 1100 MHz)
+int opp_high_mpu_m = 1375;
+int opp_high_mpu_n_38_4 = 47;
+int opp_high_mpu_n_19_2 = 23;
+int opp_high_mpu_m2 = 1; // MPU_CLK = 1100MHz
+int opp_high_mpu_dcc = 0;
+
+// Values for MPU DPLL CONFIG NOM 1600 MHZs (DCC=0 => *2 Multiplier, DPLL_CLK = 2* m2 * CORE_CLK ; MPU_CLK = 800 MHz)
+int opp_nom_mpu_m = 375;
+int opp_nom_mpu_n_38_4 = 17;
+int opp_nom_mpu_n_19_2 = 8;
+int opp_nom_mpu_m2 = 1; // MPU_CLK = 800MHz
+int opp_nom_mpu_dcc = 0;
+
+// Values for MPU DPLL CONFIG LOW 1600 MHZs (DCC=0 => *2 Multiplier, DPLL_CLK = 2* m2 * CORE_CLK ; MPU_CLK = 400 MHz)
+int opp_low_mpu_m = 375;
+int opp_low_mpu_n_38_4 = 17;
+int opp_low_mpu_n_19_2 = 8;
+int opp_low_mpu_m2 = 2; // MPU_CLK = 400MHz
+int opp_low_mpu_dcc = 0;
+
+// Values for MPU DPLL CONFIG ZEBU
+int opp_zebu_mpu_m = 2;
+int opp_zebu_mpu_n = 0;
+int opp_zebu_mpu_m2 = 1;
+int opp_zebu_mpu_dcc = 1;
+
+// Values for PER DPLL CONFIG NOM 768 MHZs
+int opp_nom_per_m_38_4 = 10;
+int opp_nom_per_m_19_2 = 20;
+int opp_nom_per_n = 0;
+int opp_nom_per_m2 = 4;
+int opp_nom_per_m3 = 3;
+int opp_nom_per_h11 = 6;
+int opp_nom_per_h12 = 4;
+int opp_nom_per_h13 = 2;
+int opp_nom_per_h14 = 2;
+
+// Values for PER DPLL CONFIG LOW 768 MHZs
+int opp_low_per_m_38_4 = 10;
+int opp_low_per_m_19_2 = 20;
+int opp_low_per_n = 0;
+int opp_low_per_m2 = 4;
+int opp_low_per_m3 = 4;
+int opp_low_per_h11 = 6;
+int opp_low_per_h12 = 4;
+int opp_low_per_h13 = 2;
+int opp_low_per_h14 = 4;
+
+// Values for PER DPLL CONFIG AUDIO LOW NO LOCK
+int opp_low_abe_per_m = 0;
+int opp_low_abe_per_n = 0;
+int opp_low_abe_per_m2 = 1;
+int opp_low_abe_per_m3 = 1;
+int opp_low_abe_per_h11 = 1;
+int opp_low_abe_per_h12 = 1;
+int opp_low_abe_per_h13 = 1;
+int opp_low_abe_per_h14 = 1;
+
+// Values for PER DPLL CONFIG ZEBU
+int opp_zebu_per_m = 2;
+int opp_zebu_per_n = 0;
+int opp_zebu_per_m2 = 4;
+int opp_zebu_per_m3 = 3;
+int opp_zebu_per_h11 = 6;
+int opp_zebu_per_h12 = 4;
+int opp_zebu_per_h13 = 2;
+int opp_zebu_per_h14 = 2;
+
+// Values for IVAHD DPLL CONFIG OD 1064 MHZs
+int opp_od_ivahd_m = 665;
+int opp_od_ivahd_n_38_4 = 47;
+int opp_od_ivahd_n_19_2 = 23;
+int opp_od_ivahd_h11 = 2;
+int opp_od_ivahd_h12 = 2;
+
+// Values for IVAHD DPLL CONFIG NOM 2330 MHZs
+int opp_nom_ivahd_m_38_4 = 1972;
+int opp_nom_ivahd_m_19_2 = 1881;
+int opp_nom_ivahd_n_38_4 = 64;
+int opp_nom_ivahd_n_19_2 = 30;
+int opp_nom_ivahd_h11 = 5;
+int opp_nom_ivahd_h12 = 6;
+
+// Values for IVAHD DPLL CONFIG LOW 2330 MHZs
+int opp_low_ivahd_m_38_4 = 1972;
+int opp_low_ivahd_m_19_2 = 1881;
+int opp_low_ivahd_n_38_4 = 64;
+int opp_low_ivahd_n_19_2 = 30;
+int opp_low_ivahd_h11 = 10;
+int opp_low_ivahd_h12 = 12;
+
+// Values for IVAHD DPLL CONFIG ZEBU
+int opp_zebu_ivahd_m = 100;
+int opp_zebu_ivahd_n = 2;
+int opp_zebu_ivahd_h11 = 4;
+int opp_zebu_ivahd_h12 = 7;
+
+// Values for ABE DPLL CONFIG LOCK 196,608 MHZs (32 KHzs)
+int opp_32k_abe_m = 750;
+int opp_32k_abe_n = 0;
+int opp_32k_abe_m2 = 1;
+int opp_32k_abe_m3 = 1;
+
+// Values for ABE DPLL CONFIG LOCK 196,608 MHZs (Zebu)
+int opp_zebu_abe_m = 2;
+int opp_zebu_abe_n = 0;
+int opp_zebu_abe_m2 = 0;
+int opp_zebu_abe_m3 = 0;
+
+// Values for USB DPLL CONFIG LOCK 960 MHZs
+int opp_usb_allopp_m = 400;
+int opp_usb_allopp_n_38_4 = 15;
+int opp_usb_allopp_n_19_2 = 7;
+int opp_usb_allopp_m2 = 2;
+
+// Values for UNIPRO DPLL CONFIG LOCK 1248 MHZs
+int opp_unipro_allopp_m = 520;
+int opp_unipro_allopp_n_38_4 = 15;
+int opp_unipro_allopp_n_19_2 = 7;
+int opp_unipro_allopp_m2 = 4;
+int opp_unipro_allopp_m3 = 1;
+int opp_unipro_allopp_h11 = 1;
+int opp_unipro_allopp_h12 = 1;
+
+// Values for UNIPRO DPLL CONFIG LOCK 1457 MHZs
+int opp_unipro_hs_m = 911;
+int opp_unipro_hs_n_38_4 = 23;
+int opp_unipro_hs_n_19_2 = 11;
+int opp_unipro_hs_m2 = 4;
+
+int opp_core_m;
+int opp_core_n;
+int opp_core_m2;
+int opp_core_m3;
+int opp_core_h11;
+int opp_core_h12;
+int opp_core_h13;
+int opp_core_h14;
+int opp_core_h22;
+int opp_core_h23;
+
+int opp_mpu_m;
+int opp_mpu_n;
+int opp_mpu_m2;
+int opp_mpu_dcc;
+
+int opp_per_m;
+int opp_per_n;
+int opp_per_m2;
+int opp_per_m3;
+int opp_per_h11;
+int opp_per_h12;
+int opp_per_h13;
+int opp_per_h14;
+
+int opp_ivahd_m;
+int opp_ivahd_n;
+int opp_ivahd_h11;
+int opp_ivahd_h12;
+
+int opp_abe_m;
+int opp_abe_n;
+int opp_abe_m2;
+int opp_abe_m3;
+
+
+int opp_usb_m;
+int opp_usb_n;
+int opp_usb_m2;
+
+int opp_unipro_m;
+int opp_unipro_n;
+int opp_unipro_m2;
+
+
+
+//------------------------
+//  SYS_CLK definitions.
+//------------------------
+#define SYS_CLK_38_4     1
+#define SYS_CLK_26       2
+#define SYS_CLK_19_2     3
+
+//default when no menu used.
+int SYSCLKFREQ = SYS_CLK_19_2;
+
+
+
+// DPLL definitions
+#define PRM_BASE                    0x4AE06000
+#define CAM_CM2_BASE                0x4A009000
+
+int	FREF	=		0;	// System clock reference frequency in KHZ
+
+#define	DPLL_TIMEOUT	5000	// DPLL lock/unlock timeout
+//#define	DPLL_TIMEOUT	5		// DPLL lock/unlock timeout
+
+// Register definitions
+#define CKGEN_CM1_BASE_ADDRESS		0x4A004000
+
+#define CM_CORE_BASE        		(CKGEN_CM1_BASE_ADDRESS + 0x120)
+#define CM_MPU_BASE         		(CKGEN_CM1_BASE_ADDRESS + 0x160)
+#define CM_IVA_BASE         		(CKGEN_CM1_BASE_ADDRESS + 0x1A0)
+#define CM_ABE_BASE         		(CKGEN_CM1_BASE_ADDRESS + 0x1E0)
+
+#define CM_CLKSEL_ABE                       *(unsigned int *)(CM_ABE_BASE + 0x0C)
+
+#define CM_CLKMODE_DPLL(DPLL_BASE_ADDRESS)  *(unsigned int *)(DPLL_BASE_ADDRESS)
+#define CM_IDLEST_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x04)
+#define CM_AUTOIDLE_DPLL(DPLL_BASE_ADDRESS) *(unsigned int *)(DPLL_BASE_ADDRESS + 0x08)
+
+#define CM_CLKSEL_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x0C)
+#define CM_DIV_M2_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x10)
+#define CM_DIV_M3_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x14)
+#define CM_DIV_H11_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x18)
+#define CM_DIV_H12_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x1C)
+#define CM_DIV_H13_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x20)
+#define CM_DIV_H14_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x24)
+#define CM_DIV_H22_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x34)
+#define CM_DIV_H23_DPLL(DPLL_BASE_ADDRESS)   *(unsigned int *)(DPLL_BASE_ADDRESS + 0x38)
+
+#define CM_SYS_CLKSEL       				*(unsigned int *)(PRM_BASE + 0x110)
+
+#define CKGEN_CM2_BASE_ADDRESS		0x4A008100		
+#define CM_PER_BASE         		CKGEN_CM2_BASE_ADDRESS + 0x40
+
+
+#define CM_L4PER_CLKSTCTRL 				*(unsigned int *)(CAM_CM2_BASE + 0x400)
+
+#define CORE_CM_CORE                0x4A008700
+#define CM_EMIF_CLKSTCTRL           *(unsigned int *)(CORE_CM_CORE + 0x400)
+#define CM_EMIF_EMIF1_CLKCTRL       *(unsigned int *)(CORE_CM_CORE + 0x430)
+#define CM_EMIF_EMIF2_CLKCTRL       *(unsigned int *)(CORE_CM_CORE + 0x438)
+
+#define CLKGEN_CM_CORE_AON      0x4A004100
+#define CM_CLKSEL_CORE          *(unsigned int *)(CLKGEN_CM_CORE_AON)
+#define CM_CLKMODE_DPLL_ABE     *(unsigned int *)(CLKGEN_CM_CORE_AON + 0xE0)
+#define CM_SHADOW_FREQ_CONFIG1  *(unsigned int *)(CLKGEN_CM_CORE_AON + 0x160)
+#define CM_SHADOW_FREQ_CONFIG2  *(unsigned int *)(CLKGEN_CM_CORE_AON + 0x164)
+
+#define	dpll_freq(M,N)						(2*FREF*M/(N+1))
+
+#define DEBUGSS_CFGBUS_PLLCTRL 0x54171800
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS  *(unsigned int *)(DEBUGSS_CFGBUS_PLLCTRL + 0x4)
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_GO  *(unsigned int *)(DEBUGSS_CFGBUS_PLLCTRL + 0x8)
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1  *(unsigned int *)(DEBUGSS_CFGBUS_PLLCTRL + 0xC)
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2  *(unsigned int *)(DEBUGSS_CFGBUS_PLLCTRL + 0x10)
+#define DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3  *(unsigned int *)(DEBUGSS_CFGBUS_PLLCTRL + 0x14)
+
+#define PALMAS_I2C_SLAVE_ADDRESS 0x12
+#define PALMAS_SMPS12DVS_REG_ADDRESS 0x23
+//#define PALMAS_SMPS3DVS_REG_ADDRESS 0x5
+#define PALMAS_SMPS45DVS_REG_ADDRESS 0x2B
+#define PALMAS_SMPS6DVS_REG_ADDRESS 0x2F
+#define PALMAS_SMPS8DVS_REG_ADDRESS 0x37
+#define PALMAS_MIN_VOLTAGE 500
+
+#define PRM_VC_CFG_I2C_CLK    0x4AE07BB8 
+#define PRM_VC_CFG_I2C_MODE   0x4AE07BB4
+#define PRM_VC_CFG_VAL_BYPASS 0x4AE07BA0
+
+#define VALID_BYPATH_CFG_FORCE_CMD       (0x1 << 24)
+
+/* 5432 in case of DDR3 we force the static dependency */
+#define CM_MPU_STATIC_DEP 0X4A004304
+
+/**********************************************************************
+ *
+ *  FUNCTIONS
+ *
+ **********************************************************************/
+ 
+prcm_clock_def_opp_zebu()
+{
+ SelectSysClock_38_4MHz();
+ 
+ current_opp = OPP_ZEBU;
+ current_mpu_voltage = OPP_MPU_VOLTAGE_NONE;
+ current_core_voltage = OPP_CORE_VOLTAGE_NONE;
+ current_iva_voltage = OPP_IVA_VOLTAGE_NONE;
+ current_lpddr_voltage = OPP_LPDDR_VOLTAGE_NONE;
+
+ opp_core_m = opp_zebu_core_m;
+ opp_core_n = opp_zebu_core_n;
+ opp_core_m2 = opp_zebu_core_m2;
+ opp_core_m3 = opp_zebu_core_m3;
+ opp_core_h11 = opp_zebu_core_h11;
+ opp_core_h12 = opp_zebu_core_h12;
+ opp_core_h13 = opp_zebu_core_h13;
+ opp_core_h14 = opp_zebu_core_h14;
+ opp_core_h22 = opp_zebu_core_h22;
+ opp_core_h23 = opp_zebu_core_h23;
+ 
+
+ opp_mpu_m = opp_zebu_mpu_m;
+ opp_mpu_n = opp_zebu_mpu_n;
+ opp_mpu_m2 = opp_zebu_mpu_m2;
+ opp_mpu_dcc = opp_zebu_mpu_dcc;
+
+ opp_per_m = opp_zebu_per_m;
+ opp_per_n = opp_zebu_per_n;
+ opp_per_m2 = opp_zebu_per_m2;
+ opp_per_m3 = opp_zebu_per_m3;
+ opp_per_h11 = opp_zebu_per_h11;
+ opp_per_h12 = opp_zebu_per_h12;
+ opp_per_h13 = opp_zebu_per_h13;
+ opp_per_h14 = opp_zebu_per_h14;
+
+ opp_ivahd_m = opp_zebu_ivahd_m;
+ opp_ivahd_n = opp_zebu_ivahd_n;
+ opp_ivahd_h11 = opp_zebu_ivahd_h11;
+ opp_ivahd_h12 = opp_zebu_ivahd_h12;
+
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_38_4;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ 
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_38_4;
+ opp_unipro_m2 = opp_unipro_allopp_m2;
+ 
+}// end of set
+
+prcm_clock_def_opp_low_38_4()
+{
+ SelectSysClock_38_4MHz();
+ current_opp = OPP_LOW;
+ current_mpu_voltage = OPP_MPU_LOW_VOLTAGE;
+ current_core_voltage = OPP_CORE_LOW_VOLTAGE;
+ current_iva_voltage = OPP_IVA_LOW_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_LOW_VOLTAGE;
+ opp_core_m = opp_low_core_m;
+ opp_core_n = opp_low_core_n_38_4;
+ opp_core_m2 = opp_low_core_m2;
+ opp_core_m3 = opp_low_core_m3;
+ opp_core_h11 = opp_low_core_h11;
+ opp_core_h12 = opp_low_core_h12;
+ opp_core_h13 = opp_low_core_h13;
+ opp_core_h14 = opp_low_core_h14;
+ opp_core_h22 = opp_low_core_h22;
+ opp_core_h23 = opp_low_core_h23;
+ opp_mpu_m = opp_low_mpu_m;
+ opp_mpu_n = opp_low_mpu_n_38_4;
+ opp_mpu_m2 = opp_low_mpu_m2;
+ opp_mpu_dcc = opp_low_mpu_dcc;
+ opp_per_m = opp_low_per_m_38_4;
+ opp_per_n = opp_low_per_n;
+ opp_per_m2 = opp_low_per_m2;
+ opp_per_m3 = opp_low_per_m3;
+ opp_per_h11 = opp_low_per_h11;
+ opp_per_h12 = opp_low_per_h12;
+ opp_per_h13 = opp_low_per_h13;
+ opp_per_h14 = opp_low_per_h14;
+ opp_ivahd_m = opp_low_ivahd_m_38_4;
+ opp_ivahd_n = opp_low_ivahd_n_38_4;
+ opp_ivahd_h11 = opp_low_ivahd_h11;
+ opp_ivahd_h12 = opp_low_ivahd_h12;
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_v;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_38_4;
+ opp_usb_m2 = opp_usb_allopp_m2; 
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_38_4;
+ opp_unipro_m2 = opp_unipro_allopp_m2;
+ 
+}// end of set
+
+
+
+prcm_clock_def_opp_low_19_2()
+{
+ SelectSysClock_19_2MHz();
+ current_opp = OPP_LOW;
+ current_mpu_voltage = OPP_MPU_LOW_VOLTAGE;
+ current_core_voltage = OPP_CORE_LOW_VOLTAGE;
+ current_iva_voltage = OPP_IVA_LOW_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_LOW_VOLTAGE;
+ opp_core_m = opp_low_core_m;
+ opp_core_n = opp_low_core_n_19_2;
+ opp_core_m2 = opp_low_core_m2;
+ opp_core_m3 = opp_low_core_m3;
+ opp_core_h11 = opp_low_core_h11;
+ opp_core_h12 = opp_low_core_h12;
+ opp_core_h13 = opp_low_core_h13;
+ opp_core_h14 = opp_low_core_h14;
+ opp_core_h22 = opp_low_core_h22;
+ opp_core_h23 = opp_low_core_h23;
+ opp_mpu_m = opp_low_mpu_m;
+ opp_mpu_n = opp_low_mpu_n_19_2;
+ opp_mpu_m2 = opp_low_mpu_m2;
+ opp_mpu_dcc = opp_low_mpu_dcc;
+ opp_per_m = opp_low_per_m_19_2;
+ opp_per_n = opp_low_per_n;
+ opp_per_m2 = opp_low_per_m2;
+ opp_per_m3 = opp_low_per_m3;
+ opp_per_h11 = opp_low_per_h11;
+ opp_per_h12 = opp_low_per_h12;
+ opp_per_h13 = opp_low_per_h13;
+ opp_per_h14 = opp_low_per_h14;
+ opp_ivahd_m = opp_low_ivahd_m_19_2;
+ opp_ivahd_n = opp_low_ivahd_n_19_2;
+ opp_ivahd_h11 = opp_low_ivahd_h11;
+ opp_ivahd_h12 = opp_low_ivahd_h12;
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_19_2;
+ opp_usb_m2 = opp_usb_allopp_m2; 
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_19_2;
+ opp_unipro_m2 = opp_unipro_allopp_m2;
+ 
+}// end of set
+
+
+prcm_clock_def_opp_wakeUp_SYSCLK_38_4_DDR_532()
+{
+ SelectSysClock_38_4MHz();
+ current_opp = OPP_WAKEUP_DDR_532;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_WAKEUP_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_WAKEUP_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ opp_core_m = 277;
+ opp_core_n = 9;
+ opp_core_m2 = 2;
+ opp_core_m3 = 5;
+ opp_core_h11 = 8;
+ opp_core_h12 = 4;
+ opp_core_h13 = 62;
+ opp_core_h14 = 4;
+ opp_core_h22 = 5;
+ opp_core_h23 = 7;
+ opp_mpu_m = 375;
+ opp_mpu_n = 17;
+ opp_mpu_m2 = 1;
+ opp_mpu_dcc = opp_nom_mpu_dcc;
+ opp_per_m = 10;
+ opp_per_n = 0;
+ opp_per_m2 = 4;
+ opp_per_m3 = 3;
+ opp_per_h11 = 6;
+ opp_per_h12 = 4;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = 2;
+ opp_ivahd_m = 91;
+ opp_ivahd_n = 2;
+ opp_ivahd_h11 = 5;
+ opp_ivahd_h12 = 6; 
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_38_4;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_38_4;
+ opp_unipro_m2 = opp_unipro_allopp_m2;   
+}// end of set
+
+prcm_clock_def_opp_wakeUp_SYSCLK_26_DDR_532()
+{
+ SelectSysClock_26MHz();
+ current_opp = OPP_WAKEUP_DDR_532;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_WAKEUP_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_WAKEUP_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ opp_core_m = 368;
+ opp_core_n = 8;
+ opp_core_m2 = 2;
+ opp_core_m3 = 5;
+ opp_core_h11 = 8;
+ opp_core_h12 = 4;
+ opp_core_h13 = 62;
+ opp_core_h14 = 4;
+ opp_core_h22 = 5;
+ opp_core_h23 = 7;
+ opp_mpu_m = 400;
+ opp_mpu_n = 12;
+ opp_mpu_m2 = 1;
+ opp_mpu_dcc = opp_nom_mpu_dcc; 
+ opp_per_m = 192;
+ opp_per_n = 12;
+ opp_per_m2 = 4;
+ opp_per_m3 = 3;
+ opp_per_h11 = 6;
+ opp_per_h12 = 4;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = 2;
+ opp_ivahd_m = 224;
+ opp_ivahd_n = 4;
+ opp_ivahd_h11 = 5;
+ opp_ivahd_h12 = 6;
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_19_2;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_19_2;
+ opp_unipro_m2 = opp_unipro_allopp_m2;   
+}// end of set
+
+prcm_clock_def_opp_wakeUp_SYSCLK_38_4_DDR_400()
+{
+ SelectSysClock_38_4MHz();
+ current_opp = OPP_WAKEUP_DDR_400;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_WAKEUP_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_WAKEUP_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ opp_core_m = opp_nom_core_m_wakeup_ddr_400;
+ opp_core_n = opp_nom_core_n_38_4_wakeup_ddr_400;
+ opp_core_m2 = opp_nom_core_m2_wakeup_ddr_400;
+ opp_core_m3 = opp_nom_core_m3_wakeup_ddr_400;
+ opp_core_h11 = opp_nom_core_h11_wakeup_ddr_400;
+ opp_core_h12 = opp_nom_core_h12_wakeup_ddr_400;
+ opp_core_h13 = opp_nom_core_h13_wakeup_ddr_400;
+ opp_core_h14 = opp_nom_core_h14_wakeup_ddr_400;
+ opp_core_h22 = opp_nom_core_h22_wakeup_ddr_400;
+ opp_core_h23 = opp_nom_core_h23_wakeup_ddr_400;
+ opp_mpu_m = opp_nom_mpu_m;
+ opp_mpu_n = opp_nom_mpu_n_38_4;
+ opp_mpu_m2 = opp_nom_mpu_m2;
+ opp_mpu_dcc = opp_nom_mpu_dcc;
+ opp_per_m = opp_nom_per_m_38_4;
+ opp_per_n = opp_nom_per_n;
+ opp_per_m2 = opp_nom_per_m2;
+ opp_per_m3 = opp_nom_per_m3;
+ opp_per_h11 = opp_nom_per_h11;
+ opp_per_h12 = opp_nom_per_h12;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = opp_nom_per_h14;
+ opp_ivahd_m = opp_nom_ivahd_m_38_4;
+ opp_ivahd_n = opp_nom_ivahd_n_38_4;
+ opp_ivahd_h11 = opp_nom_ivahd_h11;
+ opp_ivahd_h12 = opp_nom_ivahd_h12; 
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_38_4;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_38_4;
+ opp_unipro_m2 = opp_unipro_allopp_m2;   
+}// end of set
+
+prcm_clock_def_opp_wakeUp_SYSCLK_19_2_DDR_400()
+{
+ SelectSysClock_19_2MHz();
+ current_opp = OPP_WAKEUP_DDR_400;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_WAKEUP_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_WAKEUP_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ opp_core_m = opp_nom_core_m_wakeup_ddr_400;
+ opp_core_n = opp_nom_core_n_19_2_wakeup_ddr_400;
+ opp_core_m2 = opp_nom_core_m2_wakeup_ddr_400;
+ opp_core_m3 = opp_nom_core_m3_wakeup_ddr_400;
+ opp_core_h11 = opp_nom_core_h11_wakeup_ddr_400;
+ opp_core_h12 = opp_nom_core_h12_wakeup_ddr_400;
+ opp_core_h13 = opp_nom_core_h13_wakeup_ddr_400;
+ opp_core_h14 = opp_nom_core_h14_wakeup_ddr_400;
+ opp_core_h22 = opp_nom_core_h22_wakeup_ddr_400;
+ opp_core_h23 = opp_nom_core_h23_wakeup_ddr_400;
+ opp_mpu_m = opp_nom_mpu_m;
+ opp_mpu_n = opp_nom_mpu_n_19_2;
+ opp_mpu_m2 = opp_nom_mpu_m2;
+ opp_mpu_dcc = opp_nom_mpu_dcc; 
+ opp_per_m = opp_nom_per_m_19_2;
+ opp_per_n = opp_nom_per_n;
+ opp_per_m2 = opp_nom_per_m2;
+ opp_per_m3 = opp_nom_per_m3;
+ opp_per_h11 = opp_nom_per_h11;
+ opp_per_h12 = opp_nom_per_h12;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = opp_nom_per_h14;
+ opp_ivahd_m = opp_nom_ivahd_m_19_2;
+ opp_ivahd_n = opp_nom_ivahd_n_19_2;
+ opp_ivahd_h11 = opp_nom_ivahd_h11;
+ opp_ivahd_h12 = opp_nom_ivahd_h12;
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_19_2;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_19_2;
+ opp_unipro_m2 = opp_unipro_allopp_m2;   
+}// end of set
+
+prcm_clock_def_opp_wakeUp_SYSCLK_19_2_DDR_532()
+{
+ SelectSysClock_19_2MHz();
+ current_opp = OPP_WAKEUP_DDR_532;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_WAKEUP_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_WAKEUP_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ opp_core_m = opp_nom_core_m_wakeup_ddr_532;
+ opp_core_n = opp_nom_core_n_19_2_wakeup_ddr_532;
+ opp_core_m2 = opp_nom_core_m2_wakeup_ddr_532;
+ opp_core_m3 = opp_nom_core_m3_wakeup_ddr_532;
+ opp_core_h11 = opp_nom_core_h11_wakeup_ddr_532;
+ opp_core_h12 = opp_nom_core_h12_wakeup_ddr_532;
+ opp_core_h13 = opp_nom_core_h13_wakeup_ddr_532;
+ opp_core_h14 = opp_nom_core_h14_wakeup_ddr_532;
+ opp_core_h22 = opp_nom_core_h22_wakeup_ddr_532;
+ opp_core_h23 = opp_nom_core_h23_wakeup_ddr_532;
+ opp_mpu_m = opp_nom_mpu_m;
+ opp_mpu_n = opp_nom_mpu_n_19_2;
+ opp_mpu_m2 = opp_nom_mpu_m2;
+ opp_mpu_dcc = opp_nom_mpu_dcc; 
+ opp_per_m = opp_nom_per_m_19_2;
+ opp_per_n = opp_nom_per_n;
+ opp_per_m2 = opp_nom_per_m2;
+ opp_per_m3 = opp_nom_per_m3;
+ opp_per_h11 = opp_nom_per_h11;
+ opp_per_h12 = opp_nom_per_h12;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = opp_nom_per_h14;
+ opp_ivahd_m = opp_nom_ivahd_m_19_2;
+ opp_ivahd_n = opp_nom_ivahd_n_19_2;
+ opp_ivahd_h11 = opp_nom_ivahd_h11;
+ opp_ivahd_h12 = opp_nom_ivahd_h12;
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_19_2;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_19_2;
+ opp_unipro_m2 = opp_unipro_allopp_m2;   
+}// end of set
+
+
+prcm_clock_def_opp_wakeUp_SYSCLK_38_4_DDR_266()
+{
+ SelectSysClock_38_4MHz();
+ current_opp = OPP_WAKEUP_DDR_266;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_WAKEUP_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_WAKEUP_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ opp_core_m = opp_nom_core_m_wakeup_ddr_266;
+ opp_core_n = opp_nom_core_n_38_4_wakeup_ddr_266;
+ opp_core_m2 = opp_nom_core_m2_wakeup_ddr_266;
+ opp_core_m3 = opp_nom_core_m3_wakeup_ddr_266;
+ opp_core_h11 = opp_nom_core_h11_wakeup_ddr_266;
+ opp_core_h12 = opp_nom_core_h12_wakeup_ddr_266;
+ opp_core_h13 = opp_nom_core_h13_wakeup_ddr_266;
+ opp_core_h14 = opp_nom_core_h14_wakeup_ddr_266;
+ opp_core_h22 = opp_nom_core_h22_wakeup_ddr_266;
+ opp_core_h23 = opp_nom_core_h23_wakeup_ddr_266;
+ opp_mpu_m = opp_nom_mpu_m;
+ opp_mpu_n = opp_nom_mpu_n_38_4;
+ opp_mpu_m2 = opp_nom_mpu_m2;
+ opp_mpu_dcc = opp_nom_mpu_dcc;
+ opp_per_m = opp_nom_per_m_38_4;
+ opp_per_n = opp_nom_per_n;
+ opp_per_m2 = opp_nom_per_m2;
+ opp_per_m3 = opp_nom_per_m3;
+ opp_per_h11 = opp_nom_per_h11;
+ opp_per_h12 = opp_nom_per_h12;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = opp_nom_per_h14;
+ opp_ivahd_m = opp_nom_ivahd_m_38_4;
+ opp_ivahd_n = opp_nom_ivahd_n_38_4;
+ opp_ivahd_h11 = opp_nom_ivahd_h11;
+ opp_ivahd_h12 = opp_nom_ivahd_h12; 
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_38_4;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_38_4;
+ opp_unipro_m2 = opp_unipro_allopp_m2;   
+}// end of set
+
+prcm_clock_def_opp_wakeUp_SYSCLK_19_2_DDR_266()
+{
+ SelectSysClock_19_2MHz();
+ current_opp = OPP_WAKEUP_DDR_266;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_WAKEUP_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_WAKEUP_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ opp_core_m = opp_nom_core_m_wakeup_ddr_266;
+ opp_core_n = opp_nom_core_n_19_2_wakeup_ddr_266;
+ opp_core_m2 = opp_nom_core_m2_wakeup_ddr_266;
+ opp_core_m3 = opp_nom_core_m3_wakeup_ddr_266;
+ opp_core_h11 = opp_nom_core_h11_wakeup_ddr_266;
+ opp_core_h12 = opp_nom_core_h12_wakeup_ddr_266;
+ opp_core_h13 = opp_nom_core_h13_wakeup_ddr_266;
+ opp_core_h14 = opp_nom_core_h14_wakeup_ddr_266;
+ opp_core_h22 = opp_nom_core_h22_wakeup_ddr_266;
+ opp_core_h23 = opp_nom_core_h23_wakeup_ddr_266;
+ opp_mpu_m = opp_nom_mpu_m;
+ opp_mpu_n = opp_nom_mpu_n_19_2;
+ opp_mpu_m2 = opp_nom_mpu_m2;
+ opp_mpu_dcc = opp_nom_mpu_dcc; 
+ opp_per_m = opp_nom_per_m_19_2;
+ opp_per_n = opp_nom_per_n;
+ opp_per_m2 = opp_nom_per_m2;
+ opp_per_m3 = opp_nom_per_m3;
+ opp_per_h11 = opp_nom_per_h11;
+ opp_per_h12 = opp_nom_per_h12;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = opp_nom_per_h14;
+ opp_ivahd_m = opp_nom_ivahd_m_19_2;
+ opp_ivahd_n = opp_nom_ivahd_n_19_2;
+ opp_ivahd_h11 = opp_nom_ivahd_h11;
+ opp_ivahd_h12 = opp_nom_ivahd_h12;
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_19_2;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_19_2;
+ opp_unipro_m2 = opp_unipro_allopp_m2;   
+}// end of set
+
+prcm_clock_def_opp_nom_38_4()
+{
+ SelectSysClock_38_4MHz();
+ current_opp = OPP_NOM;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_NOM_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_NOM_VOLTAGE;
+ opp_core_m = opp_nom_core_m;
+ opp_core_n = opp_nom_core_n_38_4;
+ opp_core_m2 = opp_nom_core_m2;
+ opp_core_m3 = opp_nom_core_m3;
+ opp_core_h11 = opp_nom_core_h11;
+ opp_core_h12 = opp_nom_core_h12;
+ opp_core_h13 = opp_nom_core_h13;
+ opp_core_h14 = opp_nom_core_h14;
+ opp_core_h22 = opp_nom_core_h22;
+ opp_core_h23 = opp_nom_core_h23;
+
+ opp_mpu_m = opp_nom_mpu_m;
+ opp_mpu_n = opp_nom_mpu_n_38_4;
+ opp_mpu_m2 = opp_nom_mpu_m2;
+ opp_mpu_dcc = opp_nom_mpu_dcc;
+ 
+ opp_per_m = opp_nom_per_m_38_4;
+ opp_per_n = opp_nom_per_n;
+ opp_per_m2 = opp_nom_per_m2;
+ opp_per_m3 = opp_nom_per_m3;
+ opp_per_h11 = opp_nom_per_h11;
+ opp_per_h12 = opp_nom_per_h12;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = opp_nom_per_h14;
+
+ opp_ivahd_m = opp_nom_ivahd_m_38_4;
+ opp_ivahd_n = opp_nom_ivahd_n_38_4;
+ opp_ivahd_h11 = opp_nom_ivahd_h11;
+ opp_ivahd_h12 = opp_nom_ivahd_h12;
+ 
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_38_4;
+ opp_usb_m2 = opp_usb_allopp_m2;
+
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_38_4;
+ opp_unipro_m2 = opp_unipro_allopp_m2;
+   
+}// end of set
+
+prcm_clock_def_opp_nom_19_2()
+{
+ SelectSysClock_19_2MHz();
+ current_opp = OPP_NOM;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_NOM_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_NOM_VOLTAGE;
+ opp_core_m = opp_nom_core_m;
+ opp_core_n = opp_nom_core_n_19_2;
+ opp_core_m2 = opp_nom_core_m2;
+ opp_core_m3 = opp_nom_core_m3;
+ opp_core_h11 = opp_nom_core_h11;
+ opp_core_h12 = opp_nom_core_h12;
+ opp_core_h13 = opp_nom_core_h13;
+ opp_core_h14 = opp_nom_core_h14;
+ opp_core_h22 = opp_nom_core_h22;
+ opp_core_h23 = opp_nom_core_h23;
+
+ opp_mpu_m = opp_nom_mpu_m;
+ opp_mpu_n = opp_nom_mpu_n_19_2;
+ opp_mpu_m2 = opp_nom_mpu_m2;
+ opp_mpu_dcc = opp_nom_mpu_dcc;
+ 
+ opp_per_m = opp_nom_per_m_19_2;
+ opp_per_n = opp_nom_per_n;
+ opp_per_m2 = opp_nom_per_m2;
+ opp_per_m3 = opp_nom_per_m3;
+ opp_per_h11 = opp_nom_per_h11;
+ opp_per_h12 = opp_nom_per_h12;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = opp_nom_per_h14;
+
+ opp_ivahd_m = opp_nom_ivahd_m_19_2;
+ opp_ivahd_n = opp_nom_ivahd_n_19_2;
+ opp_ivahd_h11 = opp_nom_ivahd_h11;
+ opp_ivahd_h12 = opp_nom_ivahd_h12;
+ 
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_19_2;
+ opp_usb_m2 = opp_usb_allopp_m2;
+
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_19_2;
+ opp_unipro_m2 = opp_unipro_allopp_m2;
+   
+}// end of set
+
+prcm_clock_def_low_opp_abe_38_4()
+{
+ SelectSysClock_38_4MHz();
+ current_opp = OPP_LOW_ABE;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_LOW_ABE_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_LOW_ABE_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ opp_core_m = opp_low_abe_core_m;
+ opp_core_n = opp_low_abe_core_n_38_4;
+ opp_core_m2 = opp_low_abe_core_m2;
+ opp_core_m3 = opp_low_abe_core_m3;
+ opp_core_h11 = opp_low_abe_core_h11;
+ opp_core_h12 = opp_low_abe_core_h12;
+ opp_core_h13 = opp_low_abe_core_h13;
+ opp_core_h14 = opp_low_abe_core_h14;
+ opp_core_h22 = opp_low_abe_core_h22;
+ opp_core_h23 = opp_low_abe_core_h23;
+
+ opp_mpu_m = opp_low_mpu_m;
+ opp_mpu_n = opp_low_mpu_n_38_4;
+ opp_mpu_m2 = opp_low_mpu_m2;
+ opp_mpu_dcc = opp_low_mpu_dcc;
+
+ opp_per_m = opp_low_abe_per_m_38_4;
+ opp_per_n = opp_low_abe_per_n;
+ opp_per_m2 = opp_low_abe_per_m2;
+ opp_per_m3 = opp_low_abe_per_m3;
+ opp_per_h11 = opp_low_abe_per_h11;
+ opp_per_h12 = opp_low_abe_per_h12;
+ opp_per_h13 = opp_low_abe_per_h13;
+ opp_per_h14 = opp_low_abe_per_h14;
+
+ opp_ivahd_m = opp_low_ivahd_m_38_4;
+ opp_ivahd_n = opp_low_ivahd_n_38_4;
+ opp_ivahd_h11 = opp_low_ivahd_h11;
+ opp_ivahd_h12 = opp_low_ivahd_h12;
+
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_38_4;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ 
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_38_4;
+ opp_unipro_m2 = opp_unipro_allopp_m2;
+}// end of set
+
+prcm_clock_def_low_opp_abe_19_2()
+{
+ SelectSysClock_19_2MHz();
+ current_opp = OPP_LOW_ABE;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_LOW_ABE_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_LOW_ABE_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ opp_core_m = opp_low_abe_core_m;
+ opp_core_n = opp_low_abe_core_n_19_2;
+ opp_core_m2 = opp_low_abe_core_m2;
+ opp_core_m3 = opp_low_abe_core_m3;
+ opp_core_h11 = opp_low_abe_core_h11;
+ opp_core_h12 = opp_low_abe_core_h12;
+ opp_core_h13 = opp_low_abe_core_h13;
+ opp_core_h14 = opp_low_abe_core_h14;
+ opp_core_h22 = opp_low_abe_core_h22;
+ opp_core_h23 = opp_low_abe_core_h23;
+
+ opp_mpu_m = opp_low_mpu_m;
+ opp_mpu_n = opp_low_mpu_n_19_2;
+ opp_mpu_m2 = opp_low_mpu_m2;
+ opp_mpu_dcc = opp_low_mpu_dcc;
+
+ opp_per_m = opp_low_abe_per_m_19_2;
+ opp_per_n = opp_low_abe_per_n;
+ opp_per_m2 = opp_low_abe_per_m2;
+ opp_per_m3 = opp_low_abe_per_m3;
+ opp_per_h11 = opp_low_abe_per_h11;
+ opp_per_h12 = opp_low_abe_per_h12;
+ opp_per_h13 = opp_low_abe_per_h13;
+ opp_per_h14 = opp_low_abe_per_h14;
+
+ opp_ivahd_m = opp_low_ivahd_m_19_2;
+ opp_ivahd_n = opp_low_ivahd_n_19_2;
+ opp_ivahd_h11 = opp_low_ivahd_h11;
+ opp_ivahd_h12 = opp_low_ivahd_h12;
+
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_19_2;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ 
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_19_2;
+ opp_unipro_m2 = opp_unipro_allopp_m2;
+}// end of set
+
+prcm_clock_def_opp_high_38_4()
+{
+ SelectSysClock_38_4MHz();
+ current_opp = OPP_HIGH;
+ current_mpu_voltage = OPP_MPU_HIGH_VOLTAGE;
+ current_core_voltage = OPP_CORE_NOM_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_NOM_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ opp_core_m = opp_nom_core_m;
+ opp_core_n = opp_nom_core_n_38_4;
+ opp_core_m2 = opp_nom_core_m2;
+ opp_core_m3 = opp_nom_core_m3;
+ opp_core_h11 = opp_nom_core_h11;
+ opp_core_h12 = opp_nom_core_h12;
+ opp_core_h13 = opp_nom_core_h13;
+ opp_core_h14 = opp_nom_core_h14;
+
+ opp_mpu_m = opp_high_mpu_m;
+ opp_mpu_n = opp_high_mpu_n_38_4;
+ opp_mpu_m2 = opp_high_mpu_m2;
+ opp_mpu_dcc = opp_high_mpu_dcc;
+
+ opp_per_m = opp_nom_per_m_38_4;
+ opp_per_n = opp_nom_per_n;
+ opp_per_m2 = opp_nom_per_m2;
+ opp_per_m3 = opp_nom_per_m3;
+ opp_per_h11 = opp_nom_per_h11;
+ opp_per_h12 = opp_nom_per_h12;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = opp_nom_per_h14;
+
+ opp_ivahd_m = opp_nom_ivahd_m_38_4;
+ opp_ivahd_n = opp_nom_ivahd_n_38_4;
+ opp_ivahd_h11 = opp_nom_ivahd_h11;
+ opp_ivahd_h12 = opp_nom_ivahd_h12;
+
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_38_4;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ 
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_38_4;
+ opp_unipro_m2 = opp_unipro_allopp_m2;
+  
+}// end of set
+
+prcm_clock_def_opp_high_19_2()
+{
+ SelectSysClock_19_2MHz();
+ current_opp = OPP_HIGH;
+ current_mpu_voltage = OPP_MPU_HIGH_VOLTAGE;
+ current_core_voltage = OPP_CORE_NOM_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_NOM_VOLTAGE;
+ current_iva_voltage = OPP_IVA_NOM_VOLTAGE;
+ opp_core_m = opp_nom_core_m;
+ opp_core_n = opp_nom_core_n_19_2;
+ opp_core_m2 = opp_nom_core_m2;
+ opp_core_m3 = opp_nom_core_m3;
+ opp_core_h11 = opp_nom_core_h11;
+ opp_core_h12 = opp_nom_core_h12;
+ opp_core_h13 = opp_nom_core_h13;
+ opp_core_h14 = opp_nom_core_h14;
+
+ opp_mpu_m = opp_high_mpu_m;
+ opp_mpu_n = opp_high_mpu_n_19_2;
+ opp_mpu_m2 = opp_high_mpu_m2;
+ opp_mpu_dcc = opp_high_mpu_dcc;
+
+ opp_per_m = opp_nom_per_m_19_2;
+ opp_per_n = opp_nom_per_n;
+ opp_per_m2 = opp_nom_per_m2;
+ opp_per_m3 = opp_nom_per_m3;
+ opp_per_h11 = opp_nom_per_h11;
+ opp_per_h12 = opp_nom_per_h12;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = opp_nom_per_h14;
+
+ opp_ivahd_m = opp_nom_ivahd_m_19_2;
+ opp_ivahd_n = opp_nom_ivahd_n_19_2;
+ opp_ivahd_h11 = opp_nom_ivahd_h11;
+ opp_ivahd_h12 = opp_nom_ivahd_h12;
+
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_19_2;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ 
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_19_2;
+ opp_unipro_m2 = opp_unipro_allopp_m2;
+  
+}// end of set
+
+
+prcm_clock_def_opp_od_38_4()
+{
+ SelectSysClock_38_4MHz();
+ current_opp = OPP_OD;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_NOM_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_NOM_VOLTAGE;
+ current_iva_voltage = OPP_IVA_OD_VOLTAGE;
+ opp_core_m = opp_nom_core_m;
+ opp_core_n = opp_nom_core_n_38_4;
+ opp_core_m2 = opp_nom_core_m2;
+ opp_core_m3 = opp_nom_core_m3;
+ opp_core_h11 = opp_nom_core_h11;
+ opp_core_h12 = opp_nom_core_h12;
+ opp_core_h13 = opp_nom_core_h13;
+ opp_core_h14 = opp_nom_core_h14_opp_od_ivahd;
+
+ opp_mpu_m = opp_nom_mpu_m;
+ opp_mpu_n = opp_nom_mpu_n_38_4;
+ opp_mpu_m2 = opp_nom_mpu_m2;
+ opp_mpu_dcc = opp_nom_mpu_dcc;
+
+ opp_per_m = opp_nom_per_m_38_4;
+ opp_per_n = opp_nom_per_n;
+ opp_per_m2 = opp_nom_per_m2;
+ opp_per_m3 = opp_nom_per_m3;
+ opp_per_h11 = opp_nom_per_h11;
+ opp_per_h12 = opp_nom_per_h12;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = opp_nom_per_h14;
+
+ opp_ivahd_m = opp_od_ivahd_m_38_4;
+ opp_ivahd_n = opp_od_ivahd_n_38_4;
+ opp_ivahd_h11 = opp_od_ivahd_h11;
+ opp_ivahd_h12 = opp_od_ivahd_h12;
+
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_38_4;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ 
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_38_4;
+ opp_unipro_m2 = opp_unipro_allopp_m2;
+  
+}// end of set
+
+prcm_clock_def_opp_od_19_2()
+{
+ SelectSysClock_19_2MHz();
+ current_opp = OPP_OD;
+ current_mpu_voltage = OPP_MPU_NOM_VOLTAGE;
+ current_core_voltage = OPP_CORE_NOM_VOLTAGE;
+ current_lpddr_voltage = OPP_LPDDR_NOM_VOLTAGE;
+ current_iva_voltage = OPP_IVA_OD_VOLTAGE;
+ opp_core_m = opp_nom_core_m;
+ opp_core_n = opp_nom_core_n_19_2;
+ opp_core_m2 = opp_nom_core_m2;
+ opp_core_m3 = opp_nom_core_m3;
+ opp_core_h11 = opp_nom_core_h11;
+ opp_core_h12 = opp_nom_core_h12;
+ opp_core_h13 = opp_nom_core_h13;
+ opp_core_h14 = opp_nom_core_h14;
+
+ opp_mpu_m = opp_nom_mpu_m;
+ opp_mpu_n = opp_nom_mpu_n_19_2;
+ opp_mpu_m2 = opp_nom_mpu_m2;
+ opp_mpu_dcc = opp_nom_mpu_dcc;
+
+ opp_per_m = opp_nom_per_m_19_2;
+ opp_per_n = opp_nom_per_n;
+ opp_per_m2 = opp_nom_per_m2;
+ opp_per_m3 = opp_nom_per_m3;
+ opp_per_h11 = opp_nom_per_h11;
+ opp_per_h12 = opp_nom_per_h12;
+ opp_per_h13 = opp_nom_per_h13;
+ opp_per_h14 = opp_nom_per_h14;
+
+ opp_ivahd_m = opp_od_ivahd_m_19_2;
+ opp_ivahd_n = opp_od_ivahd_n_19_2;
+ opp_ivahd_h11 = opp_od_ivahd_h11;
+ opp_ivahd_h12 = opp_od_ivahd_h12;
+
+ opp_abe_m = opp_32k_abe_m;
+ opp_abe_n = opp_32k_abe_n;
+ opp_abe_m2 = opp_32k_abe_m2;
+ opp_abe_m3 = opp_32k_abe_m3;
+
+ opp_usb_m = opp_usb_allopp_m;
+ opp_usb_n = opp_usb_allopp_n_19_2;
+ opp_usb_m2 = opp_usb_allopp_m2;
+ 
+ opp_unipro_m = opp_unipro_allopp_m;
+ opp_unipro_n = opp_unipro_allopp_n_19_2;
+ opp_unipro_m2 = opp_unipro_allopp_m2;
+  
+}// end of set
+
+menuitem "Power config"
+hotmenu SelectSysClock_38_4MHz()
+{
+    GEL_TextOut("Set system clock to 38.4MHz \n");
+    CM_SYS_CLKSEL = 0x07;
+    SYSCLKFREQ = SYS_CLK_38_4;
+    FREF = 38400;
+}
+hotmenu SelectSysClock_26MHz()
+{
+    GEL_TextOut("Set system clock to 26MHz \n");
+    CM_SYS_CLKSEL = 0x05;
+    SYSCLKFREQ = SYS_CLK_26;
+    FREF = 26000;      
+}
+hotmenu SelectSysClock_19_2MHz()
+{
+    GEL_TextOut("Set system clock to 19.2MHz \n");
+    CM_SYS_CLKSEL = 0x04;
+    SYSCLKFREQ = SYS_CLK_19_2;
+    FREF = 19200;   
+}
+
+hotmenu SelectSysClock()
+{
+   if (SYSCLKFREQ == SYS_CLK_38_4)
+   {
+      SelectSysClock_38_4MHz();
+   }
+   if (SYSCLKFREQ == SYS_CLK_26)
+   {
+      SelectSysClock_26MHz();
+   }   
+   if (SYSCLKFREQ == SYS_CLK_19_2)
+   {
+      SelectSysClock_19_2MHz();
+   }       
+}
+
+hotmenu opp_default_config_board_OPP_ZEBU()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP_ZEBU ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_zebu();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_ZEBU);
+}
+
+hotmenu opp_default_config_board_WAKEUP_38_4_DDR_532()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP WAKEUP 38_4 DDR 532 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_wakeUp_SYSCLK_38_4_DDR_532();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_WAKEUP_DDR_532);
+}
+
+hotmenu opp_default_config_board_WAKEUP_26_DDR_532()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP WAKEUP 26 DDR 532 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_wakeUp_SYSCLK_26_DDR_532();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_WAKEUP_DDR_532);
+}
+
+hotmenu opp_default_config_board_WAKEUP_19_2_DDR_532()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP WAKEUP 19_2 DDR 532 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_wakeUp_SYSCLK_19_2_DDR_532();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage,current_iva_voltage);
+  opp_config_board(OPP_WAKEUP_DDR_532);
+  
+}
+
+hotmenu opp_default_config_board_WAKEUP_38_4_DDR_400()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP WAKEUP 38_4 DDR 400 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_wakeUp_SYSCLK_38_4_DDR_400();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_WAKEUP_DDR_400);
+}
+
+hotmenu opp_default_config_board_WAKEUP_19_2_DDR_400()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP WAKEUP 19_2 DDR 400 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_wakeUp_SYSCLK_19_2_DDR_400();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage,current_iva_voltage);
+  opp_config_board(OPP_WAKEUP_DDR_400);
+}
+
+hotmenu opp_default_config_board_WAKEUP_38_4_DDR_266()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP WAKEUP 38_4 DDR 266 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_wakeUp_SYSCLK_38_4_DDR_266();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_WAKEUP_DDR_266);
+}
+
+hotmenu opp_default_config_board_WAKEUP_19_2_DDR_266()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP WAKEUP 19_2 DDR 266 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_wakeUp_SYSCLK_19_2_DDR_266();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage,current_iva_voltage);
+  opp_config_board(OPP_WAKEUP_DDR_266);
+}
+
+hotmenu opp_default_config_board_OPP_LOW_38_4()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP_LOW_38_4 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_low_38_4();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_LOW);
+}
+
+hotmenu opp_default_config_board_OPP_LOW_19_2()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP_LOW_19_2 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_low_19_2();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_LOW);
+}
+
+hotmenu opp_default_config_board_OPP_NOM_38_4()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP_NOM_38_4 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_nom_38_4();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_NOM);
+}
+
+hotmenu opp_default_config_board_OPP_NOM_19_2()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP_NOM_19_2 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_nom_19_2();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_NOM);
+}
+
+hotmenu opp_default_config_board_OPP_OD_38_4()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP_OD_38_4 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_od_38_4();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_OD);
+}
+
+hotmenu opp_default_config_board_OPP_OD_19_2()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP_OD_19_2 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_od_19_2();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_OD);
+}
+
+hotmenu opp_default_config_board_OPP_HIGH_38_4()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP_HIGH_38_4 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_high_38_4();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_HIGH);
+}
+
+hotmenu opp_default_config_board_OPP_HIGH_19_2()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP_HIGH_19_2 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_opp_high_19_2();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_HIGH);
+}
+
+hotmenu opp_default_config_board_OPP_LOW_ABE_38_4()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP_LOW_ABE_38_4 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_low_opp_abe_38_4();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_LOW_ABE);
+}
+
+hotmenu opp_default_config_board_OPP_LOW_ABE_19_2()
+{
+  GEL_TextOut("-----------------------\n");
+  GEL_TextOut("------ Applying OPP_LOW_ABE_19_2 ------\n");
+  GEL_TextOut("-----------------------\n");
+  prcm_clock_def_low_opp_abe_19_2();
+  set_voltage(current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+  opp_config_board(OPP_LOW_ABE);
+}
+
+hotmenu dump_dividers()
+{
+
+	GEL_TextOut("--------------------------- sysclock -----------------------------\n"); 
+ 	GEL_TextOut(" FREF, SYSCLKFREQ %d, %d \n",,,,,FREF,SYSCLKFREQ);		
+	GEL_TextOut("--------------------------- MPU_dpll -----------------------------\n"); 
+	GEL_TextOut("MPU dpll M, %d \n",,,,,opp_mpu_m); 
+	GEL_TextOut("MPU dpll N, %d \n",,,,,opp_mpu_n); 
+	GEL_TextOut("MPU dpll M2, %d \n",,,,,opp_mpu_m2); 
+	GEL_TextOut("MPU dpll M2, %d \n",,,,,opp_mpu_dcc); 
+	GEL_TextOut("Freq %d",,,,,dpll_freq(opp_mpu_m,opp_mpu_n));
+
+	GEL_TextOut("--------------------------- IVA_dpll -----------------------------\n"); 
+	GEL_TextOut("ivahd dpll M, %d \n",,,,,opp_ivahd_m); 
+	GEL_TextOut("ivahd dpll N, %d \n",,,,,opp_ivahd_n); 
+	GEL_TextOut("ivahd dpll h11, %d \n",,,,,opp_ivahd_h11); 
+ 	GEL_TextOut("ivahd dpll ,h12, %d \n",,,,,opp_ivahd_h12); 
+	GEL_TextOut("Freq %d",,,,,dpll_freq(opp_ivahd_m,opp_ivahd_n));
+
+	GEL_TextOut("--------------------------- core abe :_DPLL -----------------------------\n"); 
+	GEL_TextOut("core abe  M, %d \n",,,,,opp_abe_m); 
+	GEL_TextOut("core abe dpll N, %d \n",,,,,opp_abe_n); 
+	GEL_TextOut("core abe dpll m2, %d \n",,,,,opp_abe_m2); 
+	GEL_TextOut("core abe dpll m3, %d \n",,,,,opp_abe_m3); 
+	GEL_TextOut("Freq %d",,,,,dpll_freq(opp_abe_m,opp_abe_n));
+
+	GEL_TextOut("--------------------------- core abe :_DPLL -----------------------------\n"); 
+	GEL_TextOut("core core dpll M, %d \n",,,,,opp_core_m); 
+	GEL_TextOut("core core dpll N, %d \n",,,,,opp_core_n); 
+	GEL_TextOut("core core dpll M2, %d \n",,,,,opp_core_m2); 
+	GEL_TextOut("core core dpll M2, %d \n",,,,,opp_core_m3); 
+	GEL_TextOut("core core dpll M2, %d \n",,,,,opp_core_h11); 
+	GEL_TextOut("core core dpll M2, %d \n",,,,,opp_core_h12); 
+	GEL_TextOut("core core dpll M2, %d \n",,,,,opp_core_h13); 
+	GEL_TextOut("core core dpll M2, %d \n",,,,,opp_core_h14); 
+	GEL_TextOut("Freq %d",,,,,dpll_freq(opp_core_m,opp_core_n));
+
+	GEL_TextOut("--------------------------- core abe :dpll -----------------------------\n"); 
+	GEL_TextOut("core per dpll M, %d \n",,,,,opp_per_m); 
+	GEL_TextOut("core per dpll N, %d \n",,,,,opp_per_n); 
+	GEL_TextOut("core per dpll M2, %d \n",,,,,opp_per_m2); 
+	GEL_TextOut("core per dpll M2, %d \n",,,,,opp_per_m3); 
+	GEL_TextOut("core per dpll M2, %d \n",,,,,opp_per_h11); 
+	GEL_TextOut("core per dpll M2, %d \n",,,,,opp_per_h12); 
+	GEL_TextOut("core per dpll M2, %d \n",,,,,opp_per_h13); 
+	GEL_TextOut("core per dpll M2, %d \n",,,,,opp_per_h14); 
+	GEL_TextOut("Freq %d",,,,,dpll_freq(opp_per_m,opp_per_n));
+	GEL_TextOut("--------------------------- dump voltage ---------------------------------\n");
+	GEL_TextOut("voltage mpu %d, core %d, lpddr %d, iva %d",,,,,current_mpu_voltage, current_core_voltage, current_lpddr_voltage, current_iva_voltage);
+}
+
+hotmenu setsysclock19_2()
+{
+   setPrcmSysClock(SYS_CLK_19_2);
+}
+
+hotmenu setsysclock26()
+{
+   setPrcmSysClock(SYS_CLK_26);
+}
+hotmenu setsysclock38_4()
+{
+   setPrcmSysClock(SYS_CLK_38_4);
+}
+/* function that changes the sysclock 19_2 and 38_4 available now */
+setPrcmSysClock(int n)
+{
+	GEL_TextOut("setting clock parameters %d",,,,,n);
+	SYSCLKFREQ=n;
+
+	if (n==SYS_CLK_19_2)
+	{
+	FREF=19200;
+	}
+	if (n==SYS_CLK_26)
+	{
+	FREF=26000;
+	}
+	if (n==SYS_CLK_38_4)
+	{
+	FREF=38400;
+	}
+	
+	setMainSysClock(n);	
+
+}
+/******************************************************************************
+ * core_dpll_unlock() : CORE DPLL unlock sequence
+ *****************************************************************************/
+core_dpll_unlock()
+{
+
+    int test =0;
+    int ID_CODE=0;
+    if (INFO_PRINT) {    
+    GEL_TextOut(">> START setting CORE DPLL in bypass mode \n");
+  }
+  
+  // configure MEMIF domain in SW_WKUP
+  CM_EMIF_CLKSTCTRL = 0x2;
+    
+  // EMIF1
+  while ((CM_EMIF_EMIF1_CLKCTRL&0x30000)!=0x0);
+    
+  // EMIF2
+  while ((CM_EMIF_EMIF2_CLKCTRL&0x30000)!=0x0);
+
+  // CM_SHADOW_FREQ_CONFIG_2 (GPMC FREQ_UPDATE = 1)
+  CM_SHADOW_FREQ_CONFIG2 = 0x1;
+
+  // CM_SHADOW_FREQ_CONFIG_1 (start freq update to go to bypass mode)
+  CM_SHADOW_FREQ_CONFIG1= 0x60D;
+    
+  // wait for CM_SHADOW_FREQ_CONFIG1.FREQ_UPDATE to be cleared by PRCM
+  while ((CM_SHADOW_FREQ_CONFIG1&0x1)==0x1);
+    
+  // configure MEMIF domain back in HW_AUTO
+  CM_EMIF_CLKSTCTRL = 0x3;
+
+  // CM_SHADOW_FREQ_CONFIG_2 (GPMC FREQ_UPDATE back to 0)
+  CM_SHADOW_FREQ_CONFIG2 = 0;
+
+  /* read ID code to know if we are using the 5432 scripts */
+  ID_CODE	  = *(int *)0x4AE0C13C;
+  
+  device_version = (ID_CODE & 0x00040000) >> 18;
+  /* if we are using 5432 */
+  if (device_version==1) 
+    { 
+      /* lets set the MPU STATIC dependency */
+      CM_MPU_STATIC_DEP |= 0x10;
+    }
+  
+
+  while (test<10000)
+    {
+      test=test+1;
+    }
+
+    if (INFO_PRINT) {    
+    GEL_TextOut(">> END setting CORE DPLL in bypass mode \n");    
+  }
+}     
+
+/******************************************************************************
+ * freq_update() : CORE DPLL lock from bypass sequence
+ *****************************************************************************/
+freq_update(int OPP)
+{
+
+    int test =0;
+    if (INFO_PRINT) {
+    GEL_TextOut(">> START setting CORE DPLL in lock mode \n");
+  }
+  
+  
+    // configure MEMIF domain in SW_WKUP
+    CM_EMIF_CLKSTCTRL = 0x2;
+    
+  // EMIF1
+  while ((CM_EMIF_EMIF1_CLKCTRL&0x30000)!=0x0);
+   
+  // EMIF2
+  while ((CM_EMIF_EMIF2_CLKCTRL&0x30000)!=0x0);
+
+  
+  // start freq_update in CM_SHADOW_FREQ_CONFIG1 and CM_SHADOW_FREQ_CONFIG2 
+  CM_SHADOW_FREQ_CONFIG2 = (opp_core_h12<<2)|0x3;
+  //CM_SHADOW_FREQ_CONFIG1 = (opp_core_m2<<11)|0x70D;
+   CM_SHADOW_FREQ_CONFIG1 = (opp_core_m2<<11)|0x709;
+   
+  // wait for CM_SHADOW_FREQ_CONFIG1.FREQ_UPDATE to be cleared by PRCM
+  if (INFO_PRINT) {    
+    GEL_TextOut(">> waiting for FREQ_UPDATE bit to be cleared \n");
+  }
+  while ((CM_SHADOW_FREQ_CONFIG1&0x1)==0x1);
+  if (INFO_PRINT) {    
+    GEL_TextOut(">> FREQ_UPDATE bit cleared \n");
+  }
+    
+  // configure MEMIF domain back in HW_AUTO
+  CM_EMIF_CLKSTCTRL = 0x3;
+        
+  // CM_SHADOW_FREQ_CONFIG_2 (GPMC FREQ_UPDATE back to 0)
+  // CM_SHADOW_FREQ_CONFIG2 = opp_core_h12<<2|0x2;
+    
+  while (test<10000)
+    {
+      test=test+1;
+    }
+
+    if (INFO_PRINT) {
+    GEL_TextOut(">> END setting CORE DPLL in lock mode \n");
+  }
+
+}
+
+/******************************************************************************
+ * opp_config_board() : 
+ *****************************************************************************/
+opp_config_board(int OPP)
+{
+
+    if (INFO_PRINT) { 
+	GEL_TextOut("opp_config OPP board %d\n",,,,, OPP);
+    }
+	
+	// Zonda DPLL programming
+	// DC: dpll_a15_opp_config_board(OPP);
+    
+    // IVA & TESLA clock programming
+	dpll_iva_opp_config_board(OPP);
+        
+    // PER DPLL programming
+   dpll_per_opp_config_board(OPP);
+   
+   // enable peripherals (NEED TO REMOVE ?)
+   enable_peripherals();
+        
+    // Core DPLL programming
+// DC:	dpll_core_opp_config_board(OPP);
+     
+    // ABE DPLL programming
+	dpll_abe_opp_config_board(OPP);
+    
+    // Ducati clock programming (using CORE clock)
+	//dpll_ducati_coreclk_opp_config_board(OPP);
+    
+    dpll_dbgss_config_board(OPP);
+    
+    if (INFO_PRINT) { 
+	GEL_TextOut("opp_config OPP Board FINISHED %d\n",,,,, OPP);
+    }
+
+}
+
+
+
+/******************************************************************************
+ * dpll_lock_board() : DPLL lock_sequence
+ *****************************************************************************/
+dpll_lock_board(int base_address, int OPP)
+{
+  unsigned int timer;
+
+  int clksel_dpll_value = 0 ;
+  int register_temp = 0;
+
+  if (INFO_PRINT) {   
+  GEL_TextOut("base adress : %x\n",,,,,base_address);
+  }
+
+  // Put DPLL into bypass mode
+  clksel_dpll_value = CM_CLKMODE_DPLL(base_address);
+  
+  clksel_dpll_value &= ~(0x7 << 0);
+  clksel_dpll_value |= (0x5 << 0);
+  CM_CLKMODE_DPLL(base_address) = clksel_dpll_value;
+	
+  if (base_address == CM_IVA_BASE)
+    {
+      // Program DPLL frequency (M =)
+      clksel_dpll_value = CM_CLKSEL_DPLL(CM_IVA_BASE);
+      clksel_dpll_value |= (opp_ivahd_m << 8);
+    
+      CM_CLKSEL_DPLL(CM_IVA_BASE) = clksel_dpll_value;
+        
+    }
+                        
+  if (base_address == CM_ABE_BASE)
+    {
+      // Program DPLL frequency (M = )
+      clksel_dpll_value = CM_CLKSEL_DPLL(CM_ABE_BASE);
+       
+      clksel_dpll_value |= (opp_abe_m << 8);
+       
+      CM_CLKSEL_DPLL(CM_ABE_BASE) = clksel_dpll_value;
+      
+    }
+       
+  if (base_address == CM_MPU_BASE)
+    {
+      // Program DPLL frequency (M = )
+      clksel_dpll_value = CM_CLKSEL_DPLL(CM_MPU_BASE);
+      clksel_dpll_value |= (opp_mpu_dcc << 22);
+      clksel_dpll_value |= (opp_mpu_m << 8);
+      
+      CM_CLKSEL_DPLL(CM_MPU_BASE) = clksel_dpll_value;
+    }
+
+  if (base_address == CM_CORE_BASE)
+    {
+      clksel_dpll_value = CM_CLKSEL_DPLL(CM_CORE_BASE);
+      // Program DPLL frequency (M = )
+      clksel_dpll_value |= (opp_core_m << 8);
+      CM_CLKSEL_DPLL(CM_CORE_BASE) = clksel_dpll_value;
+    }
+    
+
+  if (base_address == CM_PER_BASE)
+    {
+      clksel_dpll_value = CM_CLKSEL_DPLL(CM_PER_BASE);
+      clksel_dpll_value |= ( opp_per_m << 8);
+      CM_CLKSEL_DPLL(CM_PER_BASE) = clksel_dpll_value;
+    }
+  // Put DPLL into lock mode
+    
+  if (base_address != CM_CORE_BASE)
+    {        
+    
+      register_temp = CM_CLKMODE_DPLL(base_address);
+      register_temp |= 0x7;
+      CM_CLKMODE_DPLL(base_address) = register_temp;
+    }
+  else
+    {
+      freq_update(OPP);
+    }
+    	
+  // Wait for DPLL to be locked
+  timer = 0;
+  while( ((CM_IDLEST_DPLL(base_address) & 0x1) != 0x1) && (timer++<DPLL_TIMEOUT) );
+
+  if( timer >= DPLL_TIMEOUT )
+    {
+      GEL_TextOut("ERROR: timeout while locking DPLL \n");
+      return -1;
+    }
+  else
+    {
+      if (INFO_PRINT) {  		
+	GEL_TextOut("Locked board DPLL successfully \n");
+      }        		
+      return 0;
+    }
+    
+    
+}
+
+
+set_voltage(int mpu_voltage, int core_voltage, int lpddr_voltage, int iva_voltage)
+{
+    int vsel_mpu_code, vsel_core_code, vsel_lpddr_code, vsel_iva_code, value_mpu_temp, value_core_temp, value_lpddr_temp, value_iva_temp, vsel_val  ;
+    
+    
+    
+    if (INFO_PRINT) {    
+	GEL_TextOut("> ENTER set_voltage \n");
+    }
+    
+    GEL_TextOut("MPU VOLTAGE SET TO : %d mV\n",,,,,mpu_voltage);
+    GEL_TextOut("CORE VOLTAGE SET TO : %d mV\n",,,,,core_voltage);
+    GEL_TextOut("LPDDR VOLTAGE SET TO : %d mV\n",,,,,lpddr_voltage);
+    GEL_TextOut("IVA  VOLTAGE SET TO : %d mV\n",,,,,iva_voltage);
+    
+    if (mpu_voltage==OPP_MPU_VOLTAGE_NONE)
+    {  
+            GEL_TextOut("MPU VOLTAGE NOT MODIFIED \n");
+    }
+    
+    if (core_voltage==OPP_CORE_VOLTAGE_NONE)
+    {  
+            GEL_TextOut("CORE VOLTAGE NOT MODIFIED \n");
+    }
+    
+    if (core_voltage==OPP_LPDDR_VOLTAGE_NONE)
+    {  
+            GEL_TextOut("LPDDR VOLTAGE NOT MODIFIED \n");
+    }
+    
+    if (iva_voltage==OPP_IVA_VOLTAGE_NONE)
+    {  
+            GEL_TextOut("IVA VOLTAGE NOT MODIFIED \n");
+    }
+    
+    if ((mpu_voltage >= PALMAS_MIN_VOLTAGE)&&(core_voltage >= PALMAS_MIN_VOLTAGE)&&(lpddr_voltage >= PALMAS_MIN_VOLTAGE)&&(iva_voltage >= PALMAS_MIN_VOLTAGE))
+    { 
+        value_mpu_temp = (int)(mpu_voltage-PALMAS_MIN_VOLTAGE);
+        value_core_temp = (int)(core_voltage-PALMAS_MIN_VOLTAGE);
+        value_lpddr_temp = (int)(lpddr_voltage-PALMAS_MIN_VOLTAGE);
+        value_iva_temp = (int)(iva_voltage-PALMAS_MIN_VOLTAGE);
+ 
+        if (value_mpu_temp==0)
+        {
+           vsel_mpu_code=1;
+        }
+        else
+        {
+            vsel_mpu_code =  (int)((int)(value_mpu_temp/10)+6);
+        }   
+          
+        
+        if (value_core_temp==0)
+        {
+           vsel_core_code = 1;
+        }
+        else
+        {
+             vsel_core_code =  (int)(value_core_temp/10)+6;
+        }
+        
+        if (value_lpddr_temp==0)
+        {
+           vsel_lpddr_code = 1;
+        }
+        else
+        {
+             vsel_lpddr_code =  (int)(value_lpddr_temp/10)+6;
+        }
+        
+        if (value_iva_temp==0)
+        {
+           vsel_iva_code=1;
+        }
+        else
+        {
+            vsel_iva_code =  (int)(value_iva_temp/10)+6; 
+        }     
+    
+    
+        value_mpu_temp = VALID_BYPATH_CFG_FORCE_CMD + (vsel_mpu_code<<16) + (PALMAS_SMPS12DVS_REG_ADDRESS<<8) + PALMAS_I2C_SLAVE_ADDRESS;    
+        value_core_temp = VALID_BYPATH_CFG_FORCE_CMD + (vsel_core_code<<16) + (PALMAS_SMPS8DVS_REG_ADDRESS<<8) + PALMAS_I2C_SLAVE_ADDRESS; 
+        value_lpddr_temp = VALID_BYPATH_CFG_FORCE_CMD + (vsel_lpddr_code<<16) + (PALMAS_SMPS6DVS_REG_ADDRESS<<8) + PALMAS_I2C_SLAVE_ADDRESS;   
+        value_iva_temp = VALID_BYPATH_CFG_FORCE_CMD + (vsel_iva_code<<16) + (PALMAS_SMPS45DVS_REG_ADDRESS<<8) + PALMAS_I2C_SLAVE_ADDRESS;  
+    
+        if (INFO_PRINT) {    
+	        GEL_TextOut("value_mpu_temp : %x\n",,,,,value_mpu_temp);
+            GEL_TextOut("value_core_temp : %x\n",,,,,value_core_temp);
+            GEL_TextOut("value_lpddr_temp : %x\n",,,,,value_lpddr_temp);
+            GEL_TextOut("value_iva_temp : %x\n",,,,,value_iva_temp);
+        }  
+    
+        *(int*)PRM_VC_CFG_I2C_CLK = 0x6026;
+        *(int*)PRM_VC_CFG_I2C_MODE = 0x0;
+        *(int*)PRM_VC_CFG_VAL_BYPASS = value_mpu_temp;
+    
+        *(int*)PRM_VC_CFG_I2C_CLK = 0x6026;
+        *(int*)PRM_VC_CFG_I2C_MODE = 0x0;
+        *(int*)PRM_VC_CFG_VAL_BYPASS = value_core_temp;
+        
+        *(int*)PRM_VC_CFG_I2C_CLK = 0x6026;
+        *(int*)PRM_VC_CFG_I2C_MODE = 0x0;
+        *(int*)PRM_VC_CFG_VAL_BYPASS = value_lpddr_temp;
+    
+        *(int*)PRM_VC_CFG_I2C_CLK = 0x6026;
+        *(int*)PRM_VC_CFG_I2C_MODE = 0x0;
+        *(int*)PRM_VC_CFG_VAL_BYPASS = value_iva_temp;
+   }         
+    if (INFO_PRINT) {    
+	GEL_TextOut("> END set_voltage \n");
+    }
+}
+
+/******************************************************************************
+* dpll_a15_opp_config_board() : Cortex A15 DPLL OPP configurations
+*****************************************************************************/
+dpll_a15_opp_config_board(int OPP)
+{
+    if (INFO_PRINT) {    
+	GEL_TextOut("> Cortex A15 DPLL Board OPP %d\n",,,,, OPP);
+    }
+             
+    if (CM_IDLEST_DPLL(CM_MPU_BASE)&0x1)
+    {
+        GEL_TextOut("Cortex A15 DPLL Board has been already locked before, unlock it and apply new changes before relock  \n");
+    }
+  	    
+    CM_CLKSEL_DPLL(CM_MPU_BASE) = opp_mpu_n;
+            
+    // Program DPLL_CLKOUT divider (M2 = 1)
+    CM_DIV_M2_DPLL(CM_MPU_BASE) = opp_mpu_m2;
+        
+    dpll_lock_board(CM_MPU_BASE, OPP);
+  	   
+	if (INFO_PRINT) {
+    GEL_TextOut("< Cortex A15 DPLL Board OPP %d\n",,,,, OPP);
+    }
+}
+
+/******************************************************************************
+* dpll_per_opp_config_board() : PER DPLL OPP configurations
+*****************************************************************************/
+dpll_per_opp_config_board(int OPP)
+{
+	
+    if (INFO_PRINT) {
+        GEL_TextOut(" > PER DPLL BOARD OPP %d\n",,,,, OPP);
+    }
+    
+        if (CM_IDLEST_DPLL(CM_PER_BASE)&0x1)
+        {
+            GEL_TextOut("PER DPLL Board has been already locked before, unlock it and apply new changes before relock  \n");
+  	    }
+  	    
+           
+        /* CM_CLKSEL_DPLL_PER DPLL MULT */
+        // CM_CLKSEL_DPLL(CM_PER_BASE) = 0x200;
+        
+        /* CM_DIV_M2_DPLL_PER.DPLL_CLKOUT_DIV, UnForce DPLL CLKOUTX2 and CLKOUT to stay enabled */
+        CM_DIV_M2_DPLL(CM_PER_BASE) = opp_per_m2;
+        
+        /* CM_DIV_M3_DPLL_PER.DPLL_CLKOUT_DIV, UnForce DPLL CLKOUTHIF to stay enabled */
+        CM_DIV_M3_DPLL(CM_PER_BASE) = opp_per_m3;
+    
+        /* CM_DIV_H11_DPLL_PER.HSDIVIDER_CLKOUT1_DIV, UnForce HSDIVIDER_CLKOUT1 to stay enabled */
+        CM_DIV_H11_DPLL(CM_PER_BASE) = opp_per_h11;
+    
+        /* CM_DIV_H12_DPLL_PER.HSDIVIDER_CLKOUT2_DIV*/
+        CM_DIV_H12_DPLL(CM_PER_BASE) = opp_per_h12;
+    
+        /* CM_DIV_H13_DPLL_PER.HSDIVIDER_CLKOUT2_DIV, Force HSDIVIDER_CLKOUT3 to stay enabled */
+        CM_DIV_H13_DPLL(CM_PER_BASE) = opp_per_h13;
+    
+        /* CM_DIV_H14_DPLL_PER.HSDIVIDER_CLKOUT3_DIV */
+        CM_DIV_H14_DPLL(CM_PER_BASE) = opp_per_h14;
+        
+        /* Set force wakeUp domain transition */
+            CM_L4PER_CLKSTCTRL = 0x2;
+        
+
+            dpll_lock_board(CM_PER_BASE, OPP);
+            
+  
+     
+	if (INFO_PRINT) { 
+    GEL_TextOut(" < PER DPLL BOARD OPP %d\n",,,,, OPP);
+    }
+	
+}
+
+
+enable_peripherals()
+{
+
+if (INFO_PRINT) {   
+    GEL_TextOut(" > ENABLE PERIPHERALS \n");
+  }
+  
+  // ENABLE GPMC
+  *(int*)0x4A008828 = 0x00000001;
+        
+  // ENABLE EMIF4D1
+  *(int*)0x4A008B30 = 0x00000001;
+        
+  // ENABLE IVAHD CLK CTRL
+  *(int*)0x4A008f20 = 0x00000001;
+        
+  // ENABLE IVAHD SL2 CTRL
+  *(int*)0x4A008f28 = 0x00000001;   
+            
+  // ENABLE UART1
+  *(int*)0x4a009540 = 0x2;
+  // ENABLE UART2
+  *(int*)0x4a009548 = 0x2;
+  
+  // ENABLE UART3
+  *(int*)0x4a009550 = 0x2;
+  
+  // ENABLE UART4
+  *(int*)0x4a009558 = 0x2;
+  
+  // ENABLE I2C1
+  *(int*)0x4a0095A0 = 0x2 ; 
+  
+  if (INFO_PRINT) {   
+    GEL_TextOut(" < ENABLE PERIPHERALS \n");
+  }
+}
+
+/******************************************************************************
+* dpll_core_opp_config_board() : CORE DPLL OPP configurations
+*****************************************************************************/
+dpll_core_opp_config_board(int OPP)
+{
+    if (INFO_PRINT) { 
+	GEL_TextOut("> CORE DPLL BOARD OPP %d\n",,,,, OPP);
+    }
+	   
+        if (CM_IDLEST_DPLL(CM_CORE_BASE)&0x1)
+        {
+            GEL_TextOut("CORE DPLL BOARD has been already locked before, unlock it and apply new changes before relock  \n");
+  	    }
+  	    
+            // Program L3 & L4 dividers from CORE DPLL
+           /* L3 clock = CORE CLK /2; L4 clock = L3 clock /2; CORE_CLK=CORE_X2_CLK/2 */
+           CM_CLKSEL_CORE = 0x110;
+           
+           
+                   /* PADS CLKS is enabled (ABE), ABE CLK is divided by 2 */
+                   *(int*)0x4A004108 = 0x00000501;
+                   
+                   /* Lock and code outputs are not overriden */
+                   *(int*)0x4A004110 = 0x00000000;
+               
+                   /* CM_CLKSEL_DPLL_CORE.PLL_MULT */
+                   CM_CLKSEL_DPLL(CM_CORE_BASE) = opp_core_n;
+               
+                   /* CM_DIV_M2_DPLL_CORE.DPLL_CLKOUT_DIV*/
+                   //CM_DIV_M2_DPLL(CM_CORE_BASE) = opp_core_m2;
+               
+                   /* CM_DIV_M3_DPLL_CORE.DPLL_CLKOUT_DIV */
+                   CM_DIV_M3_DPLL(CM_CORE_BASE) = opp_core_m3;
+           
+                   /* CM_DIV_H11_DPLL_CORE.HSDIVIDER_CLKOUT1_DIV*/
+                   CM_DIV_H11_DPLL(CM_CORE_BASE) = opp_core_h11;
+           
+                   /* CM_DIV_H12_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV*/
+                   //CM_DIV_H12_DPLL(CM_CORE_BASE) = opp_core_h12;
+           
+                   /* CM_DIV_H13_DPLL_CORE.HSDIVIDER_CLKOUT2_DIV */
+                   CM_DIV_H13_DPLL(CM_CORE_BASE) = opp_core_h13;
+           
+                   /* CM_DIV_H14_DPLL_CORE.HSDIVIDER_CLKOUT3_DIV = 5 */
+                   CM_DIV_H14_DPLL(CM_CORE_BASE) = opp_core_h14;
+                   
+                   /* CM_DIV_H22_DPLL_CORE.HSDIVIDER_CLKOUT3_DIV = 5 */
+                   CM_DIV_H22_DPLL(CM_CORE_BASE) = opp_core_h22;
+                   
+                   /* CM_DIV_H23_DPLL_CORE.HSDIVIDER_CLKOUT3_DIV = 7 */
+                    CM_DIV_H23_DPLL(CM_CORE_BASE) = opp_core_h23;
+      
+                 
+          
+  
+            dpll_lock_board(CM_CORE_BASE ,OPP);
+        
+      
+         if (INFO_PRINT) {        
+    GEL_TextOut(" < CORE DPLL BOARD OPP %d\n",,,,, OPP);
+  }	
+}
+
+
+/******************************************************************************
+ * dpll_abe_opp_config_board() : ABE DPLL OPP configurations
+ *****************************************************************************/
+dpll_abe_opp_config_board(int OPP)
+{
+    int register_temp;
+    
+    if (INFO_PRINT) { 
+    GEL_TextOut("> ABE DPLL BOARD OPP %d\n",,,,, OPP);
+    }
+     
+     if (CM_IDLEST_DPLL(CM_ABE_BASE)&0x1)
+     {
+        GEL_TextOut("ABE DPLL BOARD has been already locked before, unlock it and apply new changes before relock  \n");
+  	 }
+  	
+        // select sysclk as CLKINP (ABE lock on CLK32K).
+         *(int*)0x4AE0610C = 0x00000001;    
+         
+         // ENABLE REGM4XEN of the ABE DPLL
+         // ENABLE DPLL_LP_MODE
+          register_temp = CM_CLKMODE_DPLL_ABE;
+      
+          register_temp=register_temp|0xC00;
+       
+          CM_CLKMODE_DPLL_ABE = register_temp;
+                                                                                     
+         // DPLL MULT                                          
+         CM_CLKSEL_DPLL(CM_ABE_BASE) = opp_abe_n;                         
+              
+        dpll_lock_board(CM_ABE_BASE, OPP);
+          
+     
+    if (INFO_PRINT) {
+    GEL_TextOut("< ABE DPLL BOARD OPP %d\n",,,,, OPP);
+  }
+}
+
+/******************************************************************************
+ * dpll_ducati_coreclk_opp_config_board() : DUCATI CORE DPLL OPP configurations
+ *****************************************************************************/
+dpll_ducati_coreclk_opp_config_board(int OPP)
+{
+    if (INFO_PRINT) {
+    GEL_TextOut("> DUCATI BOARD OPP %d\n",,,,, OPP);
+    }
+    
+    // Configure Ducati mode into Auto mode
+    // CORE_CM2:CM_DUCATI_DUCATI_CLKCTRL
+    *(int*)0x4A008920 = 0x00000001;
+    
+    // Set force-wakeup domain transition
+    // CORE_CM2:CM_DUCATI_CLKSTCTRL = SW_WKUP
+    *(int*)0x4A008900 = 0x00000002;
+    
+    // Reading 1 : clock is running ir gating/ungating transition is on-going.
+    while (((*(int*)0x4A008900) & 0x100)& ~0x100);
+   
+    if (INFO_PRINT) {
+    GEL_TextOut("< DUCATI BOARD OPP %d\n",,,,, OPP);
+    }
+    
+}
+
+dpll_dbgss_config_board(int OPP)
+{
+    if (INFO_PRINT) {
+    GEL_TextOut("> DEBUGSS BOARD 1,6GHz\n");
+    }
+       
+    if (DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS&0x2)
+    {
+        GEL_TextOut("DEBUGSS DPLL has been already locked before, unlock it and apply new changes before relock  \n");
+  	}
+  	
+    if (SYSCLKFREQ==SYS_CLK_38_4)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1 = 0x1C60FA0A;
+    }
+    
+    if (SYSCLKFREQ==SYS_CLK_19_2)
+    {
+        // PLL CONFIGURATION1
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION1 = 0x1C61F40A;
+    }
+    
+        // PLL CONFIGURATION2
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION2 = 0xE52008;
+            
+        // PLL CONFIGURATION3
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_CONFIGURATION3 = 0x4;
+     
+        // REQUEST DPLL
+        DEBUGSS_CFGBUS_PLLCTRL_PLL_GO = 0x1;
+    
+        // Reading 1 : DPLL is locked.
+        while ((DEBUGSS_CFGBUS_PLLCTRL_PLL_STATUS&0x2)& ~0x2);
+        
+    if (INFO_PRINT) {   
+    GEL_TextOut("< DEBUGSS ZEBU 1,6GHz DPLL \n");
+    }   
+}
+
+dpll_iva_opp_config_board(int OPP)
+{
+    if (INFO_PRINT) {
+    GEL_TextOut("> IVA BOARD OPP %d\n",,,,, OPP);
+    }
+    
+      
+    if (CM_IDLEST_DPLL(CM_IVA_BASE)&0x1)
+    {
+        GEL_TextOut("IVA BOARD has been already locked before, unlock it and apply new changes before relock  \n");
+  	 }
+  
+     
+         // DPLL AUTO control  disabled
+            *(int*)0x4A0041DC = 0x00000001;
+             
+            // DPLL AUTO control  disabled
+            CM_AUTOIDLE_DPLL(CM_IVA_BASE) = 0x00000000;
+             
+            // CKGEN_CM1.CM_CLKSEL_DPLL_IVA
+            CM_CLKSEL_DPLL(CM_IVA_BASE) = opp_ivahd_n;
+            
+            // CKGEN_CM1.CM_DIV_H11_DPLL_IVA.HSDIVIDER_CLKOUT1_DIV
+            CM_DIV_H11_DPLL(CM_IVA_BASE) = opp_ivahd_h11;
+            
+            // CKGEN_CM1.CM_DIV_H12_DPLL_IVA.HSDIVIDER_CLKOUT2_DIV = 7
+            CM_DIV_H12_DPLL(CM_IVA_BASE) = opp_ivahd_h12;
+            
+        //CM_CLKMODE_DPLL(CM_IVA_BASE) = 0x7;
+    
+        // Need to lock it
+        dpll_lock_board(CM_IVA_BASE, OPP);
+
+    if (INFO_PRINT) {   
+    GEL_TextOut("< IVA BOARD OPP %d\n",,,,, OPP);
+    }
+}
+
+

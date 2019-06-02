@@ -1,0 +1,26 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* Attila L4 PER DSS     			     						   */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     					   */
+/*******************************************************************/
+memorymap_init_L4_PER_DSS()
+{
+    GEL_MapAddStr(0x48040000, 0, 0x00001000, "R|W|AS4", 0);  /* DSS registers */
+    GEL_MapAddStr(0x48041000, 0, 0x00001000, "R|W|AS4", 0);  /* DISPC */
+    GEL_MapAddStr(0x48042000, 0, 0x00001000, "R|W|AS4", 0);  /* RFBI */
+    GEL_MapAddStr(0x48043000, 0, 0x00001000, "R|W|AS4", 0);  /* VENC */
+    GEL_MapAddStr(0x48044000, 0, 0x00001000, "R|W|AS4", 0);  /* DSI1 */
+    GEL_MapAddStr(0x48045000, 0, 0x00001000, "R|W|AS4", 0);  /* DSI2 */
+    GEL_MapAddStr(0x48046000, 0, 0x00001000, "R|W|AS4", 0);  /* HDMI */
+    GEL_MapAddStr(0x48047000, 0, 0x00001000, "R|W|AS4", 0);  /* HDCP */
+}
+    
+ 
+    
+    

@@ -1,0 +1,43 @@
+/*--------------------------------------------------------------*/
+/* Tesla.gel                                        */
+/* version 0.01                                                 */
+/*                                                              */
+/* SUMMARY:                                                     */
+/*                                                              */
+/* This gel file is to be used to configure the cross           */
+/* triggering on a TCU based device.                            */
+/*                                                              */
+/* LIMITATIONS:                                                 */
+/*                                                              */
+/*                                                              */
+/*--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------*/
+/* FUNCTION SUMMARY                                             */
+/*                                                              */
+/* EnableCrossTrigger   -- Enable Cross Trigger                 */
+/* DisableCrossTrigger  -- Disable Cross Trigger                */
+/*--------------------------------------------------------------*/ 
+menuitem "Cross Triggering"; 
+
+/* TCU SETTINGS */
+#define TCU_RELEASE         0xFFFF0000
+#define TCU_CLAIM           0x00000001
+#define TCU_ENABLE          0x00000002
+
+#define CROSS_TRIG_EMU0     0x00005880
+#define CROSS_TRIG_EMU1     0x00009046
+
+hotmenu EnableCrossTrigger()
+{
+  TCU_CNTL = TCU_CLAIM;						    /* Claim TCU */
+  TCU_CNTL = (CROSS_TRIG_EMU0 | TCU_ENABLE);	/* Watch EMU0, Stop on EMU event, Enable EMU0 pulse catch, Drive EMU0 low on stop, ECU enable  */
+  GEL_TextOut("\nCross triggering is enabled\n");
+} 
+
+hotmenu DisableCrossTrigger()
+{
+  TCU_CNTL &= TCU_RELEASE;						/* Clear TCU */
+  GEL_TextOut("\nCross-triggering is disabled\n");
+} 
+

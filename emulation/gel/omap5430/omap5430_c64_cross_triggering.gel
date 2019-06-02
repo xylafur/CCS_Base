@@ -1,0 +1,35 @@
+/*--------------------------------------------------------------*/
+/* Tesla.gel                                                    */
+/* version 0.01                                                 */
+/*                                                              */
+/* SUMMARY:                                                     */
+/*                                                              */
+/* This gel file is to be used to configure the cross           */
+/* triggering on a Tesla driver                                 */
+/*                                                              */
+/* LIMITATIONS:                                                 */
+/*                                                              */
+/*                                                              */
+/*--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------*/
+/* FUNCTION SUMMARY                                             */
+/*                                                              */
+/* EnableCrossTrigger   -- Enable Cross Trigger                 */
+/* DisableCrossTrigger  -- Disable Cross Trigger                */
+/*--------------------------------------------------------------*/ 
+menuitem "Cross Triggering"; 
+
+
+hotmenu EnableCrossTrigger()
+{
+  STS_DBG_GBRKPT  = 0x1;
+  GEL_TextOut("\nCross triggering is enabled\n");
+} 
+
+hotmenu DisableCrossTrigger()
+{
+  STS_DBG_GBRKPT  = 0x0;
+  GEL_TextOut("\nCross-triggering is disabled\n");
+} 
+

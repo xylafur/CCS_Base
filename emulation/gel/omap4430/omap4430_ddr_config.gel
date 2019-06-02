@@ -1,0 +1,4306 @@
+/*******************************************************************/ 
+/* This GEL file is loaded on the command line of Code Composer    */
+/* The StartUp() function is called every time you start           */
+/* Code Composer.  You can customize this function to              */
+/* initialize wait states or to perform other initialization.      */
+/*                                                                 */
+/* ATTILA DDR Config              		     				 */
+/*                                                                 */
+/*                                                                 */
+/*  Author: Salamito thomas				     		       */
+/*******************************************************************/
+menuitem "Memory config"
+/**********************************************************************
+ *
+ *  FUNCTIONS
+ *
+ **********************************************************************/
+#define SAMSUNG		1
+#define ELPIDA2X2GBIT	2
+#define ELPIDA4X2GBIT	3
+#define HYNIX		4
+#define MICRON		5
+#define ZEBU		11
+
+#define	OPP25		1
+#define	OPP50		2
+#define	OPP80		3
+#define	OPP100		4
+#define	OPP100_SDC	5
+#define OPP100_ES20 55
+#define OPP119      	6
+
+#define	OPP25_SDC	7
+#define	OPP50_SDC	8
+#define	OPP80_SDC	9
+#define OPP119_SDC      10
+
+#define	OPPBOOT		11
+#define	OPP100_HDMI	12
+
+#define JEDEC_TIM1_OPPBOOT	0x04442049
+#define JEDEC_TIM1_OPP25	0x04444189
+#define JEDEC_TIM1_OPP50	0x08648309
+#define JEDEC_TIM1_OPP100	0x10EB065A
+#define JEDEC_TIM1_OPP25_SDC	0x04443149
+#define JEDEC_TIM1_OPP50_SDC	0x06446289
+#define JEDEC_TIM1_OPP100_SDC	0x0CA8D51A
+
+#define JEDEC_TIM2_OPPBOOT	0x1002008A
+#define JEDEC_TIM2_OPP25	0x100D034A
+#define JEDEC_TIM2_OPP50	0x101B06CA
+#define JEDEC_TIM2_OPP100	0x20370DD2
+#define JEDEC_TIM2_OPP25_SDC	0x100B02CA
+#define JEDEC_TIM2_OPP50_SDC	0x101705CA
+#define JEDEC_TIM2_OPP100_SDC	0x202E0B92
+
+#define SDRAM_CONFIG_1X_1GBIT_MAP3_CL3	0x98800E31
+#define SDRAM_CONFIG_1X_1GBIT_MAP3_CL5	0x98801631
+#define SDRAM_CONFIG_1X_1GBIT_MAP3_CL6	0x98801A31
+#define SDRAM_CONFIG_1X_2GBIT_MAP3_CL3	0x98800EB1
+#define SDRAM_CONFIG_1X_2GBIT_MAP3_CL6	0x98801AB1
+#define SDRAM_CONFIG_2X_2GBIT_MAP3_CL3	0x98800EB9
+#define SDRAM_CONFIG_2X_2GBIT_MAP3_CL6	0x98801AB9
+
+#define DDR_PHY_CTRL1_OPPBOOT_RL3	0x449FFFF4
+#define DDR_PHY_CTRL1_OPP25_RL3		0x449FFFF4
+#define DDR_PHY_CTRL1_OPP50_RL3		0x449FF814
+#define DDR_PHY_CTRL1_OPP100_RL3	0x449FF414
+#define DDR_PHY_CTRL1_OPPBOOT_RL5	0x449FFFF7
+#define DDR_PHY_CTRL1_OPP25_RL5		0x449FFFF7
+#define DDR_PHY_CTRL1_OPP50_RL5		0x449FF817
+#define DDR_PHY_CTRL1_OPP100_RL5	0x449FF417
+#define DDR_PHY_CTRL1_OPPBOOT_RL6	0x449FFFF8
+#define DDR_PHY_CTRL1_OPP25_RL6		0x449FFFF8
+#define DDR_PHY_CTRL1_OPP50_RL6		0x449FF818
+#define DDR_PHY_CTRL1_OPP100_RL6	0x449FF418
+
+#define REF_CTRL_3_9_US_OPPBOOT		0x0000004A
+#define REF_CTRL_3_9_US_OPP25		0x00000186
+#define REF_CTRL_3_9_US_OPP50		0x0000030C
+#define REF_CTRL_3_9_US_OPP100		0x00000618
+#define REF_CTRL_3_9_US_OPP25_SDC	0x00000143
+#define REF_CTRL_3_9_US_OPP50_SDC	0x00000287
+#define REF_CTRL_3_9_US_OPP100_SDC	0x0000050E
+#define REF_CTRL_3_9_US_OPP100_HDMI	0x000005CD
+
+#define REF_CTRL_7_8_US_OPPBOOT		0x00000095
+#define REF_CTRL_7_8_US_OPP25		0x0000030C
+#define REF_CTRL_7_8_US_OPP50		0x00000618
+#define REF_CTRL_7_8_US_OPP100		0x00000C30
+#define REF_CTRL_7_8_US_OPP25_SDC	0x00000287
+#define REF_CTRL_7_8_US_OPP50_SDC	0x0000050E
+#define REF_CTRL_7_8_US_OPP100_SDC	0x00000A1D
+
+#define LISA_MAP0_256MBYTE_INTL128	0x80440300
+#define LISA_MAP0_512MBYTE_INTL128	0x80540300
+#define LISA_MAP0_1GBYTE_INTL128	0x80640300
+
+hotmenu ddr_config_top(int OPP, int memoryType)
+{
+	int lv_OPP; // Local OPP variable needed to overwrite OPP100_ES20 that is actually OPP50 (to keep consistency inside omap4430_startup_common.gel)
+	
+	if (OPP == OPP100_ES20){
+		lv_OPP = OPP50;
+	} else {
+		lv_OPP = OPP;
+	}
+	
+	// Removing NVM mode on nCS1 in order to select if needed 2 CS of DDRAM for each EMIF4D instance
+	*(int*)(0x4D00000C)&=0xBFFFFFFF; // Clear bit 30 - REG_CS1NVMEN
+	*(int*)(0x4C00000C)&=0xBFFFFFFF; // Clear bit 30 - REG_CS1NVMEN
+		
+	if (memoryType==SAMSUNG)
+	{
+		samsung_K3PE3E300MXGC1_EMIF4D1(lv_OPP);
+		samsung_K3PE3E300MXGC1_EMIF4D2(lv_OPP);
+	}
+
+	if (memoryType==ELPIDA2X2GBIT)
+	{
+		elpida_E1471E10_EMIF4D1(lv_OPP);
+		elpida_E1471E10_EMIF4D2(lv_OPP);
+	}
+
+	if (memoryType==ELPIDA4X2GBIT)
+	{
+		elpida_EDB8064B1PB8DF_EMIF4D1(lv_OPP);
+		elpida_EDB8064B1PB8DF_EMIF4D2(lv_OPP);
+	}
+
+	if (memoryType==HYNIX)
+	{
+		hynix_H8TBR00K0MQR_EMIF4D1(lv_OPP);
+		hynix_H8TBR00K0MQR_EMIF4D2(lv_OPP);
+	}
+
+	if (memoryType==MICRON)
+	{
+		micron_MT2L32M64DKH3_EMIF4D1(lv_OPP);
+		micron_MT2L32M64DKH3_EMIF4D2(lv_OPP);
+	}
+
+
+	dmm_settings_board(memoryType);
+	*(int*)0x4A100638 = 0x9C9C9C9C;
+	*(int*)0x4A10063C = 0x9C9C9C9C;
+	*(int*)0x4A100640 = 0x9C9C9C9C;
+	*(int*)0x4A100648 = 0x9C9C9C9C;
+	*(int*)0x4A10064C = 0x9C9C9C9C;
+	*(int*)0x4A100650 = 0x9C9C9C9C;
+	*(int*)0x4A100704 = 0x00084000;
+
+}
+
+hotmenu elpida_E1471E10_ddr_config(int OPP)
+{
+    //*(int*)0x4c000038 = 0x0;
+
+    elpida_E1471E10_ddr_config_EMIF4D1_shadow(OPP);
+    elpida_E1471E10_ddr_config_EMIF4D2_shadow(OPP);
+    dmm_settings_board(ELPIDA2X2GBIT);
+    //*(int*)0x4e000040 = 0x80400200;
+    //*(int*)0x4e000040 = 0x80400100;
+    *(int*)0x4e000040 = 0x80540300;
+    *(int*)0x4A100638 = 0x9C9C9C9C;
+    *(int*)0x4A10063C = 0x9C9C9C9C;
+    *(int*)0x4A100640 = 0x9C9C9C9C;
+    //    *(int*)0x4A100638 = 0x2C2C2C2C;
+    //    *(int*)0x4A10063C = 0x2C2C2C2C;
+    //    *(int*)0x4A100640 = 0x2C2C2C2C;
+    //    *(int*)0x4A100638 = 0x24242424;
+    //    *(int*)0x4A10063C = 0x24242424;
+    //    *(int*)0x4A100640 = 0x24242424;
+    *(int*)0x4A100648 = 0x9C9C9C9C;
+    *(int*)0x4A10064C = 0x9C9C9C9C;
+    *(int*)0x4A100650 = 0x9C9C9C9C;
+    *(int*)0x4A100704 = 0x00084000;
+}
+
+hotmenu samsung_K3PE3E300MXGC1_ddr_config(int OPP)
+{
+    //*(int*)0x4c000038 = 0x0;
+
+    samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_shadow(OPP);
+    samsung_K3PE3E300MXGC1_ddr_config_EMIF4D2_shadow(OPP);
+    dmm_settings_board(SAMSUNG);
+    //*(int*)0x4e000040 = 0x80400200;
+    //*(int*)0x4e000040 = 0x80400100;
+    *(int*)0x4e000040 = 0x80440300;
+    *(int*)0x4A100638 = 0x9C9C9C9C;
+    *(int*)0x4A10063C = 0x9C9C9C9C;
+    *(int*)0x4A100640 = 0x9C9C9C9C;
+    //    *(int*)0x4A100638 = 0x2C2C2C2C;
+    //    *(int*)0x4A10063C = 0x2C2C2C2C;
+    //    *(int*)0x4A100640 = 0x2C2C2C2C;
+    //    *(int*)0x4A100638 = 0x24242424;
+    //    *(int*)0x4A10063C = 0x24242424;
+    //    *(int*)0x4A100640 = 0x24242424;
+    *(int*)0x4A100648 = 0x9C9C9C9C;
+    *(int*)0x4A10064C = 0x9C9C9C9C;
+    *(int*)0x4A100650 = 0x9C9C9C9C;
+    *(int*)0x4A100704 = 0x00084000;
+}
+
+samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_AND_EMIF4D2_shadow(int OPP)
+{
+	samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_shadow(OPP);
+	samsung_K3PE3E300MXGC1_ddr_config_EMIF4D2_shadow(OPP);
+	dmm_settings_board(SAMSUNG);
+}
+
+samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_ONLY_shadow(int OPP)
+{
+	samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_shadow(OPP);
+	dmm_settings_board(SAMSUNG);
+}
+
+
+elpida_E1471E10_ddr_config_EMIF4D1_AND_EMIF4D2_shadow(int OPP)
+{
+	elpida_E1471E10_ddr_config_EMIF4D1_shadow(OPP);
+	elpida_E1471E10_ddr_config_EMIF4D2_shadow(OPP);
+	dmm_settings_board(ELPIDA2X2GBIT);
+}
+
+elpida_E1471E10_ddr_config_EMIF4D1_ONLY_shadow(int OPP)
+{
+	elpida_E1471E10_ddr_config_EMIF4D1_shadow(OPP);
+	dmm_settings_board(ELPIDA2X2GBIT);
+}
+
+samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_AND_EMIF4D2_raw()
+{
+	samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_raw();
+	samsung_K3PE3E300MXGC1_ddr_config_EMIF4D2_raw();
+	dmm_settings_board(SAMSUNG);
+}
+
+samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_ONLY_raw()
+{
+	samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_raw();
+	dmm_settings_board(SAMSUNG);
+}
+
+
+elpida_E1471E10_ddr_config_EMIF4D1_AND_EMIF4D2_raw()
+{
+	elpida_E1471E10_ddr_config_EMIF4D1_raw();
+	elpida_E1471E10_ddr_config_EMIF4D2_raw();
+	dmm_settings_board(ELPIDA2X2GBIT);
+}
+
+elpida_E1471E10_ddr_config_EMIF4D1_ONLY_raw()
+{
+	elpida_E1471E10_ddr_config_EMIF4D1_raw();
+	dmm_settings_board(ELPIDA2X2GBIT);
+}
+
+samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_AND_EMIF4D2_wakeUp()
+{
+	samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_wakeUp();
+	samsung_K3PE3E300MXGC1_ddr_config_EMIF4D2_wakeUp();
+	dmm_settings_board(SAMSUNG);
+}
+
+samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_ONLY_wakeUp()
+{
+	samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_wakeUp();
+	dmm_settings_board(SAMSUNG);
+}
+
+
+elpida_E1471E10_ddr_config_EMIF4D1_AND_EMIF4D2_wakeUp()
+{
+	elpida_E1471E10_ddr_config_EMIF4D1_wakeUp();
+	elpida_E1471E10_ddr_config_EMIF4D2_wakeUp();
+	dmm_settings_board(ELPIDA2X2GBIT);
+}
+
+elpida_E1471E10_ddr_config_EMIF4D1_AND_EMIF4D2_boot()
+{
+	elpida_E1471E10_ddr_config_EMIF4D1_boot();
+	elpida_E1471E10_ddr_config_EMIF4D2_boot();
+	dmm_settings_board(ELPIDA2X2GBIT);
+}
+
+elpida_E1471E10_ddr_config_EMIF4D1_ONLY_wakeUp()
+{
+	elpida_E1471E10_ddr_config_EMIF4D1_wakeUp();
+	dmm_settings_board(ELPIDA2X2GBIT);
+}
+
+hotmenu zebu_ddr_config()
+{
+    GEL_TextOut(">> START Zebu DDR config \n");
+    
+    
+    // DDR2 controller CONFIG for LPDDR2 2Gb (256MB) (x32)
+    /* Write @E4 d0x901FF416 */
+   *(int*)0x4c0000e4 = 0x901FF416;
+   
+   /* Write @08 d0x80800EB2 */
+   *(int*)0x4c000008 = 0x80800EB2;
+   
+   /* Write @50 d0x40000000 */
+   *(int*)0x4c000050 = 0x40000000;
+   
+   /* Write @40 d0x00000000 */
+   *(int*)0x4c000040 = 0x00000000;
+
+   /* Configure DMM */
+    *(int*)0x4E000040 = 0x80700100;
+	dmm_settings_board(ZEBU);
+
+	// Enable EMIF1 CLK CTRL
+    *(int*)0x4A008B30 = 0x00000001;
+    
+    // Enable EMIFH1 CLK CTRL
+    *(int*)0x4A008B50 = 0x00000001;
+    
+    GEL_TextOut(">> END Zebu DDR config \n");
+}
+
+dmm_settings_board(int memoryType)
+{
+	GEL_TextOut(">> START dmm_settings_board \n");
+
+	if (memoryType==ZEBU)
+	{
+		/* Write @40 LISA_MAP_0 */
+   		*(int*)0x4e000040 = 0x80700100;
+  	
+		/* Write @48 LISA_MAP_3 */
+   		*(int*)0x4e00004C = 0xFF020100;
+	}
+
+	if (memoryType==ELPIDA2X2GBIT)
+	{
+	
+		/* Write @40 LISA_MAP_0 */
+   		*(int*)0x4e000040 = LISA_MAP0_512MBYTE_INTL128;
+   	
+		/* Write @48 LISA_MAP_3 */
+   		*(int*)0x4e00004C = 0xFF020100;
+	}
+
+	if (memoryType==ELPIDA4X2GBIT)
+	{
+	
+		/* Write @40 LISA_MAP_0 */
+   		*(int*)0x4e000040 = LISA_MAP0_1GBYTE_INTL128;
+   	
+		/* Write @48 LISA_MAP_3 */
+   		*(int*)0x4e00004C = 0xFF020100;
+	}
+
+	if ((memoryType==SAMSUNG)||(memoryType==HYNIX)||(memoryType==MICRON))
+	{
+		/* Write @40 LISA_MAP_0 */
+   		*(int*)0x4e000040 = LISA_MAP0_256MBYTE_INTL128;
+	
+		/* Write @48 LISA_MAP_3 */
+   		*(int*)0x4e00004C = 0xFF020100;
+	}
+
+	GEL_TextOut(">> END dmm_settings_board\n");
+}
+
+
+samsung_K3PE3E300MXGC1_EMIF4D1_shadow_reg(int OPP)
+{
+
+	// DDR PHY CTRL1 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP100_RL6;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP50_RL6;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP25_RL6;
+	}
+	else if (OPP == OPP100_ES20)
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	}
+
+	// READ IDLE CTRL SHDW
+	*(int*)0x4C00009C = 0x000501FF;
+
+	// SDRAM TIM 1 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP25_SDC;
+	}
+
+	// SDRAM TIM 2 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP25_SDC;
+	}
+
+	// SDRAM TIM 3 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C00002C = 0x00B1C337;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C00002C = 0x008EA2B7;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C00002C = 0x0048A197;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C00002C = 0x00470157;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C00002C = 0x004400C7;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C00002C = 0x004380A7;
+	}
+
+	// PWR MGMT CTRL SHDW
+	*(int*)0x4C00003C = 0x00000000;
+
+
+	// SDRAM REF CTRL SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP25_SDC;
+	}
+
+
+}
+
+samsung_K3PE3E300MXGC1_EMIF4D1(int OPP)
+{
+
+    	GEL_TextOut(">> Start SAMSUNG K3PE3E300MXGC1 DDR config EMIF4D1\n");
+
+   	// SDRAM CONFIG
+	*(int*)0x4C000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL3;
+
+	// DDR PHY CTRL 1
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	
+	// set MR0 register and poll
+	*(int*)0x4C000050 = 0x00000000;
+	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	// set MR10 register
+	*(int*)0x4C000050 = 0x0000000A;
+	*(int*)0x4C000040 = 0x000000FF;
+
+	// set MR1 register 
+	*(int*)0x4C000050 = 0x00000001;
+	*(int*)0x4C000040 = 0x00000023;
+
+ if ((OPP != OPP100_ES20) && (OPP != OPP50)){
+	// change RL
+	// set MR2 register
+	*(int*)0x4C000050 = 0x00000002;
+	*(int*)0x4C000040 = 0x00000004;
+	// SDRAM CONFIG
+	*(int*)0x4C000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL6;
+	// DDR PHY CTRL 1
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+}
+
+
+	// DDR PHY CTRL 2
+	*(int*)0x4C0000EC = 0x00000000;
+
+	// READ IDLE CTRL
+	*(int*)0x4C000098 = 0x000501FF;
+
+	// PWR MGMT CTRL
+	*(int*)0x4C000038 = 0x80000000;
+
+	// ZQ INIT
+	*(int*)0x4C0000C8 = 0x500B3215;
+
+	// SDRAM REF CTRL
+	*(int*)0x4C000010 = REF_CTRL_7_8_US_OPPBOOT;
+
+	// program shadow registers
+	samsung_K3PE3E300MXGC1_EMIF4D1_shadow_reg(OPP);
+
+	// set MR16 register
+	*(int*)0x4C000050 = 0x40000010;
+	*(int*)0x4C000040 = 0x00000000;
+
+
+     GEL_TextOut(">> END SAMSUNG K3PE3E300MXGC1 DDR config EMIF4D1\n");
+}
+
+
+samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_shadow(int OPP)
+{
+	int loop = 0;	
+    	GEL_TextOut(">> Start SAMSUNG K3PE3E300MXGC1 DDR EMIF4D1 config SHADOW \n");
+
+	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL3;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+
+	/* DDR PHY CTRL1 SHDW */
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP100_RL3;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP50_RL3;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP25_RL3;
+	}
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4C0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4C000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	*(int*)0x4C00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4C000018 = JEDEC_TIM1_OPPBOOT;
+	
+	/* SDRAM TIM 1 SHDW*/
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP25_SDC;
+	}
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4C000020 = JEDEC_TIM2_OPPBOOT;
+
+	/* SDRAM TIM 2 SHDW */
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP25_SDC;
+	}
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4C000028 = 0x00408027;
+
+	/* SDRAM TIM 3 SHDW */
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C00002C = 0x00B1C337;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C00002C = 0x008EA2B7;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C00002C = 0x0048A197;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C00002C = 0x00470157;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C00002C = 0x004400C7;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C00002C = 0x004380A7;
+	}
+	
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4C000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4C00003C = 0x00000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4C0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x000000FF;
+
+//	for (loop=0; loop<20; loop++)
+//	{
+//		loop++;
+//	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000023;
+
+	
+	/* set MR2 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000002;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000004;
+
+     /* CHECK THERE IF MR2 VALUE HAS CHANGED */
+	/* In the following example no */
+	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL6;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+
+	/* DDR PHY CTRL1 SHDW */
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP100_RL6;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP50_RL6;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP25_RL6;
+	}
+
+     /* END OF CHECK THERE IF MR2 VALUE HAS CHANGED */	
+
+	/* SDRAM REF CTRL */
+	*(int*)0x4C000010 = REF_CTRL_7_8_US_OPPBOOT;
+
+	/* SDRAM REF CTRL SHDW */
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP25_SDC;
+	}
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x40000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000000;
+
+	// Enable EMIF1 CLK CTRL (done by default)
+      // *(int*)0x4A008B30 = 0x00000001;
+        
+     GEL_TextOut(">> END SAMSUNG K3PE3E300MXGC1 DDR config EMIF4D1 SHADOW \n");
+}
+
+
+samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_raw()
+{
+	int loop = 0;	
+    	GEL_TextOut(">> Start SAMSUNG K3PE3E300MXGC1 DDR EMIF4D1 config RAW\n");
+
+	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = 0x98800E31;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = 0x449FF416;
+
+	/* DDR PHY CTRL1 SHDW */
+	*(int*)0x4C0000E8 = 0x449FF416;
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4C0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4C000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	*(int*)0x4C00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4C000018 = 0x0CA8D51A;
+	
+	/* SDRAM TIM 1 SHDW*/
+	*(int*)0x4C00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4C000020 = 0x202E0B92;
+
+	/* SDRAM TIM 2 SHDW */
+	*(int*)0x4C000024 = 0x202E0B92;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4C000028 = 0x008EA2B7;
+
+	/* SDRAM TIM 3 SHDW */
+	*(int*)0x4C00002C = 0x008EA2B7;
+	
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4C000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4C00003C = 0x00000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4C0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x000000FF;
+
+	for (loop=0; loop<20; loop++)
+	{
+		loop++;
+	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000023;
+
+	
+	/* set MR2 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000002;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000004;
+
+     /* CHECK THERE IF MR2 VALUE HAS CHANGED */
+	/* In the following example no */
+	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = 0x98801A31;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = 0x449FF418;
+
+	/* DDR PHY CTRL1 SHDW */
+	*(int*)0x4C0000E8 = 0x449FF418;
+
+     /* END OF CHECK THERE IF MR2 VALUE HAS CHANGED */	
+
+	/* SDRAM REF CTRL */
+	*(int*)0x4C000010 = 0x00000A1D;
+
+	/* SDRAM REF CTRL SHDW */
+	*(int*)0x4C000014 = 0x00000A1D;
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x40000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000000;
+
+	// Enable EMIF1 CLK CTRL (done by default)
+      // *(int*)0x4A008B30 = 0x00000001;
+        
+     GEL_TextOut(">> END SAMSUNG K3PE3E300MXGC1 DDR config EMIF4D1 RAW\n");
+}
+
+
+samsung_K3PE3E300MXGC1_ddr_config_EMIF4D1_wakeUp()
+{
+	int loop = 0;	
+    	GEL_TextOut(">> Start SAMSUNG K3PE3E300MXGC1 DDR config EMIF4D1 WAKEUP\n");
+
+	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = 0x98800E31;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = 0x449FFFF6;
+
+	/* DDR PHY CTRL1 SHDW */
+	//*(int*)0x4C0000E8 = 0x449FF416;
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4C0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4C000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	//*(int*)0x4C00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4C000018 = 0x04442049;
+	
+	/* SDRAM TIM 1 SHDW*/
+	//*(int*)0x4C00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4C000020 = 0x1002008A;
+
+	/* SDRAM TIM 2 SHDW */
+	//*(int*)0x4C000024 = 0x1002008A;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4C000028 = 0x00408027;
+
+	/* SDRAM TIM 3 SHDW */
+	//*(int*)0x4C00002C = 0x008EA2BF;
+	
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4C000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	//*(int*)0x4C00003C = 0x00000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4C0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x000000FF;
+
+	for (loop=0; loop<20; loop++)
+	{
+		loop++;
+	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000023;
+
+	
+	/* set MR2 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000002;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000004;
+
+     /* CHECK THERE IF MR2 VALUE HAS CHANGED */
+	/* In the following example no */
+	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = 0x98801A31;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = 0x449FF418;
+
+	/* DDR PHY CTRL1 SHDW */
+	*(int*)0x4C0000E8 = 0x449FF418;
+    
+    
+    
+    
+    /* DDR PHY CTRL 2 */
+	*(int*)0x4C0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4C000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	*(int*)0x4C00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4C000018 = 0x0CA8D51A;
+	
+	/* SDRAM TIM 1 SHDW*/
+	*(int*)0x4C00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4C000020 = 0x202E0B92;
+
+	/* SDRAM TIM 2 SHDW */
+	*(int*)0x4C000024 = 0x202E0B92;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4C000028 = 0x008EA2BF;
+
+	/* SDRAM TIM 3 SHDW */
+	*(int*)0x4C00002C = 0x008EA2BF;
+	
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4C000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4C00003C = 0x00000000;
+    
+	/* SDRAM REF CTRL */
+	*(int*)0x4C000010 = 0x00000A1D;
+
+	/* SDRAM REF CTRL SHDW */
+	*(int*)0x4C000014 = 0x00000A1D;
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x40000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000000;
+
+	// Enable EMIF1 CLK CTRL (done by default)
+      // *(int*)0x4A008B30 = 0x00000001;
+   
+     GEL_TextOut(">> END SAMSUNG K3PE3E300MXGC1 DDR EMIF4D1 config wakeUp \n");
+}
+
+
+samsung_K3PE3E300MXGC1_EMIF4D2_shadow_reg(int OPP)
+{
+
+	// DDR PHY CTRL1 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP100_RL6;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP50_RL6;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP25_RL6;
+	}
+	else if (OPP == OPP100_ES20)
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	}
+
+	// READ IDLE CTRL SHDW
+	*(int*)0x4D00009C = 0x000501FF;
+
+	// SDRAM TIM 1 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP25_SDC;
+	}
+
+	// SDRAM TIM 2 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP25_SDC;
+	}
+
+	// SDRAM TIM 3 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D00002C = 0x00B1C337;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D00002C = 0x008EA2B7;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D00002C = 0x0048A197;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D00002C = 0x00470157;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D00002C = 0x004400C7;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D00002C = 0x004380A7;
+	}
+
+	// PWR MGMT CTRL SHDW
+	*(int*)0x4D00003C = 0x00000000;
+
+
+	// SDRAM REF CTRL SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP25_SDC;
+	}
+
+
+}
+
+samsung_K3PE3E300MXGC1_EMIF4D2(int OPP)
+{
+
+    	GEL_TextOut(">> Start SAMSUNG K3PE3E300MXGC1 DDR config EMIF4D2\n");
+
+   	// SDRAM CONFIG
+	*(int*)0x4D000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL3;
+
+	// DDR PHY CTRL 1
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	
+	// set MR0 register and poll
+	*(int*)0x4D000050 = 0x00000000;
+	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	// set MR10 register
+	*(int*)0x4D000050 = 0x0000000A;
+	*(int*)0x4D000040 = 0x000000FF;
+
+	// set MR1 register 
+	*(int*)0x4D000050 = 0x00000001;
+	*(int*)0x4D000040 = 0x00000023;
+
+if ((OPP != OPP100_ES20) && (OPP != OPP50)){
+	// change RL
+	// set MR2 register
+	*(int*)0x4D000050 = 0x00000002;
+	*(int*)0x4D000040 = 0x00000004;
+	// SDRAM CONFIG
+	*(int*)0x4D000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL6;
+	// DDR PHY CTRL 1
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+}
+
+
+	// DDR PHY CTRL 2
+	*(int*)0x4D0000EC = 0x00000000;
+
+	// READ IDLE CTRL
+	*(int*)0x4D000098 = 0x000501FF;
+
+	// PWR MGMT CTRL
+	*(int*)0x4D000038 = 0x80000000;
+
+	// ZQ INIT
+	*(int*)0x4D0000C8 = 0x500B3215;
+
+	// SDRAM REF CTRL
+	*(int*)0x4D000010 = REF_CTRL_7_8_US_OPPBOOT;
+
+	// program shadow registers
+	samsung_K3PE3E300MXGC1_EMIF4D2_shadow_reg(OPP);
+
+	// set MR16 register
+	*(int*)0x4D000050 = 0x40000010;
+	*(int*)0x4D000040 = 0x00000000;
+
+
+     GEL_TextOut(">> END SAMSUNG K3PE3E300MXGC1 DDR config EMIF4D2\n");
+}
+
+samsung_K3PE3E300MXGC1_ddr_config_EMIF4D2_shadow(int OPP)
+{
+	int loop = 0;	
+    	GEL_TextOut(">> Start SAMSUNG K3PE3E300MXGC1 DDR EMIF4D2 config SHADOW \n");
+
+	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL3;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+
+	/* DDR PHY CTRL1 SHDW */
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP100_RL3;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP50_RL3;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP25_RL3;
+	}
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4D0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4D000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	*(int*)0x4D00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4D000018 = JEDEC_TIM1_OPPBOOT;
+	
+	/* SDRAM TIM 1 SHDW*/
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP25_SDC;
+	}
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4D000020 = JEDEC_TIM2_OPPBOOT;
+
+	/* SDRAM TIM 2 SHDW */
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP25_SDC;
+	}
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4D000028 = 0x00408027;
+
+	/* SDRAM TIM 3 SHDW */
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D00002C = 0x00B1C337;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D00002C = 0x008EA2B7;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D00002C = 0x0048A197;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D00002C = 0x00470157;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D00002C = 0x004400C7;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D00002C = 0x004380A7;
+	}
+	
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4D000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4D00003C = 0x00000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4D0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x000000FF;
+
+//	for (loop=0; loop<20; loop++)
+//	{
+//		loop++;
+//	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000023;
+
+	
+	/* set MR2 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000002;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000004;
+
+     /* CHECK THERE IF MR2 VALUE HAS CHANGED */
+	/* In the following example no */
+	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL6;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+
+	/* DDR PHY CTRL1 SHDW */
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP100_RL6;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP50_RL6;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP25_RL6;
+	}
+
+     /* END OF CHECK THERE IF MR2 VALUE HAS CHANGED */	
+
+	/* SDRAM REF CTRL */
+	*(int*)0x4D000010 = REF_CTRL_7_8_US_OPPBOOT;
+
+	/* SDRAM REF CTRL SHDW */
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP25_SDC;
+	}
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x40000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000000;
+
+	// Enable EMIF1 CLK CTRL (done by default)
+      // *(int*)0x4A008B30 = 0x00000001;
+        
+     GEL_TextOut(">> END SAMSUNG K3PE3E300MXGC1 DDR config EMIF4D2 SHADOW \n");
+}
+
+samsung_K3PE3E300MXGC1_ddr_config_EMIF4D2_raw()
+{
+	int loop = 0;	
+    	GEL_TextOut(">> Start SAMSUNG K3PE3E300MXGC1 DDR config EMIF4D2 RAW\n");
+
+	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = 0x98800E31;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = 0x449FF416;
+
+	/* DDR PHY CTRL1 SHDW */
+	*(int*)0x4D0000E8 = 0x449FF416;
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4D0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4D000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	*(int*)0x4D00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4D000018 = 0x0CA8D51A;
+	
+	/* SDRAM TIM 1 SHDW*/
+	*(int*)0x4D00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4D000020 = 0x202E0B92;
+
+	/* SDRAM TIM 2 SHDW */
+	*(int*)0x4D000024 = 0x202E0B92;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4D000028 = 0x008EA2BF;
+
+	/* SDRAM TIM 3 SHDW */
+	*(int*)0x4D00002C = 0x008EA2BF;
+	
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4D000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4D00003C = 0x00000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4D0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x000000FF;
+
+	for (loop=0; loop<20; loop++)
+	{
+		loop++;
+	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000023;
+
+	
+	/* set MR2 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000002;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000004;
+
+     /* CHECK THERE IF MR2 VALUE HAS CHANGED */
+	/* In the following example no */
+	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = 0x98801A31;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = 0x449FF418;
+
+	/* DDR PHY CTRL1 SHDW */
+	*(int*)0x4D0000E8 = 0x449FF418;
+
+     /* END OF CHECK THERE IF MR2 VALUE HAS CHANGED */	
+
+	/* SDRAM REF CTRL */
+	*(int*)0x4D000010 = 0x00000A1D;
+
+	/* SDRAM REF CTRL SHDW */
+	*(int*)0x4D000014 = 0x00000A1D;
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x40000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000000;
+
+	// Enable EMIF1 CLK CTRL (done by default)
+      // *(int*)0x4A008B30 = 0x00000001;
+   
+     GEL_TextOut(">> END SAMSUNG K3PE3E300MXGC1 DDR EMIF4D2 config RAW \n");
+}
+
+samsung_K3PE3E300MXGC1_ddr_config_EMIF4D2_wakeUp()
+{
+	int loop = 0;	
+    	GEL_TextOut(">> Start SAMSUNG K3PE3E300MXGC1 DDR config EMIF4D2 WAKEUP\n");
+
+	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = 0x98800E31;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = 0x449FFFF6;
+
+	/* DDR PHY CTRL1 SHDW */
+	//*(int*)0x4D0000E8 = 0x449FF416;
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4D0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4D000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	//*(int*)0x4D00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4D000018 = 0x04442049;
+	
+	/* SDRAM TIM 1 SHDW*/
+	//*(int*)0x4D00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4D000020 = 0x1002008A;
+
+	/* SDRAM TIM 2 SHDW */
+	//*(int*)0x4D000024 = 0x1002008A;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4D000028 = 0x00408027;
+
+	/* SDRAM TIM 3 SHDW */
+	//*(int*)0x4D00002C = 0x008EA2BF;
+	
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4D000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	//*(int*)0x4D00003C = 0x00000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4D0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x000000FF;
+
+	for (loop=0; loop<20; loop++)
+	{
+		loop++;
+	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000023;
+
+	
+	/* set MR2 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000002;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000004;
+
+     /* CHECK THERE IF MR2 VALUE HAS CHANGED */
+	/* In the following example no */
+	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = 0x98801A31;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = 0x448FF418;
+
+	/* DDR PHY CTRL1 SHDW */
+	*(int*)0x4D0000E8 = 0x448FF418;
+    
+    /* DDR PHY CTRL 2 */
+	*(int*)0x4D0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4D000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	*(int*)0x4D00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4D000018 = 0x0CA8D51A;
+	
+	/* SDRAM TIM 1 SHDW*/
+	*(int*)0x4D00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4D000020 = 0x202E0B92;
+
+	/* SDRAM TIM 2 SHDW */
+	*(int*)0x4D000024 = 0x202E0B92;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4D000028 = 0x008EA2BF;
+
+	/* SDRAM TIM 3 SHDW */
+	*(int*)0x4D00002C = 0x008EA2BF;
+	
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4D000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	//*(int*)0x4D00003C = 0x00000000;
+    
+	/* SDRAM REF CTRL */
+	*(int*)0x4D000010 = 0x00000A1D;
+
+	/* SDRAM REF CTRL SHDW */
+	*(int*)0x4D000014 = 0x00000A1D;
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x40000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000000;
+
+	// Enable EMIF1 CLK CTRL (done by default)
+      // *(int*)0x4A008B30 = 0x00000001;
+   
+     GEL_TextOut(">> END SAMSUNG K3PE3E300MXGC1 DDR EMIF4D2 config wakeUp \n");
+}
+
+
+
+
+elpida_E1471E10_ddr_config_EMIF4D1_shadow(int OPP)
+{
+	int loop = 0;
+     GEL_TextOut(">> Start ELPIDA E1471E10 DDR config EMIF4D1 shadow\n");
+    
+    
+   	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = SDRAM_CONFIG_1X_2GBIT_MAP3_CL3;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+
+	/* DDR PHY CTRL1 SHDW */
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+	*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP100_RL3;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP50_RL3;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP25_RL3;
+	}
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4C0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4C000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	*(int*)0x4C00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4C000018 = JEDEC_TIM1_OPPBOOT;
+	
+	/* SDRAM TIM 1 SHDW*/
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+	*(int*)0x4C00001C = JEDEC_TIM1_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP25_SDC;
+	}
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4C000020 = JEDEC_TIM2_OPPBOOT;
+
+	/* SDRAM TIM 2 SHDW */
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+	*(int*)0x4C000024 = JEDEC_TIM2_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP25_SDC;
+	}
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4C000028 = 0x0040802F;
+
+	/* SDRAM TIM 3 SHDW */
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C00002C = 0x00B1C33F;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+	*(int*)0x4C00002C = 0x008EA2BF;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C00002C = 0x0048A19F;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C00002C = 0x0047015F;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C00002C = 0x004400CF;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C00002C = 0x004380AF;
+	}
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4C000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4C00003C = 0x00000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4C0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	
+    
+    /// MUST BE UNCOMMENTED
+    while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x000000FF;
+
+//	for (loop=0; loop<20; loop++)
+//	{
+//		loop++;
+//	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000023;
+
+	
+	/* set MR2 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000002;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000004;
+
+     /* CHECK THERE IF MR2 VALUE HAS CHANGED */
+	/* In the following example no */
+	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = SDRAM_CONFIG_1X_2GBIT_MAP3_CL6;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+
+	/* DDR PHY CTRL1 SHDW */
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+	*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP100_RL6;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP50_RL6;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP25_RL6;
+	}
+
+     /* END OF CHECK THERE IF MR2 VALUE HAS CHANGED */	
+
+	/* SDRAM REF CTRL */
+	*(int*)0x4C000010 = REF_CTRL_3_9_US_OPPBOOT;
+
+	/* SDRAM REF CTRL SHDW */
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+	*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP25_SDC;
+	}
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x40000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000000;
+
+	// Enable EMIF1 CLK CTRL (done by default)
+      // *(int*)0x4A008B30 = 0x00000001;
+    
+    GEL_TextOut(">> End ELPIDA E1471E10 DDR config EMIF4D1 shadow\n");
+}
+
+
+micron_MT2L32M64DKH3_EMIF4D1_shadow_reg(int OPP)
+{
+	// DDR PHY CTRL1 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP100_RL5;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP50_RL5;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP25_RL5;
+	}
+	else if (OPP == OPP100_ES20)
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	}
+
+	// READ IDLE CTRL SHDW
+	*(int*)0x4C00009C = 0x000501FF;
+
+	// SDRAM TIM 1 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP25_SDC;
+	}
+
+	// SDRAM TIM 2 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP25_SDC;
+	}
+
+	// SDRAM TIM 3 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C00002C = 0x00B1C337;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C00002C = 0x008EA2B7;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C00002C = 0x0048A197;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C00002C = 0x00470157;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C00002C = 0x004400C7;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C00002C = 0x004380A7;
+	}
+
+	// PWR MGMT CTRL SHDW
+	*(int*)0x4C00003C = 0x00000000;
+
+
+	// SDRAM REF CTRL SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP25_SDC;
+	}
+
+}
+
+micron_MT2L32M64DKH3_EMIF4D1(int OPP)
+{
+     GEL_TextOut(">> Start MICRON MT2L32M64DKH3 DDR config EMIF4D1\n");
+    
+    
+   	// SDRAM CONFIG
+	*(int*)0x4C000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL3;
+
+	// DDR PHY CTRL 1
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	
+	// set MR0 register and poll
+	*(int*)0x4C000050 = 0x00000000;
+	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	// set MR10 register
+	*(int*)0x4C000050 = 0x0000000A;
+	*(int*)0x4C000040 = 0x000000FF;
+
+	// set MR1 register 
+	*(int*)0x4C000050 = 0x00000001;
+	*(int*)0x4C000040 = 0x00000023;
+
+if ((OPP != OPP100_ES20) && (OPP != OPP50)){
+	// change RL
+	// set MR2 register
+	*(int*)0x4C000050 = 0x00000002;
+	*(int*)0x4C000040 = 0x00000003;
+	// SDRAM CONFIG
+	*(int*)0x4C000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL5;
+	// DDR PHY CTRL 1
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL5;
+}
+
+
+	// DDR PHY CTRL 2
+	*(int*)0x4C0000EC = 0x00000000;
+
+	// READ IDLE CTRL
+	*(int*)0x4C000098 = 0x000501FF;
+
+	// PWR MGMT CTRL
+	*(int*)0x4C000038 = 0x80000000;
+
+	// ZQ INIT
+	*(int*)0x4C0000C8 = 0x500B3215;
+
+	// SDRAM REF CTRL
+	*(int*)0x4C000010 = REF_CTRL_7_8_US_OPPBOOT;
+
+	// program shadow registers
+	micron_MT2L32M64DKH3_EMIF4D1_shadow_reg(OPP);
+
+	// set MR16 register
+	*(int*)0x4C000050 = 0x40000010;
+	*(int*)0x4C000040 = 0x00000000;
+    
+    GEL_TextOut(">> End MICRON MT2L32M64DKH3 DDR config EMIF4D1\n");
+}
+
+micron_MT2L32M64DKH3_EMIF4D2_shadow_reg(int OPP)
+{
+	// DDR PHY CTRL1 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP100_RL5;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP50_RL5;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP25_RL5;
+	}
+	else if (OPP == OPP100_ES20)
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	}
+
+	// READ IDLE CTRL SHDW
+	*(int*)0x4D00009C = 0x000501FF;
+
+	// SDRAM TIM 1 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP25_SDC;
+	}
+
+	// SDRAM TIM 2 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP25_SDC;
+	}
+
+	// SDRAM TIM 3 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D00002C = 0x00B1C337;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D00002C = 0x008EA2B7;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D00002C = 0x0048A197;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D00002C = 0x00470157;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D00002C = 0x004400C7;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D00002C = 0x004380A7;
+	}
+
+	// PWR MGMT CTRL SHDW
+	*(int*)0x4D00003C = 0x00000000;
+
+
+	// SDRAM REF CTRL SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP25_SDC;
+	}
+
+}
+
+micron_MT2L32M64DKH3_EMIF4D2(int OPP)
+{
+     GEL_TextOut(">> Start MICRON MT2L32M64DKH3 DDR config EMIF4D2\n");
+    
+    
+   	// SDRAM CONFIG
+	*(int*)0x4D000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL3;
+
+	// DDR PHY CTRL 1
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	
+	// set MR0 register and poll
+	*(int*)0x4D000050 = 0x00000000;
+	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	// set MR10 register
+	*(int*)0x4D000050 = 0x0000000A;
+	*(int*)0x4D000040 = 0x000000FF;
+
+	// set MR1 register 
+	*(int*)0x4D000050 = 0x00000001;
+	*(int*)0x4D000040 = 0x00000023;
+
+if ((OPP != OPP100_ES20) && (OPP != OPP50)){
+	// change RL
+	// set MR2 register
+	*(int*)0x4D000050 = 0x00000002;
+	*(int*)0x4D000040 = 0x00000003;
+	// SDRAM CONFIG
+	*(int*)0x4D000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL5;
+	// DDR PHY CTRL 1
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL5;
+}
+
+
+	// DDR PHY CTRL 2
+	*(int*)0x4D0000EC = 0x00000000;
+
+	// READ IDLE CTRL
+	*(int*)0x4D000098 = 0x000501FF;
+
+	// PWR MGMT CTRL
+	*(int*)0x4D000038 = 0x80000000;
+
+	// ZQ INIT
+	*(int*)0x4D0000C8 = 0x500B3215;
+
+	// SDRAM REF CTRL
+	*(int*)0x4D000010 = REF_CTRL_7_8_US_OPPBOOT;
+
+	// program shadow registers
+	micron_MT2L32M64DKH3_EMIF4D2_shadow_reg(OPP);
+
+	// set MR16 register
+	*(int*)0x4D000050 = 0x40000010;
+	*(int*)0x4D000040 = 0x00000000;
+    
+    GEL_TextOut(">> End MICRON MT2L32M64DKH3 DDR config EMIF4D2\n");
+}
+
+elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(int OPP)
+{
+
+	// DDR PHY CTRL1 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_SDC)||(OPP == OPP100_HDMI))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP100_RL6;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP50_RL6;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP25_RL6;
+	}
+	else if (OPP == OPPBOOT)
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+	}
+	else if (OPP == OPP100_ES20)
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	}
+
+	// READ IDLE CTRL SHDW
+	*(int*)0x4C00009C = 0x000501FF;
+
+	// SDRAM TIM 1 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_HDMI))
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP25_SDC;
+	}
+	else if (OPP == OPPBOOT)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPPBOOT;
+	}
+
+	// SDRAM TIM 2 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_HDMI))
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP25_SDC;
+	}
+	else if (OPP == OPPBOOT)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPPBOOT;
+	}
+
+	// SDRAM TIM 3 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_HDMI))
+	{
+		*(int*)0x4C00002C = 0x00B1C33F;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C00002C = 0x008EA2BF;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C00002C = 0x0048A19F;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C00002C = 0x0047015F;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C00002C = 0x004400CF;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C00002C = 0x004380AF;
+	}
+	else if (OPP == OPPBOOT)
+	{
+		*(int*)0x4C00002C = 0x0040802F;
+	}
+
+	// PWR MGMT CTRL SHDW
+	*(int*)0x4C00003C = 0x00000000;
+
+
+	// SDRAM REF CTRL SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP100_SDC;
+	}
+	else if (OPP == OPP100_HDMI)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP100_HDMI;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPP25_SDC;
+	}
+	else if (OPP == OPPBOOT)
+	{
+		*(int*)0x4C000014 = REF_CTRL_3_9_US_OPPBOOT;
+	}
+
+}
+
+elpida_E1471E10_EMIF4D1(int OPP)
+{
+
+     GEL_TextOut(">> Start ELPIDA E1471E10 DDR config EMIF4D1\n");
+
+   	// SDRAM CONFIG
+	*(int*)0x4C000008 = SDRAM_CONFIG_1X_2GBIT_MAP3_CL3;
+
+	// DDR PHY CTRL 1
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	
+	// set MR0 (line CS0) register and poll 
+	*(int*)0x4C000050 = 0x00000000;
+	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	// set MR0 (line CS1) register and poll 
+//	*(int*)0x4C000050 = 0x80000000;
+//	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	// set MR10 (line CS0) register
+	*(int*)0x4C000050 = 0x0000000A;
+	*(int*)0x4C000040 = 0x000000FF;
+
+	// set MR10 (line CS1) register
+//	*(int*)0x4C000050 = 0x8000000A;
+//	*(int*)0x4C000040 = 0x000000FF;
+
+	// set MR1 (line CS0) register
+	*(int*)0x4C000050 = 0x00000001;
+	*(int*)0x4C000040 = 0x00000023;
+
+	// set MR1 (line CS1) register
+//	*(int*)0x4C000050 = 0x80000001;
+//	*(int*)0x4C000040 = 0x00000023;
+
+ if ((OPP != OPP100_ES20) && (OPP != OPP50)){
+	// change RL
+	// set MR2 (line CS0) register 
+	*(int*)0x4C000050 = 0x00000002;
+	*(int*)0x4C000040 = 0x00000004;
+	// set MR2 (line CS1) register 
+//	*(int*)0x4C000050 = 0x80000002;
+//	*(int*)0x4C000040 = 0x00000004;
+	// SDRAM CONFIG
+	*(int*)0x4C000008 = SDRAM_CONFIG_1X_2GBIT_MAP3_CL6;
+	// DDR PHY CTRL 1
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+}
+
+
+	// DDR PHY CTRL 2
+	*(int*)0x4C0000EC = 0x00000000;
+
+	// READ IDLE CTRL
+	*(int*)0x4C000098 = 0x000501FF;
+
+	// PWR MGMT CTRL
+	*(int*)0x4C000038 = 0x80000000;
+
+	// ZQ INIT
+	*(int*)0x4C0000C8 = 0x500B3215;
+
+	// SDRAM REF CTRL
+	*(int*)0x4C000010 = REF_CTRL_3_9_US_OPPBOOT;
+
+	// program shadow registers
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPP);
+
+	// set MR16 (line CS0) 
+	*(int*)0x4C000050 = 0x40000010;
+	*(int*)0x4C000040 = 0x00000000;
+
+	// set MR16 (line CS1) 
+//	*(int*)0x4C000050 = 0xC0000010;
+//	*(int*)0x4C000040 = 0x00000000;
+
+    
+    GEL_TextOut(">> End ELPIDA E1471E10 DDR config EMIF4D1\n");
+}
+
+elpida_E1471E10_EMIF4D2(int OPP)
+{
+
+     GEL_TextOut(">> Start ELPIDA E1471E10 DDR config EMIF4D2\n");
+
+   	// SDRAM CONFIG
+	*(int*)0x4D000008 = SDRAM_CONFIG_1X_2GBIT_MAP3_CL3;
+
+	// DDR PHY CTRL 1
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	
+	// set MR0 (line CS0) register and poll 
+	*(int*)0x4D000050 = 0x00000000;
+	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	// set MR0 (line CS1) register and poll 
+//	*(int*)0x4D000050 = 0x80000000;
+//	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	// set MR10 (line CS0) register
+	*(int*)0x4D000050 = 0x0000000A;
+	*(int*)0x4D000040 = 0x000000FF;
+
+	// set MR10 (line CS1) register
+//	*(int*)0x4D000050 = 0x8000000A;
+//	*(int*)0x4D000040 = 0x000000FF;
+
+	// set MR1 (line CS0) register
+	*(int*)0x4D000050 = 0x00000001;
+	*(int*)0x4D000040 = 0x00000023;
+
+	// set MR1 (line CS1) register
+//	*(int*)0x4D000050 = 0x80000001;
+//	*(int*)0x4D000040 = 0x00000023;
+
+ if ((OPP != OPP100_ES20) && (OPP != OPP50)){
+	// change RL
+	// set MR2 (line CS0) register 
+	*(int*)0x4D000050 = 0x00000002;
+	*(int*)0x4D000040 = 0x00000004;
+	// set MR2 (line CS1) register 
+//	*(int*)0x4D000050 = 0x80000002;
+//	*(int*)0x4D000040 = 0x00000004;
+	// SDRAM CONFIG
+	*(int*)0x4D000008 = SDRAM_CONFIG_1X_2GBIT_MAP3_CL6;
+	// DDR PHY CTRL 1
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+}
+
+
+	// DDR PHY CTRL 2
+	*(int*)0x4D0000EC = 0x00000000;
+
+	// READ IDLE CTRL
+	*(int*)0x4D000098 = 0x000501FF;
+
+	// PWR MGMT CTRL
+	*(int*)0x4D000038 = 0x80000000;
+
+	// ZQ INIT
+	*(int*)0x4D0000C8 = 0x500B3215;
+
+	// SDRAM REF CTRL
+	*(int*)0x4D000010 = REF_CTRL_3_9_US_OPPBOOT;
+
+	// program shadow registers
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPP);
+
+	// set MR16 (line CS0) 
+	*(int*)0x4D000050 = 0x40000010;
+	*(int*)0x4D000040 = 0x00000000;
+
+	// set MR16 (line CS1) 
+//	*(int*)0x4D000050 = 0xC0000010;
+//	*(int*)0x4D000040 = 0x00000000;
+
+    
+    GEL_TextOut(">> End ELPIDA E1471E10 DDR config EMIF4D2\n");
+}
+
+elpida_EDB8064B1PB8DF_EMIF4D1(int OPP)
+{
+
+     GEL_TextOut(">> Start ELPIDA EDB8064B1PB8DF DDR config EMIF4D1\n");
+
+   	// SDRAM CONFIG
+	*(int*)0x4C000008 = SDRAM_CONFIG_2X_2GBIT_MAP3_CL3;
+
+	// DDR PHY CTRL 1
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	
+	// set MR0 (line CS0) register and poll 
+	*(int*)0x4C000050 = 0x00000000;
+	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	// set MR0 (line CS1) register and poll 
+	*(int*)0x4C000050 = 0x80000000;
+	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	// set MR10 (line CS0) register
+	*(int*)0x4C000050 = 0x0000000A;
+	*(int*)0x4C000040 = 0x000000FF;
+
+	// set MR10 (line CS1) register
+	*(int*)0x4C000050 = 0x8000000A;
+	*(int*)0x4C000040 = 0x000000FF;
+
+	// set MR1 (line CS0) register
+	*(int*)0x4C000050 = 0x00000001;
+	*(int*)0x4C000040 = 0x00000023;
+
+	// set MR1 (line CS1) register
+	*(int*)0x4C000050 = 0x80000001;
+	*(int*)0x4C000040 = 0x00000023;
+
+ if ((OPP != OPP100_ES20) && (OPP != OPP50)){
+	// change RL
+	// set MR2 (line CS0) register 
+	*(int*)0x4C000050 = 0x00000002;
+	*(int*)0x4C000040 = 0x00000004;
+	// set MR2 (line CS1) register 
+	*(int*)0x4C000050 = 0x80000002;
+	*(int*)0x4C000040 = 0x00000004;
+	// SDRAM CONFIG
+	*(int*)0x4C000008 = SDRAM_CONFIG_2X_2GBIT_MAP3_CL6;
+	// DDR PHY CTRL 1
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+}
+
+
+	// DDR PHY CTRL 2
+	*(int*)0x4C0000EC = 0x00000000;
+
+	// READ IDLE CTRL
+	*(int*)0x4C000098 = 0x000501FF;
+
+	// PWR MGMT CTRL
+	*(int*)0x4C000038 = 0x80000000;
+
+	// ZQ INIT
+	*(int*)0x4C0000C8 = 0x500B3215;
+
+	// SDRAM REF CTRL
+	*(int*)0x4C000010 = REF_CTRL_3_9_US_OPPBOOT;
+
+	// program shadow registers
+	elpida_EDB8064B1PB8DF_EMIF4D1_shadow_reg(OPP);
+
+	// set MR16 (line CS0) 
+	*(int*)0x4C000050 = 0x40000010;
+	*(int*)0x4C000040 = 0x00000000;
+
+	// set MR16 (line CS1) 
+	*(int*)0x4C000050 = 0xC0000010;
+	*(int*)0x4C000040 = 0x00000000;
+
+    
+    GEL_TextOut(">> End ELPIDA EDB8064B1PB8DF DDR config EMIF4D1\n");
+}
+
+hynix_H8TBR00K0MQR_EMIF4D1_shadow_reg(int OPP)
+{
+
+	// DDR PHY CTRL1 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP100_RL6;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP50_RL6;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPP25_RL6;
+	}
+	else if (OPP == OPP100_ES20)
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	}
+
+	// READ IDLE CTRL SHDW
+	*(int*)0x4C00009C = 0x000501FF;
+
+	// SDRAM TIM 1 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C00001C = JEDEC_TIM1_OPP25_SDC;
+	}
+
+	// SDRAM TIM 2 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C000024 = JEDEC_TIM2_OPP25_SDC;
+	}
+
+	// SDRAM TIM 3 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C00002C = 0x00B1C337;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C00002C = 0x008EA2B7;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C00002C = 0x0048A197;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C00002C = 0x00470157;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C00002C = 0x004400C7;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C00002C = 0x004380A7;
+	}
+
+	// PWR MGMT CTRL SHDW
+	*(int*)0x4C00003C = 0x00000000;
+
+
+	// SDRAM REF CTRL SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4C000014 = REF_CTRL_7_8_US_OPP25_SDC;
+	}
+
+}
+
+hynix_H8TBR00K0MQR_EMIF4D1(int OPP)
+{
+     GEL_TextOut(">> Start HYNIX H8TBR00K0MQR DDR config EMIF4D1\n");
+
+
+
+   	// SDRAM CONFIG
+	*(int*)0x4C000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL3;
+
+	// DDR PHY CTRL 1
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	
+	// set MR0 register and poll
+	*(int*)0x4C000050 = 0x00000000;
+	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	// set MR10 register
+	*(int*)0x4C000050 = 0x0000000A;
+	*(int*)0x4C000040 = 0x000000FF;
+
+	// set MR1 register 
+	*(int*)0x4C000050 = 0x00000001;
+	*(int*)0x4C000040 = 0x00000023;
+
+ if ((OPP != OPP100_ES20) && (OPP != OPP50)){
+	// change RL
+	// set MR2 register
+	*(int*)0x4C000050 = 0x00000002;
+	*(int*)0x4C000040 = 0x00000004;
+	// SDRAM CONFIG
+	*(int*)0x4C000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL6;
+	// DDR PHY CTRL 1
+	*(int*)0x4C0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+}
+
+
+	// DDR PHY CTRL 2
+	*(int*)0x4C0000EC = 0x00000000;
+
+	// READ IDLE CTRL
+	*(int*)0x4C000098 = 0x000501FF;
+
+	// PWR MGMT CTRL
+	*(int*)0x4C000038 = 0x80000000;
+
+	// ZQ INIT
+	*(int*)0x4C0000C8 = 0x500B3215;
+
+	// SDRAM REF CTRL
+	*(int*)0x4C000010 = REF_CTRL_7_8_US_OPPBOOT;
+
+	// program shadow registers
+	hynix_H8TBR00K0MQR_EMIF4D1_shadow_reg(OPP);
+
+	// set MR16 register
+	*(int*)0x4C000050 = 0x40000010;
+	*(int*)0x4C000040 = 0x00000000;
+
+    GEL_TextOut(">> End HYNIX H8TBR00K0MQR DDR config EMIF4D1\n");
+}
+
+hynix_H8TBR00K0MQR_EMIF4D2_shadow_reg(int OPP)
+{
+
+	// DDR PHY CTRL1 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP100_RL6;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP50_RL6;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP25_RL6;
+	}
+	else if (OPP == OPP100_ES20)
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	}
+
+	// READ IDLE CTRL SHDW
+	*(int*)0x4D00009C = 0x000501FF;
+
+	// SDRAM TIM 1 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP25_SDC;
+	}
+
+	// SDRAM TIM 2 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP25_SDC;
+	}
+
+	// SDRAM TIM 3 SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D00002C = 0x00B1C337;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D00002C = 0x008EA2B7;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D00002C = 0x0048A197;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D00002C = 0x00470157;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D00002C = 0x004400C7;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D00002C = 0x004380A7;
+	}
+
+	// PWR MGMT CTRL SHDW
+	*(int*)0x4D00003C = 0x00000000;
+
+
+	// SDRAM REF CTRL SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_7_8_US_OPP25_SDC;
+	}
+
+}
+
+hynix_H8TBR00K0MQR_EMIF4D2(int OPP)
+{
+     GEL_TextOut(">> Start HYNIX H8TBR00K0MQR DDR config EMIF4D2\n");
+
+
+
+   	// SDRAM CONFIG
+	*(int*)0x4D000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL3;
+
+	// DDR PHY CTRL 1
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	
+	// set MR0 register and poll
+	*(int*)0x4D000050 = 0x00000000;
+	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	// set MR10 register
+	*(int*)0x4D000050 = 0x0000000A;
+	*(int*)0x4D000040 = 0x000000FF;
+
+	// set MR1 register 
+	*(int*)0x4D000050 = 0x00000001;
+	*(int*)0x4D000040 = 0x00000023;
+
+if ((OPP != OPP100_ES20) && (OPP != OPP50)){
+	// change RL
+	// set MR2 register
+	*(int*)0x4D000050 = 0x00000002;
+	*(int*)0x4D000040 = 0x00000004;
+	// SDRAM CONFIG
+	*(int*)0x4D000008 = SDRAM_CONFIG_1X_1GBIT_MAP3_CL6;
+	// DDR PHY CTRL 1
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+}
+
+
+	// DDR PHY CTRL 2
+	*(int*)0x4D0000EC = 0x00000000;
+
+	// READ IDLE CTRL
+	*(int*)0x4D000098 = 0x000501FF;
+
+	// PWR MGMT CTRL
+	*(int*)0x4D000038 = 0x80000000;
+
+	// ZQ INIT
+	*(int*)0x4D0000C8 = 0x500B3215;
+
+	// SDRAM REF CTRL
+	*(int*)0x4D000010 = REF_CTRL_7_8_US_OPPBOOT;
+
+	// program shadow registers
+	hynix_H8TBR00K0MQR_EMIF4D2_shadow_reg(OPP);
+
+	// set MR16 register
+	*(int*)0x4D000050 = 0x40000010;
+	*(int*)0x4D000040 = 0x00000000;
+
+    GEL_TextOut(">> End HYNIX H8TBR00K0MQR DDR config EMIF4D2\n");
+}
+
+
+elpida_E1471E10_ddr_config_EMIF4D1_raw()
+{
+	int loop = 0;
+     GEL_TextOut(">> Start ELPIDA E1471E10 DDR config EMIF4D1 raw\n");
+    
+    
+   	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = 0x98800EB1;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = 0x449FF416;
+
+	/* DDR PHY CTRL1 SHADOW */
+	*(int*)0x4C0000E8 = 0x449FF416;
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4C0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4C000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	*(int*)0x4C00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4C000018 = 0x0CA8D51A;
+	
+	/* SDRAM TIM 1 SHDW*/
+	*(int*)0x4C00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4C000020 = 0x202E0B92;
+
+	/* SDRAM TIM 2 SHDW */
+	*(int*)0x4C000024 = 0x202E0B92;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4C000028 = 0x008EA2BF;
+
+	/* SDRAM TIM 3 SHDW */
+	*(int*)0x4C00002C = 0x008EA2BF;
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4C000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4C00003C = 0x00000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4C0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x000000FF;
+
+	for (loop=0; loop<20; loop++)
+	{
+		loop++;
+	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000023;
+
+	
+	/* set MR2 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000002;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000004;
+
+     /* CHECK THERE IF MR2 VALUE HAS CHANGED */
+	/* In the following example no */
+	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = 0x98801AB1;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = 0x449FF418;
+
+	/* DDR PHY CTRL1 SHDW */
+	*(int*)0x4C0000E8 = 0x449FF418;
+
+     /* END OF CHECK THERE IF MR2 VALUE HAS CHANGED */	
+
+	/* SDRAM REF CTRL */
+	*(int*)0x4C000010 = 0x0000050E;
+
+	/* SDRAM REF CTRL SHDW */
+	*(int*)0x4C000014 = 0x0000050E;
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x40000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000000;
+
+	// Enable EMIF1 CLK CTRL (done by default)
+      // *(int*)0x4A008B30 = 0x00000001;
+    
+    GEL_TextOut(">> End ELPIDA E1471E10 DDR config EMIF4D1 raw\n");
+}
+
+elpida_E1471E10_ddr_config_EMIF4D1_boot()
+{
+	int loop = 0;
+     GEL_TextOut(">> Start ELPIDA E1471E10 DDR config EMIF4D1 boot\n");
+    
+    
+   	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = 0x98800EB1;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = 0x448FF415;
+
+	/* DDR PHY CTRL1 SHDW */
+	// *(int*)0x4C0000E8 = 0x448FF415;
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4C0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4C000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	// *(int*)0x4C00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4C000018 = 0x04442049;
+	
+	/* SDRAM TIM 1 SHDW*/
+	// *(int*)0x4C00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4C000020 = 0x1002008A;
+
+	/* SDRAM TIM 2 SHDW */
+	//*(int*)0x4C000024 = 0x202E0B92;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4C000028 = 0x0040802F;
+
+	/* SDRAM TIM 3 SHDW */
+	//*(int*)0x4C00002C = 0x008EA2BF;
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4C000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4C00003C = 0x00000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4C0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x000000FF;
+
+	for (loop=0; loop<20; loop++)
+	{
+		loop++;
+	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000023;
+    
+    /* PWR MGMT CTRL */
+	*(int*)0x4C000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4C00003C = 0x00000000;
+ 
+	/* SDRAM REF CTRL */
+	*(int*)0x4C000010 = 0x0000004A;
+
+	/* SDRAM REF CTRL SHDW */
+	*(int*)0x4C000014 = 0x0000004A;
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000000;
+    
+    GEL_TextOut(">> End ELPIDA E1471E10 DDR config EMIF4D1 boot\n");
+}
+
+elpida_E1471E10_ddr_config_EMIF4D1_wakeUp()
+{
+	int loop = 0;
+     GEL_TextOut(">> Start ELPIDA E1471E10 DDR config EMIF4D1 wakeUp\n");
+    
+    
+   	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = 0x98800EB1;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = 0x449FFFF6;
+
+	/* DDR PHY CTRL1 SHDW */
+	// *(int*)0x4C0000E8 = 0x449FF416;
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4C0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4C000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	// *(int*)0x4C00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4C000018 = 0x04442049;
+	
+	/* SDRAM TIM 1 SHDW*/
+	// *(int*)0x4C00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4C000020 = 0x1002008A;
+
+	/* SDRAM TIM 2 SHDW */
+	//*(int*)0x4C000024 = 0x202E0B92;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4C000028 = 0x0040802F;
+
+	/* SDRAM TIM 3 SHDW */
+	//*(int*)0x4C00002C = 0x008EA2BF;
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4C000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4C00003C = 0x00000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4C0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	while ( (*(int*)0x4C000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x000000FF;
+
+	for (loop=0; loop<20; loop++)
+	{
+		loop++;
+	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000023;
+
+	
+	/* set MR2 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000002;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000004;
+
+  
+	/* SDRAM CONFIG */
+	*(int*)0x4C000008 = 0x98801AB1;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4C0000E4 = 0x449FF418;
+
+	/* DDR PHY CTRL1 SHDW */
+	*(int*)0x4C0000E8 = 0x449FF418;
+    
+    /* DDR PHY CTRL 2 */
+	*(int*)0x4C0000EC = 0x00000000;
+
+    /* DDR PHY CTRL1 SHDW */
+	*(int*)0x4C0000E8 = 0x449FF418;
+    
+    /* READ IDLE CTRL */
+	*(int*)0x4C000098 = 0x000501FF;
+    
+    /* READ IDLE CTRL SHDW */
+	*(int*)0x4C00009C = 0x000501FF;
+    
+    /* SDRAM TIM 1 */
+	*(int*)0x4C000018 = 0x0CA8D51A;
+	
+	/* SDRAM TIM 1 SHDW*/
+	*(int*)0x4C00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4C000020 = 0x202E0B92;
+
+	/* SDRAM TIM 2 SHDW */
+	*(int*)0x4C000024 = 0x202E0B92;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4C000028 = 0x008EA2BF;
+
+	/* SDRAM TIM 3 SHDW */
+	*(int*)0x4C00002C = 0x008EA2BF;
+    
+    /* PWR MGMT CTRL */
+	*(int*)0x4C000038 = 0x00000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4C00003C = 0x00000000;
+ 
+	/* SDRAM REF CTRL */
+	*(int*)0x4C000010 = 0x0000050E;
+
+	/* SDRAM REF CTRL SHDW */
+	*(int*)0x4C000014 = 0x0000050E;
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4C000050 = 0x00000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4C000040 = 0x00000000;
+
+	// Enable EMIF1 CLK CTRL (done by default)
+      // *(int*)0x4A008B30 = 0x00000001;
+    
+    GEL_TextOut(">> End ELPIDA E1471E10 DDR config EMIF4D1 wakeUp\n");
+}
+
+elpida_E1471E10_ddr_config_EMIF4D2_shadow(int OPP)
+{
+	int loop = 0;
+     GEL_TextOut(">> Start ELPIDA E1471E10 DDR config EMIF4D2 shadow\n");
+    
+    
+   	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = SDRAM_CONFIG_1X_2GBIT_MAP3_CL3;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+
+	/* DDR PHY CTRL1 SHDW */
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+	*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP100_RL3;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP50_RL3;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP25_RL3;
+	}
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4D0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4D000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	*(int*)0x4D00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4D000018 = JEDEC_TIM1_OPPBOOT;
+	
+	/* SDRAM TIM 1 SHDW*/
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+	*(int*)0x4D00001C = JEDEC_TIM1_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0xDC00001C = JEDEC_TIM1_OPP500;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP25_SDC;
+	}
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4D000020 = JEDEC_TIM2_OPPBOOT;
+
+	/* SDRAM TIM 2 SHDW */
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+	*(int*)0x4D000024 = JEDEC_TIM2_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP25_SDC;
+	}
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4D000028 = 0x0040802F;
+
+	/* SDRAM TIM 3 SHDW */
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D00002C = 0x00B1C33F;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+	*(int*)0x4D00002C = 0x008EA2BF;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D00002C = 0x0048A19F;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D00002C = 0x0047015F;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D00002C = 0x004400CF;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D00002C = 0x004380AF;
+	}
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4D000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4D00003C = 0x80000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4D0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	
+    // MUST BE UNCOMMENTED
+    while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x000000FF;
+
+//	for (loop=0; loop<20; loop++)
+//	{
+//		loop++;
+//	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000023;
+
+	
+	/* set MR2 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000002;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000004;
+
+     /* CHECK THERE IF MR2 VALUE HAS CHANGED */
+	/* In the following example no */
+	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = SDRAM_CONFIG_1X_2GBIT_MAP3_CL6;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+
+	/* DDR PHY CTRL1 SHDW */
+	if ((OPP == OPP100)||(OPP == OPP100_SDC))
+	{
+	*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP100_RL6;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP50_RL6;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP25_RL6;
+	}
+
+     /* END OF CHECK THERE IF MR2 VALUE HAS CHANGED */	
+
+	/* SDRAM REF CTRL */
+	*(int*)0x4D000010 = REF_CTRL_3_9_US_OPPBOOT;
+
+	/* SDRAM REF CTRL SHDW */
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+	*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP25_SDC;
+	}
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x40000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000000;
+
+	// Enable EMIF1 CLK CTRL (done by default)
+      // *(int*)0x4A008B30 = 0x00000001;
+    
+    GEL_TextOut(">> End ELPIDA E1471E10 DDR config EMIF4D2 shadow\n");
+}
+
+elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(int OPP)
+{
+
+	// DDR PHY CTRL1 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_SDC)||(OPP == OPP100_HDMI))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP100_RL6;
+	}
+	else if ((OPP == OPP50)||(OPP == OPP50_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP50_RL6;
+	}
+	else if ((OPP == OPP25)||(OPP == OPP25_SDC))
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPP25_RL6;
+	}
+	else if (OPP == OPPBOOT)
+	{
+		*(int*)0x4D0000E8 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+	}
+	else if (OPP == OPP100_ES20)
+	{
+		*(int*)0x4C0000E8 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	}
+
+	// READ IDLE CTRL SHDW
+	*(int*)0x4D00009C = 0x000501FF;
+
+	// SDRAM TIM 1 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_HDMI))
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPP25_SDC;
+	}
+	else if (OPP == OPPBOOT)
+	{
+		*(int*)0x4D00001C = JEDEC_TIM1_OPPBOOT;
+	}
+
+	// SDRAM TIM 2 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_HDMI))
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP100_SDC;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPP25_SDC;
+	}
+	else if (OPP == OPPBOOT)
+	{
+		*(int*)0x4D000024 = JEDEC_TIM2_OPPBOOT;
+	}
+
+	// SDRAM TIM 3 SHDW
+	if ((OPP == OPP100)||(OPP == OPP100_HDMI))
+	{
+		*(int*)0x4D00002C = 0x00B1C33F;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D00002C = 0x008EA2BF;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D00002C = 0x0048A19F;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D00002C = 0x0047015F;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D00002C = 0x004400CF;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D00002C = 0x004380AF;
+	}
+	else if (OPP == OPPBOOT)
+	{
+		*(int*)0x4D00002C = 0x0040802F;
+	}
+
+	// PWR MGMT CTRL SHDW
+	*(int*)0x4D00003C = 0x00000000;
+
+
+	// SDRAM REF CTRL SHDW
+	if (OPP == OPP100)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP100;
+	}
+	else if (OPP == OPP100_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP100_SDC;
+	}
+	else if (OPP == OPP100_HDMI)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP100_HDMI;
+	}
+	else if (OPP == OPP50)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP50;
+	}
+	else if (OPP == OPP50_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP50_SDC;
+	}
+	else if (OPP == OPP25)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP25;
+	}
+	else if (OPP == OPP25_SDC)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPP25_SDC;
+	}
+	else if (OPP == OPPBOOT)
+	{
+		*(int*)0x4D000014 = REF_CTRL_3_9_US_OPPBOOT;
+	}
+
+}
+
+elpida_EDB8064B1PB8DF_EMIF4D2(int OPP)
+{
+
+     GEL_TextOut(">> Start ELPIDA EDB8064B1PB8DF DDR config EMIF4D2\n");
+
+   	// SDRAM CONFIG
+	*(int*)0x4D000008 = SDRAM_CONFIG_2X_2GBIT_MAP3_CL3;
+
+	// DDR PHY CTRL 1
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL3;
+	
+	// set MR0 (line CS0) register and poll 
+	*(int*)0x4D000050 = 0x00000000;
+	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	// set MR0 (line CS1) register and poll 
+	*(int*)0x4D000050 = 0x80000000;
+	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	// set MR10 (line CS0) register
+	*(int*)0x4D000050 = 0x0000000A;
+	*(int*)0x4D000040 = 0x000000FF;
+
+	// set MR10 (line CS1) register
+	*(int*)0x4D000050 = 0x8000000A;
+	*(int*)0x4D000040 = 0x000000FF;
+
+	// set MR1 (line CS0) register
+	*(int*)0x4D000050 = 0x00000001;
+	*(int*)0x4D000040 = 0x00000023;
+
+	// set MR1 (line CS1) register
+	*(int*)0x4D000050 = 0x80000001;
+	*(int*)0x4D000040 = 0x00000023;
+
+ if ((OPP != OPP100_ES20) && (OPP != OPP50)){
+	// change RL
+	// set MR2 (line CS0) register 
+	*(int*)0x4D000050 = 0x00000002;
+	*(int*)0x4D000040 = 0x00000004;
+	// set MR2 (line CS1) register 
+	*(int*)0x4D000050 = 0x80000002;
+	*(int*)0x4D000040 = 0x00000004;
+	// SDRAM CONFIG
+	*(int*)0x4D000008 = SDRAM_CONFIG_2X_2GBIT_MAP3_CL6;
+	// DDR PHY CTRL 1
+	*(int*)0x4D0000E4 = DDR_PHY_CTRL1_OPPBOOT_RL6;
+}
+
+
+	// DDR PHY CTRL 2
+	*(int*)0x4D0000EC = 0x00000000;
+
+	// READ IDLE CTRL
+	*(int*)0x4D000098 = 0x000501FF;
+
+	// PWR MGMT CTRL
+	*(int*)0x4D000038 = 0x80000000;
+
+	// ZQ INIT
+	*(int*)0x4D0000C8 = 0x500B3215;
+
+	// SDRAM REF CTRL
+	*(int*)0x4D000010 = REF_CTRL_3_9_US_OPPBOOT;
+
+	// program shadow registers
+	elpida_EDB8064B1PB8DF_EMIF4D2_shadow_reg(OPP);
+
+	// set MR16 (line CS0) 
+	*(int*)0x4D000050 = 0x40000010;
+	*(int*)0x4D000040 = 0x00000000;
+
+	// set MR16 (line CS1) 
+	*(int*)0x4D000050 = 0xC0000010;
+	*(int*)0x4D000040 = 0x00000000;
+
+    
+    GEL_TextOut(">> End ELPIDA EDB8064B1PB8DF DDR config EMIF4D2\n");
+}
+
+elpida_E1471E10_ddr_config_EMIF4D2_raw()
+{
+	int loop = 0;
+     GEL_TextOut(">> Start ELPIDA E1471E10 DDR config EMIF4D2 RAW\n");
+    
+    
+   	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = 0x98801EB1;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = 0x449FF416;
+
+	/* DDR PHY CTRL1 SHDW */
+	*(int*)0x4D0000E8 = 0x449FF416;
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4D0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4D000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	*(int*)0x4D00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4D000018 = 0x0CA8D51A;
+	
+	/* SDRAM TIM 1 SHDW*/
+	*(int*)0x4D00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4D000020 = 0x202E0B92;
+
+	/* SDRAM TIM 2 SHDW */
+	*(int*)0x4D000024 = 0x202E0B92;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4D000028 = 0x008EA2BF;
+
+	/* SDRAM TIM 3 SHDW */
+	*(int*)0x4D00002C = 0x008EA2BF;
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4D000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4D00003C = 0x00000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4D0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x000000FF;
+
+	for (loop=0; loop<20; loop++)
+	{
+		loop++;
+	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000023;
+
+	
+	/* set MR2 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000002;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000004;
+
+     /* CHECK THERE IF MR2 VALUE HAS CHANGED */
+	/* In the following example no */
+	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = 0x98801AB1;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = 0x449FF418;
+
+	/* DDR PHY CTRL1 SHDW */
+	*(int*)0x4D0000E8 = 0x449FF418;
+
+     /* END OF CHECK THERE IF MR2 VALUE HAS CHANGED */	
+
+	/* SDRAM REF CTRL */
+	*(int*)0x4D000010 = 0x0000050E;
+
+	/* SDRAM REF CTRL SHDW */
+	*(int*)0x4D000014 = 0x0000050E;
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x40000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000000;
+
+	// Enable EMIF1 CLK CTRL (done by default)
+      // *(int*)0x4A008B30 = 0x00000001;
+    
+    GEL_TextOut(">> End ELPIDA E1471E10 DDR config EMIF4D2 RAW\n");
+}
+
+elpida_E1471E10_ddr_config_EMIF4D2_boot()
+{
+	int loop = 0;
+     GEL_TextOut(">> Start ELPIDA E1471E10 DDR config EMIF4D2 boot\n");
+    
+    
+   	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = 0x98800EB1;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = 0x448FF415;
+
+	/* DDR PHY CTRL1 SHDW */
+	// *(int*)0x4D0000E8 = 0x449FF416;
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4D0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4D000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	// *(int*)0x4D00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4D000018 = 0x04442049;
+	
+	/* SDRAM TIM 1 SHDW*/
+	// *(int*)0x4D00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4D000020 = 0x1002008A;
+
+	/* SDRAM TIM 2 SHDW */
+	//*(int*)0x4D000024 = 0x202E0B92;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4D000028 = 0x0040802F;
+
+	/* SDRAM TIM 3 SHDW */
+	//*(int*)0x4D00002C = 0x008EA2BF;
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4D000038 = 0x00000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4D00003C = 0x00000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4D0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x000000FF;
+
+	for (loop=0; loop<20; loop++)
+	{
+		loop++;
+	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000023;
+    
+    /* PWR MGMT CTRL */
+	*(int*)0x4D000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4D00003C = 0x00000000;
+ 
+	/* SDRAM REF CTRL */
+	*(int*)0x4D000010 = 0x0000004A;
+
+	/* SDRAM REF CTRL SHDW */
+	*(int*)0x4D000014 = 0x0000004A;
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000000;
+    
+    GEL_TextOut(">> End ELPIDA E1471E10 DDR config EMIF4D2 boot\n");
+}
+
+elpida_E1471E10_ddr_config_EMIF4D2_wakeUp()
+{
+	int loop = 0;
+     GEL_TextOut(">> Start ELPIDA E1471E10 DDR config EMIF4D2 wakeUp\n");
+    
+    
+   	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = 0x98800EB1;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = 0x449FFFF6;
+
+	/* DDR PHY CTRL1 SHDW */
+	// *(int*)0x4D0000E8 = 0x449FF416;
+
+	/* DDR PHY CTRL 2 */
+	*(int*)0x4D0000EC = 0x00000000;
+
+	/* READ IDLE CTRL */
+	*(int*)0x4D000098 = 0x000501FF;
+
+	/* READ IDLE CTRL SHDW */
+	// *(int*)0x4D00009C = 0x000501FF;
+
+	/* SDRAM TIM 1 */
+	*(int*)0x4D000018 = 0x04442049;
+	
+	/* SDRAM TIM 1 SHDW*/
+	// *(int*)0x4D00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4D000020 = 0x1002008A;
+
+	/* SDRAM TIM 2 SHDW */
+	//*(int*)0x4D000024 = 0x202E0B92;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4D000028 = 0x0040802F;
+
+	/* SDRAM TIM 3 SHDW */
+	//*(int*)0x4D00002C = 0x008EA2BF;
+
+	/* PWR MGMT CTRL */
+	*(int*)0x4D000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4D00003C = 0x80000000;
+	
+	/* ZQ INIT*/
+	*(int*)0x4D0000C8 = 0x500B3215;
+
+	/* set MR0 register and poll */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000000;
+	/* LPDDR2 MODE REG DATA */
+	while ( (*(int*)0x4D000040&0x1)!=0x0);
+
+	/* set MR10 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x0000000A;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x000000FF;
+
+	for (loop=0; loop<20; loop++)
+	{
+		loop++;
+	}
+
+	/* set MR1 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000001;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000023;
+
+	
+	/* set MR2 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x00000002;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000004;
+
+  
+	/* SDRAM CONFIG */
+	*(int*)0x4D000008 = 0x98801AB1;
+
+	/* DDR PHY CTRL 1 */
+	*(int*)0x4D0000E4 = 0x448FF418;
+
+	/* DDR PHY CTRL1 SHDW */
+	*(int*)0x4D0000E8 = 0x448FF418;
+    
+    /* DDR PHY CTRL 2 */
+	*(int*)0x4D0000EC = 0x00000000;
+    
+    /* READ IDLE CTRL */
+	*(int*)0x4D000098 = 0x000501FF;
+    
+    /* READ IDLE CTRL SHDW */
+	*(int*)0x4D00009C = 0x000501FF;
+    
+    /* SDRAM TIM 1 */
+	*(int*)0x4D000018 = 0x0CA8D51A;
+	
+	/* SDRAM TIM 1 SHDW*/
+	*(int*)0x4D00001C = 0x0CA8D51A;
+
+	/* SDRAM TIM 2 */
+	*(int*)0x4D000020 = 0x202E0B92;
+
+	/* SDRAM TIM 2 SHDW */
+	*(int*)0x4D000024 = 0x202E0B92;
+
+	/* SDRAM TIM 3 */
+	*(int*)0x4D000028 = 0x008EA2BF;
+
+	/* SDRAM TIM 3 SHDW */
+	*(int*)0x4D00002C = 0x008EA2BF;
+    
+    /* PWR MGMT CTRL */
+	*(int*)0x4D000038 = 0x80000000;
+
+	/* PWR MGMT CTRL SHDW*/
+	*(int*)0x4D00003C = 0x00000000;
+ 
+	/* SDRAM REF CTRL */
+	*(int*)0x4D000010 = 0x0000050E;
+
+	/* SDRAM REF CTRL SHDW */
+	*(int*)0x4D000014 = 0x0000050E;
+
+	/* set MR16 register */ 
+	/* LPDDR2 MODE REG CFG */
+	*(int*)0x4D000050 = 0x40000010;
+	/* LPDDR2 MODE REG DATA */
+	*(int*)0x4D000040 = 0x00000000;
+
+	// Enable EMIF1 CLK CTRL (done by default)
+      // *(int*)0x4A008B30 = 0x00000001;
+    
+    GEL_TextOut(">> End ELPIDA E1471E10 DDR config EMIF4D2 wakeUp\n");
+}

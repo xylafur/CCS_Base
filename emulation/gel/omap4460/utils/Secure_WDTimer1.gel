@@ -1,0 +1,61 @@
+menuitem "Advanced Emulation feature"
+
+hotmenu Secure_WDTimer1_Enable()
+{	
+	*(int*) 0x4a30c100 = 0x00011782; // Enable Secure WDT from ATTILA WKUP Control module
+}
+
+hotmenu Secure_WDTimer1_Stop()
+{	
+	// Stop Cmd to allow Write accesses to WCCR/WLDR/WCLR(PTV) registers
+	while ((*(int*) 0x4a322034) != 0);
+	*(int*) 0x4a322048 = 0x0000AAAA; 
+	while ((*(int*) 0x4a322034) != 0);
+	*(int*) 0x4a322048 = 0x00005555; 
+	while ((*(int*) 0x4a322034) != 0);
+}
+
+hotmenu Secure_WDTimer1_Start()
+{
+	// Start Cmd to allow Write accesses to WCCR/WLDR/WCLR(PTV) registers
+	while ((*(int*) 0x4a322034) != 0);
+	*(int*) 0x4a322048 = 0x0000BBBB; 
+	while ((*(int*) 0x4a322034) != 0);
+	*(int*) 0x4a322048 = 0x00004444; 
+	while ((*(int*) 0x4a322034) != 0);		
+}
+
+hotmenu Secure_WDTimer1_ModifyLoadValue_WLDR()
+{
+	*(int*) 0x4a32202C = 0xFFF00000; 
+}
+
+hotmenu Secure_WDTimer1_myTestOK()
+{
+	Stop();
+	ModifyLoadValue_WLDR();
+	Enable();
+	Start();
+}
+
+hotmenu Secure_WDTimer1_myTestTrial()
+{
+	Enable();
+	Stop();
+	ModifyLoadValue_WLDR();
+	Start();
+}
+
+hotmenu Secure_WDTimer1_enableMsuspend()
+{
+    *(int*) 0x54160050 = 0x40000000;
+    *(int*) 0x54160050 = 0x80000000;
+    *(int*) 0x54160290 = 0x69;
+}
+
+hotmenu Secure_WDTimer1_disableMsuspend()
+{
+    *(int*) 0x54160050 = 0x40000000;
+    *(int*) 0x54160050 = 0x80000000;
+    *(int*) 0x54160290 = 0x60;
+}
